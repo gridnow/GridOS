@@ -1,4 +1,0 @@
-GridOS
-======
-
-Grid Operating system

@@ -1,0 +1,3 @@
+1,x86
+	alternative.h中定义了alternative_io，用ALTERNATIVE宏根据CPU的能力来在运行时替换指令，现在只用到了老指令，新指令暂时忽略。
+	io_delay 目前用的是0x80端口，在某些平台上可能会挂起，以后再动态屏蔽这些挂起的机器。

@@ -1,0 +1,32 @@
+
+jiffies = jiffies_64;
+
+SECTIONS
+{	
+	. = 0x80100000;
+	___start = .;
+	
+	/* Init put to head */
+	.init.text : AT(ADDR(.init.text) ) { 
+	__init_text_start = .; 
+		*(.head.text) *(.init.text) 
+	 __init_text_end = .; 		
+	 }
+
+	/*cpu struct*/
+   .x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) ) {
+  __x86_cpu_dev_start = .;
+  *(.x86_cpu_dev.init)
+  __x86_cpu_dev_end = .;
+ }
+
+	.bss : AT(ADDR(.bss) ) {
+	__bss_start = .;
+	*(.bss)
+ }
+ __bss_stop = .;
+
+ /* 最好是4KB对齐的，考虑到有的页时16KB，所有用最大的16KB对齐 */
+ . = ALIGN(((0x4000)));
+	___end = .;
+};
