@@ -10,6 +10,19 @@
 #include <asm/system.h>
 #include "cpufeature.h"
 
+enum tlb_infos {
+	ENTRIES,
+	NR_INFO
+};
+
+extern u16 __read_mostly tlb_lli_4k[NR_INFO];
+extern u16 __read_mostly tlb_lli_2m[NR_INFO];
+extern u16 __read_mostly tlb_lli_4m[NR_INFO];
+extern u16 __read_mostly tlb_lld_4k[NR_INFO];
+extern u16 __read_mostly tlb_lld_2m[NR_INFO];
+extern u16 __read_mostly tlb_lld_4m[NR_INFO];
+extern s8  __read_mostly tlb_flushall_shift;
+
 /*
  *  CPU type and hardware bug flags. Kept separately for each CPU.
  *  Members of this structure are referenced in head.S, so think twice
@@ -399,6 +412,7 @@ extern void select_idle_routine(const struct cpuinfo_x86 *c);
 extern void detect_extended_topology(struct cpuinfo_x86 *c);
 
 extern void detect_ht(struct cpuinfo_x86 *c);
+void __cpuinit cpu_detect_tlb(struct cpuinfo_x86 *c);
 
 /************************************************************************/
 /*cache.c                                                               */

@@ -22,8 +22,6 @@
 #define notrace				__attribute__((no_instrument_function))
 #define __always_inline		inline __attribute__((always_inline))
 #define barrier()			__asm__ __volatile__("": : :"memory")
-#define likely(x)			__builtin_expect(!!(x), 1)
-#define unlikely(x)			__builtin_expect(!!(x), 0)
 #define __maybe_unused		__attribute__((unused))
 
 #define __bitwise
@@ -65,4 +63,5 @@
 
 #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
 
+#include_next <compiler.h>
 #endif

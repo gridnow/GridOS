@@ -28,6 +28,7 @@ BEGIN_C_DECLS;
 #ifndef __ASSEMBLY__
 typedef unsigned char		__u8;								/**< 无符号8位数据，建议不用该版本，仅仅为了兼容一些传统软件 */
 typedef unsigned char		u8;									/**< 无符号8位数据 */
+typedef   signed char		s8;									/**< 有符号8位数据 */
 typedef unsigned short		__u16;								/**< 无符号16位数据，建议不用该版本，仅仅为了兼容一些传统软件 */
 typedef unsigned short		u16;								/**< 无符号16位数据 */
 typedef unsigned int		__u32;								/**< 无符号32位数据，建议不用该版本，仅仅为了兼容一些传统软件 */
@@ -79,10 +80,6 @@ typedef unsigned int bool;
 
 /* Pointer */
 #define NULL 0
-
-/* 编译器选项 */
-#define DLLEXPORT			__attribute__ ((visibility ("default")))
-#define __noreturn			__attribute__((noreturn))
 
 /* 变量域 */
 #define __in
