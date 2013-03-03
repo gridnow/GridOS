@@ -81,10 +81,6 @@ typedef unsigned int bool;
 /* Pointer */
 #define NULL 0
 
-/* 编译器选项 */
-#define DLLEXPORT			__attribute__ ((visibility ("default")))
-#define __noreturn			__attribute__((noreturn))
-
 /* 变量域 */
 #define __in
 #define __out

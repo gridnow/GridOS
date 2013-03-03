@@ -4,7 +4,7 @@ include ../../../../hal_include.mk
 ADD_INCLUDE +=$(HAL_INCLUDE) -include hal_config.h
 
 #要编译的文件列表
-OBJS 	= string_$(BITS).o memcpy_$(BITS).o rwlock.o delay.o
+OBJS 	= string_$(BITS).o memcpy_$(BITS).o rwlock.o
 PARTS 	=
 
 all:  subs_parts $(OBJS)
