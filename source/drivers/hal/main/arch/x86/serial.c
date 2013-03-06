@@ -7,6 +7,8 @@
 */
 
 #include <types.h>
+#include <console.h>
+
 #include <asm/io.h>
 #include <asm/serial.h>
 
@@ -65,6 +67,6 @@ void __init x86_serial_init(void)
 	// 8N1
 }
 
-//struct hal_console_ops serial_console_ops = {
-//	.write = write_string,
-//};
+struct hal_console_ops serial_console_ops = {
+	.write = write_string,
+};

@@ -12,17 +12,6 @@
 	 (((base)  & _AC(0x00ffffff,ULL)) << 16) |	\
 	 (((limit) & _AC(0x0000ffff,ULL))))
 
-/* Simple and small GDT entries for booting only */
-
-#define GDT_ENTRY_BOOT_CS	2
-#define __BOOT_CS		(GDT_ENTRY_BOOT_CS * 8)
-
-#define GDT_ENTRY_BOOT_DS	(GDT_ENTRY_BOOT_CS + 1)
-#define __BOOT_DS		(GDT_ENTRY_BOOT_DS * 8)
-
-#define GDT_ENTRY_BOOT_TSS	(GDT_ENTRY_BOOT_CS + 2)
-#define __BOOT_TSS		(GDT_ENTRY_BOOT_TSS * 8)
-
 #ifdef CONFIG_X86_32
 /*
  * The layout of the per-CPU GDT:
@@ -52,14 +41,7 @@
  *  15 - default user DS
  *  16 - TSS
  *  17 - LDT
- *  18 - PNPBIOS support (16->32 gate)
- *  19 - PNPBIOS support
- *  20 - PNPBIOS support
- *  21 - PNPBIOS support
- *  22 - PNPBIOS support
- *  23 - APM BIOS support
- *  24 - APM BIOS support
- *  25 - APM BIOS support
+
  *
  *  26 - ESPFIX small SS
  *  27 - per-cpu			[ offset to per-cpu data area ]
@@ -111,38 +93,6 @@
  */
 #define GDT_ENTRIES 32
 
-/* The PnP BIOS entries in the GDT */
-#define GDT_ENTRY_PNPBIOS_CS32		(GDT_ENTRY_PNPBIOS_BASE + 0)
-#define GDT_ENTRY_PNPBIOS_CS16		(GDT_ENTRY_PNPBIOS_BASE + 1)
-#define GDT_ENTRY_PNPBIOS_DS		(GDT_ENTRY_PNPBIOS_BASE + 2)
-#define GDT_ENTRY_PNPBIOS_TS1		(GDT_ENTRY_PNPBIOS_BASE + 3)
-#define GDT_ENTRY_PNPBIOS_TS2		(GDT_ENTRY_PNPBIOS_BASE + 4)
-
-/* The PnP BIOS selectors */
-#define PNP_CS32   (GDT_ENTRY_PNPBIOS_CS32 * 8)	/* segment for calling fn */
-#define PNP_CS16   (GDT_ENTRY_PNPBIOS_CS16 * 8)	/* code segment for BIOS */
-#define PNP_DS     (GDT_ENTRY_PNPBIOS_DS * 8)	/* data segment for BIOS */
-#define PNP_TS1    (GDT_ENTRY_PNPBIOS_TS1 * 8)	/* transfer data segment */
-#define PNP_TS2    (GDT_ENTRY_PNPBIOS_TS2 * 8)	/* another data segment */
-
-/* Bottom two bits of selector give the ring privilege level */
-#define SEGMENT_RPL_MASK	0x3
-/* Bit 2 is table indicator (LDT/GDT) */
-#define SEGMENT_TI_MASK		0x4
-
-/* User mode is privilege level 3 */
-#define USER_RPL		0x3
-/* LDT segment has TI set, GDT has it cleared */
-#define SEGMENT_LDT		0x4
-#define SEGMENT_GDT		0x0
-
-/*
- * Matching rules for certain types of segments.
- */
-
-/* Matches PNP_CS32 and PNP_CS16 (they must be consecutive) */
-#define SEGMENT_IS_PNP_CODE(x)   (((x) & 0xf4) == GDT_ENTRY_PNPBIOS_BASE * 8)
-
 
 #else
 #include <asm/cache.h>
@@ -181,38 +131,17 @@
 #define FS_TLS_SEL ((GDT_ENTRY_TLS_MIN+FS_TLS)*8 + 3)
 
 #define GDT_ENTRIES 16
-
 #endif
 
 #define __KERNEL_CS	(GDT_ENTRY_KERNEL_CS*8)
 #define __KERNEL_DS	(GDT_ENTRY_KERNEL_DS*8)
 #define __USER_DS	(GDT_ENTRY_DEFAULT_USER_DS*8+3)
 #define __USER_CS	(GDT_ENTRY_DEFAULT_USER_CS*8+3)
-#ifndef CONFIG_PARAVIRT
-#define get_kernel_rpl()  0
-#endif
-
-/* User mode is privilege level 3 */
-#define USER_RPL		0x3
-/* LDT segment has TI set, GDT has it cleared */
-#define SEGMENT_LDT		0x4
-#define SEGMENT_GDT		0x0
-
-/* Bottom two bits of selector give the ring privilege level */
-#define SEGMENT_RPL_MASK	0x3
-/* Bit 2 is table indicator (LDT/GDT) */
-#define SEGMENT_TI_MASK		0x4
 
 #define IDT_ENTRIES 256
 #define NUM_EXCEPTION_VECTORS 32
 #define GDT_SIZE (GDT_ENTRIES * 8)
 #define GDT_ENTRY_TLS_ENTRIES 3
 #define TLS_SIZE (GDT_ENTRY_TLS_ENTRIES * 8)
-
-#ifdef __KERNEL__
-#ifndef __ASSEMBLY__
-extern const char early_idt_handlers[NUM_EXCEPTION_VECTORS][10];
-#endif
-#endif
 
 #endif /* _ASM_X86_SEGMENT_H */

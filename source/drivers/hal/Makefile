@@ -8,6 +8,7 @@ LDFLAGS					=-L$(SYSTEM_DIR) --entry=start
 DEPENDS 				= --warn-unresolved-symbols
 ADD_LDFLAGS				+= -T main/arch/$(ARCH_DIR)/lds$(BITS).txt
 
+DEPENDS					+= ../../libs/common/*.o
 #要编译的文件列表
 OBJS	= 
 PARTS	= main time libs
@@ -15,5 +16,14 @@ PARTS	= main time libs
 all:  subs_parts $(OBJS)
 	$(LD) $(LDFLAGS) -o $(TARGET) $(ADD_LDFLAGS) $(DEPENDS) *.o $(ARCH_LD_FLAGS)
 
+#
+#i386? we can test in virtual machine
+#
+ifeq ($(ARCH),i386)
+	$(CP) $(TARGET) $(TARGET).org
+	objcopy -O binary -S $(TARGET)
+	$(CP) $(TARGET) $(SYSTEM_DIR)
+	$(MAKE) to_image
+endif
 
 include $(MY_BUILD_BASE)/cc.mk

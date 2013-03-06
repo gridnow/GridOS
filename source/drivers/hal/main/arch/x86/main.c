@@ -105,20 +105,6 @@ void __init tramp_to_high()
 /************************************************************************/
 /* CPU                                                                  */
 /************************************************************************/
-static __init void start_aps()
-{
-	int cpu;
-#if 0
-	for_each_present_cpu(cpu) 
-	{
-		if (!cpu_online(cpu))
-		{
-			hal_arch_cpu_up( cpu );
-		}
-	}
-#endif
-}
-
 /**
 	@brief prepare goto the smp mode 
 */
@@ -136,9 +122,6 @@ static void x86_prepare_smp()
 	setup_local_APIC();
 	bsp_end_local_APIC_setup();
 	printk("\n%s->%s->%d.",__FILE__,__FUNCTION__,__LINE__);
-
-	/* Startup other cpu :*/
-	start_aps();
 }
 
 /************************************************************************/

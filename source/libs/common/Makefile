@@ -1,7 +1,7 @@
 include $(MY_BUILD_BASE)/config.mk
 
 #要编译的文件列表
-OBJS	= vsprintf.o digits.o num2str.o
+OBJS	= vsprintf.o h2d.o
 PARTS	=
 
 all:  subs_parts $(OBJS)

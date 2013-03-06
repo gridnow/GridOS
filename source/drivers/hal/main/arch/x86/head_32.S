@@ -23,7 +23,7 @@ ENTRY(_stext)
 	lea startup_sp, %eax
 	addl $startup_sp_size, %eax
 	mov %eax, %esp
-	
+
 	/*
 		Switch to high address
 		Ìø°å³ÌÐò½«Ö´ÐÐhal_main
