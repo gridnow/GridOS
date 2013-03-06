@@ -8,6 +8,30 @@
 #include <stdarg.h>
 #include <debug.h>
 
+#include <screen.h>
+#include <console.h>
+
+#if defined (__i386__)
+extern struct hal_console_ops serial_console_ops;
+#endif
+static struct hal_console_ops *console_ops_array[]={
+#if defined (__i386__)
+	&serial_console_ops,
+#endif
+};
+#define CONSOLE_COUNT (sizeof(console_ops_array) / sizeof(struct hal_console_ops*))
+
+void console_write(char *string, int size)
+{
+	int i;
+
+	/* Output to console driver */
+	for (i = 0; i < CONSOLE_COUNT; i++)
+		if(console_ops_array[i]->write)
+			console_ops_array[i]->write(string, size);
+
+}
+
 #define MAX_PRINTF_SIZE 128
 extern int vscnprintf(char *buf, int size, const char * fmt, va_list args);
 
