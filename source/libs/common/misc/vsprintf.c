@@ -5,6 +5,8 @@
 #include <ctype.h>
 #include <stdio.h>
 
+#include "digits.h"
+
 struct va_format {
 	const char *fmt;
 	va_list *va;

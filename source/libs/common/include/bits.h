@@ -3,12 +3,13 @@
 *   See the license.txt at the root directory of this project for the copyright information about this file and project.
 *
 *   wuxin
-*   实现了数字到字符串转换的通用接口
+*   位
 */
-#ifndef COMMON_LIB_DIGITS_H
-#define COMMON_LIB_DIGITS_H
+#ifndef COMMON_LIB_BITS_H
+#define COMMON_LIB_BITS_H
+#include <types.h>
 
-int h2d(char *p, int revert, unsigned long hex);
-
+unsigned long cl_find_next_zero_bit(const unsigned long *addr, unsigned long size,
+				 unsigned long offset);
 #endif
 
