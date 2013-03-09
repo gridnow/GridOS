@@ -1,7 +1,7 @@
 include $(MY_BUILD_BASE)/config.mk
 include hal_include.mk
 
-ADD_INCLUDE +=$(HAL_INCLUDE) -include hal_config.h
+ADD_INCLUDE +=$(HAL_INCLUDE)
 
 TARGET					= hal.sys
 LDFLAGS					=-L$(SYSTEM_DIR) --entry=start 
