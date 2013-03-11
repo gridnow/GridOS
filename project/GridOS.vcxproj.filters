@@ -1,0 +1,304 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="Source Files\drivers">
+      <UniqueIdentifier>{618c0141-b7a0-4872-bf9e-22bb99807552}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\drivers\hal">
+      <UniqueIdentifier>{2cbc6459-30b3-4f2c-ad1e-119096bcc422}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\drivers\hal\main">
+      <UniqueIdentifier>{fb82be2a-7787-4f6e-9024-03253fac0df9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\kernel">
+      <UniqueIdentifier>{e3e2121c-066c-4610-a748-abc1285446cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\drivers\hal\include">
+      <UniqueIdentifier>{2b895c54-4abe-453b-a819-0fe38644db79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\drivers\hal\include\arch">
+      <UniqueIdentifier>{44805e60-2af0-4d81-96a4-19ac2768bf86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\drivers\hal\include\arch\x86">
+      <UniqueIdentifier>{dac18cbc-ddbe-4dbf-87d7-122b44750ea3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\drivers\hal\include\arch\x86\asm">
+      <UniqueIdentifier>{0a605434-cd65-4c41-b560-29128d877b1c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\source\drivers\hal\hal_include.mk">
+      <Filter>Source Files\drivers\hal</Filter>
+    </None>
+    <None Include="..\source\drivers\hal\Makefile">
+      <Filter>Source Files\drivers\hal</Filter>
+    </None>
+    <None Include="..\source\drivers\hal\main\Makefile">
+      <Filter>Source Files\drivers\hal\main</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\source\drivers\hal\problem list.txt">
+      <Filter>Source Files\drivers\hal</Filter>
+    </Text>
+    <Text Include="..\include\kernel\readme.txt">
+      <Filter>Header Files\kernel</Filter>
+    </Text>
+    <Text Include="..\source\drivers\hal\include\readme.txt">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\source\drivers\hal\main\main.c">
+      <Filter>Source Files\drivers\hal\main</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\compiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ctype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\limits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\stdarg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\stddef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\stdio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\string.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\kernel\ke_lock.h">
+      <Filter>Header Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\cache.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\compiler.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\console.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\const.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\cpu.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\cpumask.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\debug.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\hal_config.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\irqflags.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\linkage.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\misc.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\percpu.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\percpu-defs.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\screen.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\smp.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\string.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\types.h">
+      <Filter>Source Files\drivers\hal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\arch.h">
+      <Filter>Source Files\drivers\hal\include\arch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\alternative.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\alternative-asm.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\apic.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\apicdef.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\asm.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\atomic.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\barrier.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\bitops.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\cache.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\cpu.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\cpufeature.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\cpufeature_def.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\delay.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\desc.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\desc_defs.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\div64.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\dwarf2.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\fixmap.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\frame.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\hypervisor.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\i387.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\io.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\irq.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\irq_vectors.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\irqflags.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\ldt.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\linkage.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\mce.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\mpspec.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\msr.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\msr-index.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\pci_x86.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\pci-direct.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\processor.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\processor_probe.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\processor-flags.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\ptrace.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\required-features.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\rwlock.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\segment.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\serial.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\smp.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\spinlock.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\spinlock_types.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\string.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\string_32.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\system.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\timer.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\timex.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\tsc.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\x86_init.h">
+      <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
