@@ -8,6 +8,6 @@ OBJS 	= cpu.o scattered.o amd.o intel.o topology.o
 PARTS 	= 
 
 all:  subs_parts $(OBJS)
-	ld -r -o ../cpu.o *.o $(ARCH_LD_FLAGS)
+	$(LD) -r -o ../cpu.o *.o $(ARCH_LD_FLAGS)
 
 include $(MY_BUILD_BASE)/cc.mk

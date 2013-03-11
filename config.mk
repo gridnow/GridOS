@@ -5,12 +5,13 @@
 #
 #¹¤¾ßºê
 #
-CC				= gcc
-AS				= as
-AR				= ar
-LD				= ld
+CC				= $(GCC_PREFIX)gcc
+AS				= $(GCC_PREFIX)as
+AR				= $(GCC_PREFIX)ar
+LD				= $(GCC_PREFIX)ld
 RES				= fares
 CP				= cp
+OBJCOPY			= $(GCC_PREFIX)objcopy
 
 CFLAGS_arm         = -c -O2
 CFLAGS_i386        = -c -O2

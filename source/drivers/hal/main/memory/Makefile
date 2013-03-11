@@ -1,10 +1,10 @@
 include $(MY_BUILD_BASE)/config.mk
-include ../hal_include.mk
+include ../../hal_include.mk
 
-ADD_INCLUDE +=$(HAL_INCLUDE)
+ADD_INCLUDE +=-I../include $(HAL_INCLUDE) -I$(MY_BUILD_BASE)/source/libs/common/include
 
 #要编译的文件列表
-OBJS	= 
+OBJS	= pa.o
 PARTS	= 
 
 all:  subs_parts $(OBJS)

@@ -8,7 +8,7 @@ OBJS = screen.o pixel.o dotfnt.o cursor.o
 PARTS = 
 
 all:  subs_parts $(OBJS)
-	ld -r -o ../console.o *.o $(ARCH_LD_FLAGS)
+	$(LD) -r -o ../console.o *.o $(ARCH_LD_FLAGS)
 
 
 include $(MY_BUILD_BASE)/cc.mk

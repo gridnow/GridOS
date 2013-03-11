@@ -5,6 +5,6 @@ OBJS	=
 PARTS	= object misc cpu
 
 all:  subs_parts $(OBJS)
-	ld -r -o ../common.o *.o $(ARCH_LD_FLAGS)
+	$(LD) -r -o ../common.o *.o $(ARCH_LD_FLAGS)
 
 include $(MY_BUILD_BASE)/cc.mk

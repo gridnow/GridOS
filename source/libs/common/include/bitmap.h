@@ -8,6 +8,7 @@
 #ifndef COMMON_LIB_BITMAP_H
 #define COMMON_LIB_BITMAP_H
 #include <types.h>
+#include <limits.h>
 
 struct cl_bitmap
 {	

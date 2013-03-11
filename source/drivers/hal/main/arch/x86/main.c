@@ -18,7 +18,7 @@
 #include <asm/smp.h>
 #include <asm/irq_vectors.h>
 #include <asm/desc.h>
-#include <asm/irq.h.>
+#include <asm/irq.h>
 
 
 /************************************************************************/

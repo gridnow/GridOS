@@ -81,15 +81,6 @@ set_bit(unsigned int nr, volatile unsigned long *addr)
 	}
 }
 
-/**
- * __set_bit - Set a bit in memory
- * @nr: the bit to set
- * @addr: the address to start counting from
- *
- * Unlike set_bit(), this function is non-atomic and may be reordered.
- * If it's called on the same region of memory simultaneously, the effect
- * may be that only one operation succeeds.
- */
 static inline void __set_bit(int nr, volatile unsigned long *addr)
 {
 	asm volatile("bts %1,%0" : ADDR : "Ir" (nr) : "memory");
@@ -98,6 +89,17 @@ static inline void __set_bit(int nr, volatile unsigned long *addr)
 static inline void __clear_bit(int nr, volatile unsigned long *addr)
 {
 	asm volatile("btr %1,%0" : ADDR : "Ir" (nr));
+}
+
+static inline int __test_and_set_bit(int nr, volatile unsigned long *addr)
+{
+	int oldbit;
+
+	asm("bts %2,%1\n\t"
+	    "sbb %0,%0"
+	    : "=r" (oldbit), ADDR
+	    : "Ir" (nr));
+	return oldbit;
 }
 
 /**
@@ -118,15 +120,6 @@ static inline int test_and_set_bit(int nr, volatile unsigned long *addr)
 	return oldbit;
 }
 
-/**
- * __test_and_clear_bit - Clear a bit and return its old value
- * @nr: Bit to clear
- * @addr: Address to count from
- *
- * This operation is non-atomic and can be reordered.
- * If two examples of this operation race, one can appear to succeed
- * but actually fail.  You must protect multiple accesses with a lock.
- */
 static inline int __test_and_clear_bit(int nr, volatile unsigned long *addr)
 {
 	int oldbit;
@@ -137,12 +130,7 @@ static inline int __test_and_clear_bit(int nr, volatile unsigned long *addr)
 		     : "Ir" (nr));
 	return oldbit;
 }
-/**
- * __ffs - find first set bit in word
- * @word: The word to search
- *
- * Undefined if no bit exists, so code should check against 0 first.
- */
+
 static inline unsigned long __ffs(unsigned long word)
 {
 	asm("bsf %1,%0"
@@ -151,12 +139,6 @@ static inline unsigned long __ffs(unsigned long word)
 	return word;
 }
 
-/**
- * ffz - find first zero bit in word
- * @word: The word to search
- *
- * Undefined if no zero exists, so code should check against ~0UL first.
- */
 static inline unsigned long ffz(unsigned long word)
 {
 	asm("bsf %1,%0"
@@ -165,13 +147,6 @@ static inline unsigned long ffz(unsigned long word)
 	return word;
 }
 
-
-/*
- * __fls: find last set bit in word
- * @word: The word to search
- *
- * Undefined if no set bit exists, so code should check against 0 first.
- */
 static inline unsigned long __fls(unsigned long word)
 {
 	asm("bsr %1,%0"

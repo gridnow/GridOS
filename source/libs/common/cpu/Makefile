@@ -9,6 +9,6 @@ ADD_INCLUDE = -I../include $(HAL_INCLUDE)
 #本模块要用CPU特有的指令
 
 all:  subs_parts $(OBJS)
-	ld -r -o ../cpu.o *.o $(ARCH_LD_FLAGS)
+	$(LD) -r -o ../cpu.o *.o $(ARCH_LD_FLAGS)
 
 include $(MY_BUILD_BASE)/cc.mk

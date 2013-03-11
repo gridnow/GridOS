@@ -21,7 +21,7 @@ all:  subs_parts $(OBJS)
 #
 ifeq ($(ARCH),i386)
 	$(CP) $(TARGET) $(TARGET).org
-	objcopy -O binary -S $(TARGET)
+	$(OBJCOPY) -O binary -S $(TARGET)
 	$(CP) $(TARGET) $(SYSTEM_DIR)
 	$(MAKE) to_image
 endif

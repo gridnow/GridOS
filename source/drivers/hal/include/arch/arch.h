@@ -7,6 +7,7 @@
 */
 #ifndef HAL_ARCH_H
 #define HAL_ARCH_H
+#include <compiler.h>
 #include <types.h>
 
 extern void __init __noreturn hal_main();

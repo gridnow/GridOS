@@ -8,6 +8,6 @@ OBJS	= printk.o
 PARTS	= 
 
 all:  subs_parts $(OBJS)
-	ld -r -o ../libs.o *.o $(ARCH_LD_FLAGS)
+	$(LD) -r -o ../libs.o *.o $(ARCH_LD_FLAGS)
 
 include $(MY_BUILD_BASE)/cc.mk

@@ -6,6 +6,6 @@ PARTS	=
 ADD_INCLUDE +=-I../include
 
 all:  subs_parts $(OBJS)
-	ld -r -o ../misc.o *.o $(ARCH_LD_FLAGS)
+	$(LD) -r -o ../misc.o *.o $(ARCH_LD_FLAGS)
 
 include $(MY_BUILD_BASE)/cc.mk

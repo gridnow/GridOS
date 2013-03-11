@@ -8,6 +8,6 @@ OBJS	= main.o
 PARTS	= arch memory
 
 all:  subs_parts $(OBJS)
-	ld -r -o ../main.o *.o $(ARCH_LD_FLAGS)
+	$(LD) -r -o ../main.o *.o $(ARCH_LD_FLAGS)
 
 include $(MY_BUILD_BASE)/cc.mk
