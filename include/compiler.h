@@ -8,10 +8,10 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
-#define  noinline			__attribute__((noinline))
+#define  noinline			__attribute__ ((noinline))
 #define likely(x)			__builtin_expect(!!(x), 1)
 #define unlikely(x)			__builtin_expect(!!(x), 0)
-#define __noreturn			__attribute__((noreturn))
+#define __noreturn			__attribute__ ((noreturn))
 #define DLLEXPORT			__attribute__ ((visibility ("default")))
 
 #endif

@@ -8,6 +8,6 @@ OBJS 	= string_$(BITS).o memcpy_$(BITS).o rwlock.o
 PARTS 	=
 
 all:  subs_parts $(OBJS)
-	ld -r -o ../lib.o *.o $(ARCH_LD_FLAGS)
+	$(LD) -r -o ../lib.o *.o $(ARCH_LD_FLAGS)
 
 include $(MY_BUILD_BASE)/cc.mk

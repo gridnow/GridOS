@@ -14,10 +14,11 @@
 #ifndef STDARG_H
 #define STDARG_H
 
-#if defined (__i386__)
-typedef char * va_list;
-#elif defined (__mips__)
+#if defined (__mips__)
 typedef void * va_list;
+#else
+/* i386 mode */
+typedef char * va_list;
 #endif
 
 #define va_start(v,l)		__builtin_va_start(v,l)

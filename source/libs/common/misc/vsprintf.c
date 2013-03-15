@@ -5,6 +5,8 @@
 #include <ctype.h>
 #include <stdio.h>
 
+#include "digits.h"
+
 struct va_format {
 	const char *fmt;
 	va_list *va;
@@ -42,7 +44,8 @@ static int skip_atoi(const char **s)
 
 static noinline char* put_dec(char *buf, unsigned long long num)
 {
-	return NULL;
+	int len = h2d(buf, 0, num);
+	return buf + len;
 }
 
 #define ZEROPAD	1		/* pad with zero */
@@ -198,6 +201,7 @@ static char *number(char *buf, char *end, unsigned long long num,
 			*buf = ' ';
 		++buf;
 	}
+	
 	return buf;
 }
 

@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{F1D8ADCC-990A-4FA2-BD2C-EDBA326C74E5}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <IncludePath>$(ProjectDir)\..\include;$(ProjectDir)\..\source\drivers\hal\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="..\source\drivers\hal\hal_include.mk" />
+    <None Include="..\source\drivers\hal\main\Makefile" />
+    <None Include="..\source\drivers\hal\Makefile" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\include\kernel\readme.txt" />
+    <Text Include="..\source\drivers\hal\include\readme.txt" />
+    <Text Include="..\source\drivers\hal\problem list.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\source\drivers\hal\main\main.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\compiler.h" />
+    <ClInclude Include="..\include\ctype.h" />
+    <ClInclude Include="..\include\kernel\ke_lock.h" />
+    <ClInclude Include="..\include\limits.h" />
+    <ClInclude Include="..\include\stdarg.h" />
+    <ClInclude Include="..\include\stddef.h" />
+    <ClInclude Include="..\include\stdio.h" />
+    <ClInclude Include="..\include\string.h" />
+    <ClInclude Include="..\include\types.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\arch.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\alternative-asm.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\alternative.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\apic.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\apicdef.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\asm.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\atomic.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\barrier.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\bitops.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\cache.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\cpu.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\cpufeature.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\cpufeature_def.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\delay.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\desc.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\desc_defs.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\div64.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\dwarf2.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\fixmap.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\frame.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\hypervisor.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\i387.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\io.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\irq.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\irqflags.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\irq_vectors.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\ldt.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\linkage.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\mce.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\mpspec.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\msr-index.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\msr.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\pci-direct.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\pci_x86.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\processor-flags.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\processor.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\processor_probe.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\ptrace.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\required-features.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\rwlock.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\segment.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\serial.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\smp.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\spinlock.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\spinlock_types.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\string.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\string_32.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\system.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\timer.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\timex.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\tsc.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\x86_init.h" />
+    <ClInclude Include="..\source\drivers\hal\include\cache.h" />
+    <ClInclude Include="..\source\drivers\hal\include\compiler.h" />
+    <ClInclude Include="..\source\drivers\hal\include\console.h" />
+    <ClInclude Include="..\source\drivers\hal\include\const.h" />
+    <ClInclude Include="..\source\drivers\hal\include\cpu.h" />
+    <ClInclude Include="..\source\drivers\hal\include\cpumask.h" />
+    <ClInclude Include="..\source\drivers\hal\include\debug.h" />
+    <ClInclude Include="..\source\drivers\hal\include\hal_config.h" />
+    <ClInclude Include="..\source\drivers\hal\include\irqflags.h" />
+    <ClInclude Include="..\source\drivers\hal\include\linkage.h" />
+    <ClInclude Include="..\source\drivers\hal\include\misc.h" />
+    <ClInclude Include="..\source\drivers\hal\include\percpu-defs.h" />
+    <ClInclude Include="..\source\drivers\hal\include\percpu.h" />
+    <ClInclude Include="..\source\drivers\hal\include\screen.h" />
+    <ClInclude Include="..\source\drivers\hal\include\smp.h" />
+    <ClInclude Include="..\source\drivers\hal\include\string.h" />
+    <ClInclude Include="..\source\drivers\hal\include\types.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

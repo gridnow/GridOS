@@ -12,14 +12,14 @@
 
 /* config of x86 */
 #if defined(__i386__)
-#define CONFIG_HAL_KERNEL_BASE				0x80000000
+#define CONFIG_HAL_KERNEL_BASE				0x80000000UL
 #define CONFIG_HAL_KERNEL_MEM_LEN			0x40000000
 #define CONFIG_X86_L1_CACHE_SHIFT			6								//from the generated from of autoconf.h
-#define CONFIG_X86_LOCAL_APIC
-#define CONFIG_X86_32
+#define CONFIG_X86_LOCAL_APIC				1
+#define CONFIG_X86_32						1
 #define PAGE_SHIFT							12								//4kb page
-#define CONFIG_GENERIC_FIND_FIRST_BIT
-#define CONFIG_GENERIC_HARDIRQS               1
+#define CONFIG_GENERIC_FIND_FIRST_BIT		1
+#define CONFIG_GENERIC_HARDIRQS				1
 #elif defined(__mips__)
 #define CONFIG_HAL_KERNEL_BASE				0xFFFFFFFF80000000UL
 #define CONFIG_GENERIC_FIND_FIRST_BIT
@@ -55,4 +55,9 @@
 #define PAGE_MASK							(~((1 << PAGE_SHIFT) - 1))
 #define CONFIG_HZ							250
 #define CONFIG_GENERIC_CLOCKEVENTS_BUILD	1								/* Clockchips.h ÐèÒª */
+
+/* Basic HAL memory conversion */
+#define HAL_GET_BASIC_KADDRESS(PHY) ((PHY) + CONFIG_HAL_KERNEL_BASE)
+#define HAL_GET_BASIC_PHYADDRESS(LOG) ((unsigned long)(LOG) - CONFIG_HAL_KERNEL_BASE)
+
 #endif /* HAL_CONFIG_H */

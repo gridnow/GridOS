@@ -8,6 +8,6 @@ OBJS	= timer.o
 PARTS	= 
 
 all:  subs_parts $(OBJS)
-	ld -r -o ../time.o *.o $(ARCH_LD_FLAGS)
+	$(LD) -r -o ../time.o *.o $(ARCH_LD_FLAGS)
 
 include $(MY_BUILD_BASE)/cc.mk

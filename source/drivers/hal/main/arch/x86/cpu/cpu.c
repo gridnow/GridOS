@@ -757,9 +757,6 @@ void __init early_cpu_init()
 
 	early_identify_cpu(&boot_cpu_data);
 
-	hal_printf("Ì½²âµ½0ºÅCPU %s-%s.\n",
-		boot_cpu_data.x86_vendor_id, boot_cpu_data.x86_model_id);
-
 	if (cpu_has_vme || cpu_has_tsc || cpu_has_de)
 		clear_in_cr4(X86_CR4_VME|X86_CR4_PVI|X86_CR4_TSD|X86_CR4_DE);
 }

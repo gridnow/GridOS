@@ -9,6 +9,6 @@ PARTS 	= cpu lib
 # smp lib
 
 all:  subs_parts $(OBJS)
-	ld -r -o ../x86.o *.o $(ARCH_LD_FLAGS)
+	$(LD) -r -o ../x86.o *.o $(ARCH_LD_FLAGS)
 
 include $(MY_BUILD_BASE)/cc.mk

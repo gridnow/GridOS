@@ -8,15 +8,7 @@
 #ifndef COMMON_LIB_DIGITS_H
 #define COMMON_LIB_DIGITS_H
 
-/**
-	@brief 得到一个数字到底需要多少个字符来表示
-*/
-int _digits(unsigned long long num, int base, int sign, int bits);
-
-/**
-	@brief 进行数字到字符串的转化
-*/
-void _lnum2str(unsigned long long num, char *string, int base, int sign);
+int h2d(char *p, int revert, unsigned long hex);
 
 #endif
 

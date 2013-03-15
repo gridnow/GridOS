@@ -17,7 +17,11 @@
 #define __percpu
 #define __used				__attribute__((__used__))
 #define __pure				__attribute__((pure))
+
+#ifndef __weak
 #define __weak				__attribute__((weak))
+#endif
+
 #define __aligned(x)		__attribute__((aligned(x)))
 #define notrace				__attribute__((no_instrument_function))
 #define __always_inline		inline __attribute__((always_inline))
@@ -61,7 +65,19 @@
 	1; \
 })
 
+#ifndef __compiletime_error
+# define __compiletime_error(message)
+#endif
+
 #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
 
+/* 一些内嵌代码导出*/
+#ifdef NEED_EXPORT
+#define STATIC
+#else
+#define STATIC static
+#endif
+
+/* 最上层的编译器定义*/
 #include_next <compiler.h>
 #endif
