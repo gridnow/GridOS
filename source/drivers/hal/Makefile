@@ -23,7 +23,6 @@ ifeq ($(ARCH),i386)
 	$(CP) $(TARGET) $(TARGET).org
 	$(OBJCOPY) -O binary -S $(TARGET)
 	$(CP) $(TARGET) $(SYSTEM_DIR)
-	$(MAKE) to_image
 endif
 
 include $(MY_BUILD_BASE)/cc.mk

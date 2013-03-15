@@ -10,8 +10,8 @@
 #define KM_H
 
 #include <list.h>
-#include <kernel/ke_lock.h>
 
+#include <lock.h>
 #include "bitmap.h"
 
 typedef unsigned long pte_t;
@@ -36,8 +36,8 @@ struct km_cluster_head
 {
 	struct list_head	nodes;	
 	struct list_head	clusters;
-	unsigned long		cpu_node;
 	struct ke_spinlock	lock;
+	int 				node;
 };
 
 /* 物理内存簇，每个CPU都有 */
@@ -49,7 +49,7 @@ struct km_cluster
 	unsigned long		end_pfn;
 	unsigned long		ram_base;											//The ram head is the bitmap,so start_pfn >>PAGE_SHIT + BITMAP = ram_base;
 	struct cl_bitmap	bitmap;
-	unsigned long		real_node;
+	int					real_node;
 
 	/* 计数器 */
 	unsigned long		usbale_count;
@@ -62,7 +62,7 @@ struct km_cluster
 /* Kernel global memory info, 所有的CPU地址*/
 struct km_stack
 {
-	struct list_head	ram_nodes;
+	struct list_head	ram_nodes;											//Numa memory node list
 	struct ke_spinlock	lock;												//Only used for modifying the nodes list or inserting ram
 	/* <Add code here for swap,etc.> */
 };
@@ -81,12 +81,12 @@ void km_cluster_init();
 /**
 	@brief
 */
-bool km_insert_ram(unsigned long start, unsigned long size, unsigned long cpu_node);
+bool km_insert_ram(unsigned long start, unsigned long size, int node);
 
 /**
 	@brief
 */
-bool km_cluster_alloc(struct ke_mem_cluster_info *ret_info, unsigned long cpu_node, bool totally_using);
+struct km_cluster *km_cluster_alloc(struct ke_mem_cluster_info *ret_info, int node, bool totally_using);
 
 /**
 	@brief Get the node by a page address
@@ -111,7 +111,7 @@ void km_put_current_cluster();
 	@note:
 		This function will disable preempt
 */
-struct km_cluster **km_get_current_cluster();
+struct km_cluster *km_get_current_cluster();
 
 /**
 	@brief

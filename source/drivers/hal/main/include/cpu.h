@@ -8,7 +8,7 @@
 
 #ifndef KC_H
 #define KC_H
-
+#include <list.h>
 #include "priority.h"
 
 struct kt_thread;
@@ -47,6 +47,19 @@ static inline struct kc_cpu *kac_get()
 	return &tmp_boot_cpu;
 }
 
+static inline struct kc_cpu *kc_get()
+{
+	//TODO:preempt disable
+	struct kc_cpu *cpu = kac_get();
+	return cpu;
+}
+
+static inline void kc_put()
+{
+	//TODO:preempt enable
+}
+
 #define kc_get_raw()		(kac_get())
+
 
 #endif

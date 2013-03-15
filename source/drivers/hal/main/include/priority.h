@@ -8,6 +8,7 @@
 
 #ifndef KT_THREAD_PRIORITY_H
 #define KT_THREAD_PRIORITY_H
+#include <types.h>
 
 /* Thread priority */
 #define KT_PRIORITY_HIGHEST			0

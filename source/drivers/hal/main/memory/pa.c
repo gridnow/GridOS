@@ -9,7 +9,7 @@
 #include <string.h>
 #include <bitops.h>
 
-#include "memory.h"
+#include "memory.h" 
 #include "cpu.h"
 
 struct km_stack km_global;
@@ -39,7 +39,7 @@ static struct km_cluster * alloc_cluster()
 	return p;
 }
 
-static struct km_cluster_head * alloc_cluster_head(int cpu_node)
+static struct km_cluster_head * alloc_cluster_head(int node)
 {
 	struct km_cluster_head *p;
 	if (cur_node_info >= KM_MAX_STATIC_NODE_INFO)
@@ -51,8 +51,20 @@ static struct km_cluster_head * alloc_cluster_head(int cpu_node)
 	memset(p, 0, sizeof(*p));
 	INIT_LIST_HEAD(&p->clusters);
 	ke_spin_init(&p->lock);
-	p->cpu_node = cpu_node;
+	p->node = node;
 	return p;
+}
+
+/**
+	@brief Change the page cluster of current cpu
+
+	@note Must be called at preempt disabled!
+ */
+static struct km_cluster *set_current_cluster(struct km_cluster *cur)
+{
+	struct km_cluster *old = kc_get_raw()->mm_current_cluster;
+	kc_get_raw()->mm_current_cluster = cur;
+	return old;
 }
 
 static void show_cluster(struct km_cluster_show_ctx * ctx)
@@ -70,9 +82,8 @@ static void show_cluster(struct km_cluster_show_ctx * ctx)
 }
 
 /* 释放页 */
-static void deallocate_page(unsigned long page, unsigned long size)
+static void deallocate_page(unsigned long page, unsigned int count)
 {
-	int count = (size + PAGE_SIZE - 1) / PAGE_SIZE;
 	struct km_cluster_head *node;
 	struct km_cluster *cluster;
 	unsigned long bit;
@@ -102,12 +113,11 @@ static void deallocate_page(unsigned long page, unsigned long size)
 	cluster->free += count; 
 	//printk("free %d, p %x.\n", count, page);
 end:
-
 	return ;
 }
 
 /**
-	@brief Allocate a page in preemnt disabled mode
+	@brief Allocate a page in preempt disabled mode
 */
 static unsigned long allocate(struct km_cluster *cluster, int count)
 {
@@ -129,7 +139,7 @@ static unsigned long allocate(struct km_cluster *cluster, int count)
 	page = page * PAGE_SIZE/*Offset from the ram*/ + cluster->ram_base;
 	cluster->free -= count;
 
-	//printk("Allocate count %d a %x, %s.\n", count, page, kmt_get_name(kmt_get_current()));
+//	printk("Allocate count %d address %x.\n", count, page);
 
 end:
 	return page;
@@ -139,29 +149,27 @@ current_full:
 }
 
 /* 分配页, 返回物理地址 */
-static unsigned long allocate_page(unsigned long size)
+static unsigned long allocate_page(unsigned int count)
 {
-	int count = (size + PAGE_SIZE - 1) / PAGE_SIZE;
-	struct km_cluster *ram, **ram_cur;
+	struct km_cluster *ram;
 	struct list_head *list;
 	struct km_cluster_head *head; 
 	unsigned long page = NULL;
 	bool tried_new_cluster = false, tried_next_node = false;
 
-	/* Case 0, Fast: Current cluster have page? Get current cluster will disable preempt. */
-	ram_cur = km_get_current_cluster();
-	ram = *ram_cur; 
+	/* Case 0, Fast: Current cluster have page? */
+	ram = km_get_current_cluster();
+	if (unlikely(!ram)) goto end0;
 
-	/* Allocate in the given cluster */
 allocate_in_current:
 	page = allocate(ram, count);
 	if (page) goto end;
+	if (tried_new_cluster == true) goto end;
 
 	/* 
 		Case 1, Slow: 
-		Next cluster may have page.
+		Previously used cluster may have page, if not allocate a new cluster.
 	*/
-	if (tried_new_cluster == false)
 	{
 		struct km_cluster * next = NULL;
 		struct ke_mem_cluster_info ctx;
@@ -186,22 +194,22 @@ allocate_in_current:
 			}
 			next = NULL;
 		}
-		
+
 		/* Found the next cluster on current list, set as current cluster */
 		if (next)
 		{
-			*ram_cur = next;
-			ram = next;			
+			set_current_cluster(next);
+			ram = next;
 			goto allocate_in_current;
 		}
 
 		/* Still not found, then try a new cluster */
 		if (km_cluster_alloc(&ctx, 
 			kc_get_raw()->id/* We are in preempt disable mode, so RAW version */,
-			false/* 一次性不使用完页 */) == true)
+			false/* 一次性不使用完页 */))
 		{
 			next = ctx.km_cluster;
-			*ram_cur = next;
+			set_current_cluster(next);
 			ram = next;
 			//printk("Allocate page use NEW cluster %x.\n", next);
 			goto allocate_in_current;
@@ -209,23 +217,12 @@ allocate_in_current:
 	}
 
 	/* Case 2, Slowest: Other node may have pages */
-	if (tried_next_node == false)
-	{
-		//TODO("当前节点上的内存分配完了，尝试下一个节点,尝试抢占其他CPU上的内存");
-	}
+	//TODO("当前节点上的内存分配完了，尝试下一个节点,尝试抢占其他CPU上的内存");
 	
 end:	
 	km_put_current_cluster();
-
+end0:
 	return page;
-}
-
-/**
-	@brief 删除转换表中的页
-*/
-static void delete_page(struct km * mem, struct km_walk_ctx * ctx, pte_t pte)
-{
-	//TODO to delete the page pointed by the ctx
 }
 
 /************************************************************************/
@@ -236,7 +233,8 @@ static void delete_page(struct km * mem, struct km_walk_ctx * ctx, pte_t pte)
 */
 void *km_page_alloc_kerneled(unsigned long size)
 {
-	unsigned long kp = allocate_page(size);
+	unsigned int count = KM_PAGE_ROUND_COUNT(size);
+	unsigned long kp = allocate_page(count);
 	if (!kp) return NULL;
 	return (void*)HAL_GET_BASIC_KADDRESS(kp);
 }
@@ -246,8 +244,9 @@ void *km_page_alloc_kerneled(unsigned long size)
 */
 void km_page_dealloc_kerneled(void *kernel_page, unsigned long size)
 {
-	unsigned long page = HAL_GET_BASIC_PHYADDRESS(kernel_page);
-	deallocate_page(page, size);
+	unsigned long page = HAL_GET_BASIC_PHYADDRESS(kernel_page); 
+	unsigned int count = KM_PAGE_ROUND_COUNT(size);
+	deallocate_page(page, count);
 }
 
 /**
@@ -256,7 +255,8 @@ void km_page_dealloc_kerneled(void *kernel_page, unsigned long size)
 void km_page_dealloc(unsigned long phy_page, unsigned long size)
 {
 	unsigned long page = (unsigned long)phy_page;
-	deallocate_page(page, size);
+	unsigned int count = KM_PAGE_ROUND_COUNT(size);
+	deallocate_page(page, count);
 }
 
 /**
@@ -266,7 +266,7 @@ unsigned long km_page_alloc()
 {
 	unsigned long p;
 	//TODO allocate the user page not from the head of the bitmap(which is used for kernel)
-	p = allocate_page(PAGE_SIZE);
+	p = allocate_page(1);
 	if (!p)
 	{
 		//TODO start recaller
@@ -276,18 +276,28 @@ unsigned long km_page_alloc()
 }
 
 /**
-	@brief Get current cluster of current cpu
+	@brief Get current cluster of current CPU
+
+	@note Preempt will be disabled
 */
-struct km_cluster **km_get_current_cluster()
+struct km_cluster *km_get_current_cluster()
 {
-	// This function will disable preempt
-	// TODO
-	return NULL;
+	struct kc_cpu *cpu = kc_get();
+	struct km_cluster *cluster = cpu->mm_current_cluster;
+	if (cluster) goto end;
+
+	/* Slow mode to get a cluster */
+	cluster = km_cluster_alloc(NULL, cpu->id, false);
+	if (unlikely(!cluster))
+		goto end;
+	set_current_cluster(cluster);
+end:
+	return cluster;
 }
 
 void km_put_current_cluster()
 {
-	//TODO
+	kc_put();
 }
 
 /**
@@ -298,7 +308,7 @@ struct km_cluster_head *km_get_page_node(unsigned long page, struct km_cluster *
 	struct km_cluster_head * node;
 	struct list_head *list;
 
-	list_for_each(list,&km_global.ram_nodes)
+	list_for_each(list, &km_global.ram_nodes)
 	{
 		struct list_head *ram_list;
 		struct km_cluster *ram;
@@ -319,7 +329,7 @@ struct km_cluster_head *km_get_page_node(unsigned long page, struct km_cluster *
 	return NULL;
 }
 
-bool km_insert_ram(unsigned long start, unsigned long size, unsigned long cpu_node)
+bool km_insert_ram(unsigned long start, unsigned long size, int node)
 {
 	struct list_head *tmp;
 	struct km_cluster_head *mem_node;
@@ -333,20 +343,20 @@ bool km_insert_ram(unsigned long start, unsigned long size, unsigned long cpu_no
 	
 	/* The km_global lock,  防止km_global被多人修改 */
 	flags = ke_spin_lock_irqsave(&km_global.lock);
-
+	
 	/* Find the cpu node structure to insert, if no such a node, create one */
 	mem_node = NULL;
 	list_for_each(tmp, &km_global.ram_nodes)
 	{
 		mem_node = list_entry(tmp, struct km_cluster_head, nodes);
-		if (mem_node->cpu_node == cpu_node)
+		if (mem_node->node == node)
 			break;
 		else
 			mem_node = NULL;
 	}
 	if (mem_node == NULL)
 	{ 
-		mem_node = alloc_cluster_head(cpu_node);
+		mem_node = alloc_cluster_head(node);
 		if (!mem_node) goto insert_end;
 		list_add_tail(&mem_node->nodes, &km_global.ram_nodes);
 	}
@@ -397,20 +407,20 @@ insert_end:
 /**
 	@brief Allocate the cluster on the specific cpu
 */
-bool km_cluster_alloc(struct ke_mem_cluster_info * ret_info, unsigned long cpu_node, bool totally_using)
+struct km_cluster *km_cluster_alloc(struct ke_mem_cluster_info * ret_info, int node, bool totally_using)
 {
 	struct km_cluster_head *cluster_head = NULL;
 	struct km_cluster * cluster = NULL;
 	unsigned long flags;
 	struct list_head * tmp;
 
-	/* Select the cluster head by cpu_node,and other cpu may adding memory to the cluster list */
+	/* Select the cluster head by node,and other cpu may adding memory to the cluster list */
 	//TODO:to optimize the arithmatic
 	flags = ke_spin_lock_irqsave(&km_global.lock);
 	list_for_each(tmp, &km_global.ram_nodes)
 	{
 		cluster_head = list_entry(tmp, struct km_cluster_head, nodes);
-		if (cluster_head->cpu_node == cpu_node)
+		if (cluster_head->node == node)
 			break;
 		else
 			cluster_head = NULL;
@@ -419,7 +429,7 @@ bool km_cluster_alloc(struct ke_mem_cluster_info * ret_info, unsigned long cpu_n
 
 	/* Found the node? */
 	if (cluster_head == NULL)
-		goto err1;
+		goto end;
 	
 	/* Loop each cluster and find a free one, and other cpu may allocating the memory on our cluster list */
 	flags = ke_spin_lock_irqsave(&cluster_head->lock);
@@ -435,7 +445,8 @@ bool km_cluster_alloc(struct ke_mem_cluster_info * ret_info, unsigned long cpu_n
 			continue;
 		}
 		
-		cluster->real_node = cpu_node;		
+		cluster->real_node = node;
+		cluster->head = cluster_head;
 		if (totally_using)
 		{
 			/* Set totally using which has a heigher priority then NOT_FREE */
@@ -448,17 +459,14 @@ bool km_cluster_alloc(struct ke_mem_cluster_info * ret_info, unsigned long cpu_n
 
 	/* Found the cluster? */
 	if (cluster == NULL)
-		goto err1;
+		goto end;
 	
 	/* Tell the user where the memory of the cluster starts */
 	ret_info->page_start = cluster->ram_base;
 	ret_info->page_count = cluster->usbale_count;
 	ret_info->km_cluster = cluster;
-
-	return true;
-
-err1:
-	return false;
+end:
+	return cluster;
 }
 
 /**
@@ -467,6 +475,7 @@ err1:
 void km_cluster_init()
 {
 	INIT_LIST_HEAD(&km_global.ram_nodes);
+	ke_spin_init(&km_global.lock);
 }
 
 

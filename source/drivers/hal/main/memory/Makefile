@@ -4,7 +4,7 @@ include ../../hal_include.mk
 ADD_INCLUDE +=-I../include $(HAL_INCLUDE) -I$(MY_BUILD_BASE)/source/libs/common/include
 
 #要编译的文件列表
-OBJS	= pa.o
+OBJS	= pa.o percpu.o
 PARTS	= 
 
 all:  subs_parts $(OBJS)

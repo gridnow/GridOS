@@ -8,10 +8,32 @@
 
 #include <arch/arch.h>
 
+static void build_ram_list()
+{
+	unsigned long start = 0x1000000, size = 128*1024*1024, node = 0;
+	int count = 0;
+	
+	//TODO: call the arch to add memory
+	km_insert_ram(start, size, node);
+ 
+	while (1)
+	{
+		unsigned long p = km_page_alloc();
+		//printk("%x ", p);
+		if (!p)
+			break;
+		count++;
+	}
+	printk("count is %d, size is %dKB.", count, count * 4);
+	while (1);
+}
+
 void __init __noreturn hal_main()
 {
 	/* 开辟鸿蒙,谁为情种？最初的一切*/
 	hal_arch_init(HAL_ARCH_INIT_PHASE_EARLY);
+	km_cluster_init();
+	build_ram_list();
 	hal_malloc_init();
 
 	/* IRQ,平台的初始化，如平台的中断，各种配置信息 */
