@@ -126,7 +126,7 @@ void km_page_dealloc(unsigned long phy_page, unsigned long size);
 /**
 	@brief
 */
-void *km_page_alloc_kerneled(unsigned long size);
+void *km_page_alloc_kerneled(int page_count);
 
 /**
 	@brief

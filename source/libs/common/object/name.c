@@ -5,6 +5,5 @@
 *   Wuxin
 *   对象管理器
 */
-#include <kernel/ke_lock.h>
 
 #include "object.h"
