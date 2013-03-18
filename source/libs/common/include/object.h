@@ -11,27 +11,21 @@
 #include <list.h>
 #include <types.h>
 #include <kernel/ke_atomic.h>
-
 #include "blkbuf.h"
 
+struct cl_object_type;
 struct cl_object
 {
-	char			*name;					/* 对象名 */
-	void			*type;					/* 指向type */
-	struct list_head	list;					/* 同一类对象链表 */
-	struct ke_atomic	ref;					/* 对象引用计数器 */
+	char					*name;					/* 对象名 */
+	struct cl_object_type	*type;					/* 指向type */
+	struct list_head		list;					/* 同一类对象链表 */
+	struct ke_atomic		ref;					/* 对象引用计数器 */
 };
 
 struct cl_object_ops
 {
 	/* 进程关闭一个对象，具体子系统应该对其作出反应 */
 	bool (*close)(struct cl_object *obj);
-
-	/* 新创立的对象被初始化 */
-	void (*init)(struct cl_object *object);
-
-	/* 希望得到对象的同步对象，用于关联一些事件，互斥什么的 */
-	void *(*get_sync_object)(struct cl_object *obj);	
 };
 
 enum cl_object_memory_type
@@ -43,8 +37,11 @@ enum cl_object_memory_type
 
 struct cl_object_type
 {
+	/* 对象基本信息 */
 	const char	*name;
 	size_t		size;
+
+	/* 对象缓冲区操作，用与为对象分配器创立对象内存 */
 	bool (*add_space)(struct cl_object_type *type, void **base, size_t *size, enum cl_object_memory_type);
 	void (*free_space)(struct cl_object_type *type, void *base, size_t size, enum cl_object_memory_type);
 
@@ -52,6 +49,7 @@ struct cl_object_type
 	struct cl_object_ops *ops;
 
 	/* HIDE to user */
+	/* 对象分配器 */
 	struct cl_bkb allocator;
 };
 

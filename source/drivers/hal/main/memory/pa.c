@@ -186,7 +186,8 @@ allocate_in_current:
 		list_for_each(list, &head->clusters)
 		{
 			next = list_entry(list, struct km_cluster, nodes);
-			if (ram->real_node == next->real_node &&
+			if (ram != next /* Not current node */&&
+				ram->real_node == next->real_node &&
 				test_bit(KM_CLUSTER_NOT_FREE, &next->flags))
 			{
 				if (next->free >= count)

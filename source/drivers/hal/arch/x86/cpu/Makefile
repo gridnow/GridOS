@@ -1,5 +1,5 @@
 include $(MY_BUILD_BASE)/config.mk
-include ../../../../hal_include.mk
+include ../../../hal_include.mk
 
 ADD_INCLUDE +=$(HAL_INCLUDE) -include hal_config.h
 

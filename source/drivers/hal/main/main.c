@@ -16,7 +16,7 @@ static void build_ram_list()
 	//TODO: call the arch to add memory
 	km_insert_ram(start, size, node);
  
-	
+	kp_init();
 	kt_init();
 	while (1);
 }

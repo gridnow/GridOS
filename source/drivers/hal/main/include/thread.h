@@ -10,21 +10,29 @@
 #define KT_THREAD_H
 
 #include "object.h"
+#include <arch/thread.h>
 
-/* Thread privilege level */
-#define KT_CPL0						0
-#define KT_USER						3
-
-struct arch_thread
+struct ko_process;
+struct ko_thread
 {
-
-};
-struct kt_thread
-{
-	struct arch_thread arch;
+	struct kt_arch_thread arch_thread;
 	struct cl_object object;
-
+	struct ko_process *process;
 };
 
+/* Context for thread creating */
+struct kt_thread_creating_context
+{
+	struct ko_process *on;
+	unsigned long stack_pos;
+	unsigned long stack0, stack0_size;
+	unsigned long fate_entry;
+	unsigned long thread_entry;
+	int priority;
+	unsigned long para;
+	int cpl;
+};
+
+#define KT_CREATE_STACK_AS_PARA (1 << 1)
 #endif
 
