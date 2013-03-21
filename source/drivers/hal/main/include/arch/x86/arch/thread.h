@@ -113,6 +113,5 @@ static __always_inline void kt_arch_set_sp0(struct ko_thread * who, unsigned lon
 	p->ctx.sp0 = sp0;
 }
 
-void kt_arch_init_thread(struct ko_thread * thread, struct kt_thread_creating_context * ctx);
 
 #endif

@@ -48,6 +48,7 @@
     <None Include="..\source\drivers\hal\hal_include.mk" />
     <None Include="..\source\drivers\hal\main\Makefile" />
     <None Include="..\source\drivers\hal\main\memory\Makefile" />
+    <None Include="..\source\drivers\hal\main\process\Makefile" />
     <None Include="..\source\drivers\hal\Makefile" />
     <None Include="..\source\libs\common\cpu\Makefile" />
     <None Include="..\source\libs\common\object\Makefile" />
@@ -62,6 +63,9 @@
     <ClCompile Include="..\source\drivers\hal\main\memory\pa.c" />
     <ClCompile Include="..\source\drivers\hal\main\memory\page.c" />
     <ClCompile Include="..\source\drivers\hal\main\memory\percpu.c" />
+    <ClCompile Include="..\source\drivers\hal\main\process\process.c" />
+    <ClCompile Include="..\source\drivers\hal\main\process\sched.c" />
+    <ClCompile Include="..\source\drivers\hal\main\process\thread.c" />
     <ClCompile Include="..\source\libs\common\blkbuf.c" />
     <ClCompile Include="..\source\libs\common\cpu\bit.c" />
     <ClCompile Include="..\source\libs\common\cpu\bitmap.c" />
@@ -151,6 +155,7 @@
     <ClInclude Include="..\source\drivers\hal\main\include\cpu.h" />
     <ClInclude Include="..\source\drivers\hal\main\include\memory.h" />
     <ClInclude Include="..\source\drivers\hal\main\include\priority.h" />
+    <ClInclude Include="..\source\drivers\hal\main\include\sched.h" />
     <ClInclude Include="..\source\drivers\hal\main\include\thread.h" />
     <ClInclude Include="..\source\libs\common\include\bitmap.h" />
     <ClInclude Include="..\source\libs\common\include\bits.h" />

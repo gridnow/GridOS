@@ -9,6 +9,7 @@
 #include "process.h"
 #include "memory.h"
 
+#include "object.h"
 static struct ko_thread *init_process;
 
 static bool process_close(struct cl_object *obj)
@@ -57,6 +58,11 @@ static struct cl_object_type process_type = {
 	.add_space	= alloc_space,
 	.free_space	= free_space,
 };
+
+struct ko_process *kp_get_system()
+{
+	return init_process;
+}
 
 bool kp_init()
 {

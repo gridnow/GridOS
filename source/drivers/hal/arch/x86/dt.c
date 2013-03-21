@@ -16,6 +16,21 @@
 #include <asm/system.h>
 #include <asm/irq_vectors.h>
 
+static inline void setup_percpu_segment(int cpu, unsigned long base)
+{
+#ifdef CONFIG_X86_32
+	struct desc_struct gdt;
+
+	pack_descriptor(&gdt, base, 0xFFFFF,
+		0x2 | DESCTYPE_S, 0x8);
+	gdt.s = 1;
+	write_gdt_entry(get_cpu_gdt_table(cpu),
+		GDT_ENTRY_PERCPU, &gdt, DESCTYPE_S);
+#else
+#error "x86 not defined"
+#endif
+}
+
 void load_percpu_segment(int cpu)
 {
 #ifdef CONFIG_X86_32
@@ -82,3 +97,10 @@ void __init load_gdt_idt(int cpu)
 	load_idt((const struct desc_ptr *)&idt_descr);
 }
 
+void hal_arch_setup_percpu(int cpu, unsigned long base)
+{
+	/* load the segment registers */
+	setup_percpu_segment(cpu, base);
+	/* Reload the per-cpu base */
+	load_percpu_segment(cpu);
+}

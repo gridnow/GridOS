@@ -1,4 +1,7 @@
-#include <cpu.h>
+#include "cpu.h"
 
-/* 用PERCPU的话，该变量将被删掉*/
-struct kc_cpu tmp_boot_cpu;
+void __init km_setup_percpu(int cpu, unsigned long base)
+{
+	hal_arch_setup_percpu(cpu, base);
+}
+

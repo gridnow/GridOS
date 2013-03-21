@@ -49,12 +49,6 @@ STATIC inline void ke_spin_init(struct ke_spinlock * lock)
 
 STATIC inline void ke_spin_lock(struct ke_spinlock * lock)
 {
-	/* Sanity check */
-	if (!lock||(unsigned long)lock < 0x100) 
-	{
-		printk("Error return for spinlock %x.\n", __builtin_return_address(0));
-		return;
-	}
 	arch_spin_lock((arch_spinlock_t*)lock);
 }
 

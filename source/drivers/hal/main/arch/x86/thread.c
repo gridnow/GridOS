@@ -24,10 +24,11 @@ static void __attribute__((noreturn)) first_time_entry()
 		_ds = __KERNEL_DS;
 		_cs = __KERNEL_CS;
 		_sp = who->arch_thread.ctx.sp0;
+		printk("Ring 0 stack is %x.\n", _sp);
 	}
 	else
 	{
-		//printk("\nring 3...who->arch_thread.ctx.cr2 :%h.\n",who->arch_thread.ctx.cr2);
+		printk("\nring 3...who->arch_thread.ctx.cr2 :%h.\n",who->arch_thread.ctx.cr2);
 		_ds = __USER_DS;
 		_cs = __USER_CS;
 		_sp = who->arch_thread.ctx.debugreg6;
@@ -65,7 +66,7 @@ static void __attribute__((noreturn)) first_time_entry()
 			 /* input parameters: */						
 		     : [reg_ss]  "r" (_ds),
 			   [reg_sp]  "r" (_sp), 
-			   [EFLAGS]  "i" (ARCH_THREAD_ARCH_X86_32_DEFAULT_EFLAGS /*运行时开中断*/), 
+			   [EFLAGS]  "i" (ARCH_THREAD_ARCH_X86_32_DEFAULT_EFLAGS & (~X86_EFLAGS_IF)), 
 			   [reg_cs]  "r" (_cs),
 		       [reg_ip]  "r" (who->arch_thread.ctx.cr2),
 		       
@@ -77,14 +78,16 @@ static void __attribute__((noreturn)) first_time_entry()
 	while(1);
 }
 
+asmregparm void arch_thread_switch(struct ko_thread *prev_p, struct ko_thread *next_p)
+{
+	stts();
+}
 
 /**
 	@brief Create the arch thread
 */
 void kt_arch_init_thread(struct ko_thread * thread, struct kt_thread_creating_context * ctx)
-{
-	unsigned long status_set = X86_EFLAGS_IF | X86_EFLAGS_RF | 0x2;
-	
+{	
 	/* 
 		CPL0 Stack ,if cpl0, more stack and no user stack, 
 		otherwise little stack.
@@ -111,3 +114,9 @@ void kt_arch_init_thread(struct ko_thread * thread, struct kt_thread_creating_co
 	thread->arch_thread.ctx.cr2				= (unsigned long)ctx->fate_entry;
 	thread->arch_thread.ctx.ptrace_dr7		= (unsigned long)ctx->thread_entry;
 }
+
+void kt_arch_switch(struct ko_thread * prev, struct ko_thread * next)
+{ 
+	x86_thread_switch_to(prev, next);
+}
+

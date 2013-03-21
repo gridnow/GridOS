@@ -81,6 +81,9 @@
     <None Include="..\source\libs\common\cpu\Makefile">
       <Filter>Source Files\libs\common\cpu</Filter>
     </None>
+    <None Include="..\source\drivers\hal\main\process\Makefile">
+      <Filter>Source Files\drivers\hal\main\process</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\source\drivers\hal\problem list.txt">
@@ -123,6 +126,15 @@
     </ClCompile>
     <ClCompile Include="..\source\libs\common\blkbuf.c">
       <Filter>Source Files\libs\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\drivers\hal\main\process\process.c">
+      <Filter>Source Files\drivers\hal\main\process</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\drivers\hal\main\process\sched.c">
+      <Filter>Source Files\drivers\hal\main\process</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\drivers\hal\main\process\thread.c">
+      <Filter>Source Files\drivers\hal\main\process</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -386,6 +398,9 @@
     </ClInclude>
     <ClInclude Include="..\source\libs\common\include\object.h">
       <Filter>Source Files\libs\common\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\main\include\sched.h">
+      <Filter>Source Files\drivers\hal\main\include</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

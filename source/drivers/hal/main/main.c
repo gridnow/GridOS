@@ -15,7 +15,8 @@ static void build_ram_list()
 	
 	//TODO: call the arch to add memory
 	km_insert_ram(start, size, node);
- 
+
+ 	kc_init();
 	kp_init();
 	kt_init();
 	while (1);
@@ -55,4 +56,9 @@ void __init __noreturn hal_main()
 	while(1)
 	{
 	}
+}
+
+void ke_panic(char *why)
+{
+	printk("ÄÚºËÒì³£:%s.\n", why);
 }

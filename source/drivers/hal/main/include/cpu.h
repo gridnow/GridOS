@@ -36,7 +36,6 @@ struct kc_cpu
 
 	/* Current memory cluster */
 	struct km_cluster * mm_current_cluster;
-
 };
 
 /* 用PERCPU的话，该变量将被删掉*/
