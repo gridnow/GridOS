@@ -52,7 +52,7 @@ bool cl_bitmap_adaption(struct cl_bitmap *bitmap, void *buffer, int buffer_size,
 	@return 成功返回位编号，失败则返回 HAL_BITMAP_ALLOC_BIT_ERROR
 */
 unsigned long cl_bitmap_alloc_bit(struct cl_bitmap *cur_bitmap);
-#define HAL_BITMAP_ALLOC_BIT_ERROR -1UL
+#define HAL_BITMAP_ALLOC_BIT_ERROR (-1UL)
 
 /**
 	@brief 分配连续位

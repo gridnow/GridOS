@@ -3,7 +3,10 @@
 *   See the license.txt at the root directory of this project for the copyright information about this file and project.
 *
 *   Wuxin
-*   对象管理器
+*   线程调度器
 */
+#ifndef KT_SCHED_H
+#define KT_SCHED_H
 
-#include "object.h"
+void kt_schedule();
+#endif

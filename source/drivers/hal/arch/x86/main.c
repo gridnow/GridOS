@@ -20,6 +20,8 @@
 #include <asm/desc.h>
 #include <asm/irq.h>
 
+#include <screen.h>
+
 
 /************************************************************************/
 /* INIT                                                                 */
@@ -165,33 +167,20 @@ const xstring arch_hal_get_name()
 #endif
 }
 
-void bootloader_get_video_info(unsigned long * fb, int *x, int *y, int *bpp);
-
-#if 0
-void arch_video_init_screen(struct video_screen_info *main_screen)
+void hal_arch_video_init_screen(struct video_screen_info *main_screen)
 {
-	unsigned long fb, mapped;
-	int w,h,bpp;
+	unsigned long fb;
+	int w, h, bpp;
 	memset(main_screen, 0, sizeof(*main_screen));
 
-	bootloader_get_video_info(&fb, &w, &h, &bpp);
-	main_screen->bpp = bpp;
-	main_screen->width = w;
-	main_screen->height = h;
 	
-	/* Map the base */
-	mapped = NULL;
-	if (ke_map_physical(MEM_PROT_WRITE | MEM_MAP_DEVICE | MEM_PROT_READ, bpp / 8 * w * h, &mapped, fb) == false)
-		return;
-	printk("The vp:%x, vv:%x, main_screen->width %d, %d, %d\n", fb, mapped,
-		main_screen->width,
-		main_screen->height,
-		main_screen->bpp);
-	memset((void*)mapped, 0, bpp / 8 * w * h);
-	init_console();
-	main_screen->fb_base = (void*)mapped;	
+	//TODO: 通过引导程序填充该数据结构。
+	main_screen->bpp 			= 0;
+	main_screen->fb_physical 	= 0;
+	main_screen->height 		= 0;
+	main_screen->width 			= 0;	
 }
-#endif
+
 
 void arch_get_fw_arg(unsigned long *argc, unsigned long *argv)
 {

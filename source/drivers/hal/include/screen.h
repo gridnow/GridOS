@@ -14,14 +14,14 @@ struct video_screen_info
 	int bpp;
 	int width;
 	int height;
-	unsigned char *fb_base;
+	unsigned char *fb_base, *fb_physical;
 };
 extern struct video_screen_info main_screen;					//main screen,defined in screen.c
 
 //screen.c
 unsigned char video_rgb24_to_8(unsigned int colour);
 void video_get_screen_resolution(int *w, int *h, int *bpp);
-void video_init_screen();
+void hal_video_init_screen();
 
 //pixel.c
 void video_draw_pixel(unsigned int x, unsigned int y, unsigned int clr);

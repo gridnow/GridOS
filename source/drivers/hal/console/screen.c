@@ -42,8 +42,8 @@ void video_get_screen_resolution(int *w, int *h, int *bpp)
 /**
 	@brief init the screen and draw logo 
 */
-void video_init_screen()
+void hal_video_init_screen()
 {
-	
+	hal_arch_video_init_screen(&main_screen);
 }	
 

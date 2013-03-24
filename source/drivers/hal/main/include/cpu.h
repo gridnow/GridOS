@@ -11,11 +11,11 @@
 #include <list.h>
 #include "priority.h"
 
-struct kt_thread;
+struct ko_thread;
 struct kc_cpu
 {
 	/* cur thread */
-	struct kt_thread * cur;
+	struct ko_thread * cur;
 
 	/* CPU itself, 由于有了汇编器，该指针有了特别的意思，哈哈 */
 	struct km_cpu * self;
@@ -31,12 +31,11 @@ struct kc_cpu
 	struct list_head dieing_queue;
 
 	/* About idle */
-	struct kt_thread * idle;
+	struct ko_thread * idle;
 	void (*idle_ops)(int type);
 
 	/* Current memory cluster */
 	struct km_cluster * mm_current_cluster;
-
 };
 
 /* 用PERCPU的话，该变量将被删掉*/

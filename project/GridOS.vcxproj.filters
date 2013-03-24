@@ -37,6 +37,30 @@
     <Filter Include="Source Files\drivers\hal\include\arch\x86\asm">
       <UniqueIdentifier>{0a605434-cd65-4c41-b560-29128d877b1c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\drivers\hal\main\memory">
+      <UniqueIdentifier>{91d9071c-6b45-40d6-be39-9cccb6f93731}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\drivers\hal\main\include">
+      <UniqueIdentifier>{ce95628d-b224-4a4c-bbe5-d2b7f6e83f99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\libs">
+      <UniqueIdentifier>{7a43a565-4696-4d66-a4ee-c05c1408a261}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\libs\common">
+      <UniqueIdentifier>{182bf8dd-1d12-41fd-8365-9b4e972f2ed9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\libs\common\include">
+      <UniqueIdentifier>{12024e56-9606-4cb7-83c5-0a91798445e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\drivers\hal\main\process">
+      <UniqueIdentifier>{16128f90-3d9d-4f7c-904c-ef558826e72b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\libs\common\object">
+      <UniqueIdentifier>{9b7d07c6-84f2-4d34-9458-cc93e01ee2f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\libs\common\cpu">
+      <UniqueIdentifier>{966066af-6248-4efc-8901-1065f9e0b226}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\source\drivers\hal\hal_include.mk">
@@ -47,6 +71,18 @@
     </None>
     <None Include="..\source\drivers\hal\main\Makefile">
       <Filter>Source Files\drivers\hal\main</Filter>
+    </None>
+    <None Include="..\source\libs\common\object\Makefile">
+      <Filter>Source Files\libs\common\object</Filter>
+    </None>
+    <None Include="..\source\drivers\hal\main\memory\Makefile">
+      <Filter>Source Files\drivers\hal\main\memory</Filter>
+    </None>
+    <None Include="..\source\libs\common\cpu\Makefile">
+      <Filter>Source Files\libs\common\cpu</Filter>
+    </None>
+    <None Include="..\source\drivers\hal\main\process\Makefile">
+      <Filter>Source Files\drivers\hal\main\process</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -63,6 +99,42 @@
   <ItemGroup>
     <ClCompile Include="..\source\drivers\hal\main\main.c">
       <Filter>Source Files\drivers\hal\main</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\libs\common\object\name.c">
+      <Filter>Source Files\libs\common\object</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\libs\common\object\object.c">
+      <Filter>Source Files\libs\common\object</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\libs\common\object\type.c">
+      <Filter>Source Files\libs\common\object</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\drivers\hal\main\memory\pa.c">
+      <Filter>Source Files\drivers\hal\main\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\drivers\hal\main\memory\page.c">
+      <Filter>Source Files\drivers\hal\main\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\drivers\hal\main\memory\percpu.c">
+      <Filter>Source Files\drivers\hal\main\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\libs\common\cpu\bit.c">
+      <Filter>Source Files\libs\common\cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\libs\common\cpu\bitmap.c">
+      <Filter>Source Files\libs\common\cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\libs\common\blkbuf.c">
+      <Filter>Source Files\libs\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\drivers\hal\main\process\process.c">
+      <Filter>Source Files\drivers\hal\main\process</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\drivers\hal\main\process\sched.c">
+      <Filter>Source Files\drivers\hal\main\process</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\drivers\hal\main\process\thread.c">
+      <Filter>Source Files\drivers\hal\main\process</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -299,6 +371,36 @@
     </ClInclude>
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\x86_init.h">
       <Filter>Source Files\drivers\hal\include\arch\x86\asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\main\include\cpu.h">
+      <Filter>Source Files\drivers\hal\main\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\main\include\memory.h">
+      <Filter>Source Files\drivers\hal\main\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\main\include\priority.h">
+      <Filter>Source Files\drivers\hal\main\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\main\include\thread.h">
+      <Filter>Source Files\drivers\hal\main\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\libs\common\include\bitmap.h">
+      <Filter>Source Files\libs\common\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\libs\common\include\bits.h">
+      <Filter>Source Files\libs\common\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\libs\common\include\blkbuf.h">
+      <Filter>Source Files\libs\common\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\libs\common\include\digits.h">
+      <Filter>Source Files\libs\common\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\libs\common\include\object.h">
+      <Filter>Source Files\libs\common\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\drivers\hal\main\include\sched.h">
+      <Filter>Source Files\drivers\hal\main\include</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

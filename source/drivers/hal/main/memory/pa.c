@@ -186,7 +186,8 @@ allocate_in_current:
 		list_for_each(list, &head->clusters)
 		{
 			next = list_entry(list, struct km_cluster, nodes);
-			if (ram->real_node == next->real_node &&
+			if (ram != next /* Not current node */&&
+				ram->real_node == next->real_node &&
 				test_bit(KM_CLUSTER_NOT_FREE, &next->flags))
 			{
 				if (next->free >= count)
@@ -231,9 +232,8 @@ end0:
 /**
 	@brief 分配内核页，并返回内核可直接访问的地址
 */
-void *km_page_alloc_kerneled(unsigned long size)
+void *km_page_alloc_kerneled(int count)
 {
-	unsigned int count = KM_PAGE_ROUND_COUNT(size);
 	unsigned long kp = allocate_page(count);
 	if (!kp) return NULL;
 	return (void*)HAL_GET_BASIC_KADDRESS(kp);
@@ -339,7 +339,7 @@ bool km_insert_ram(unsigned long start, unsigned long size, int node)
 	bool r = false;	
 
 	/* Must meet the boundary */
-	if (start & (PAGE_SIZE - 1)) goto insert_end;	
+	if (start & (PAGE_SIZE - 1)) goto out;	
 	
 	/* The km_global lock,  防止km_global被多人修改 */
 	flags = ke_spin_lock_irqsave(&km_global.lock);
@@ -400,6 +400,7 @@ bool km_insert_ram(unsigned long start, unsigned long size, int node)
 insert_end:	
 	/* Leave critical section */
 	ke_spin_unlock_irqrestore(&km_global.lock, flags);
+out:
 	return r;
 }
 
@@ -460,7 +461,10 @@ struct km_cluster *km_cluster_alloc(struct ke_mem_cluster_info * ret_info, int n
 	/* Found the cluster? */
 	if (cluster == NULL)
 		goto end;
-	
+
+	if (ret_info == NULL)
+		goto end;
+
 	/* Tell the user where the memory of the cluster starts */
 	ret_info->page_start = cluster->ram_base;
 	ret_info->page_count = cluster->usbale_count;

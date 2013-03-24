@@ -15,16 +15,10 @@ static void build_ram_list()
 	
 	//TODO: call the arch to add memory
 	km_insert_ram(start, size, node);
- 
-	while (1)
-	{
-		unsigned long p = km_page_alloc();
-		//printk("%x ", p);
-		if (!p)
-			break;
-		count++;
-	}
-	printk("count is %d, size is %dKB.", count, count * 4);
+
+ 	kc_init();
+	kp_init();
+	kt_init();
 	while (1);
 }
 
@@ -34,9 +28,11 @@ void __init __noreturn hal_main()
 	hal_arch_init(HAL_ARCH_INIT_PHASE_EARLY);
 	km_cluster_init();
 	build_ram_list();
-	hal_malloc_init();
 
-	/* IRQ,平台的初始化，如平台的中断，各种配置信息 */
+	hal_video_init_screen();
+	
+
+	/* IRQ,平台的初始化，如平台的中断，各种配置信息 */	
 	hal_irq_init();
 	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
 
@@ -60,4 +56,9 @@ void __init __noreturn hal_main()
 	while(1)
 	{
 	}
+}
+
+void ke_panic(char *why)
+{
+	printk("内核异常:%s.\n", why);
 }
