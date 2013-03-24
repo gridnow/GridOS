@@ -13,7 +13,7 @@ start:
 _start:
     jmp multiboot_entry
             
-    align 4
+    .align 4
 multiboot_header:
     .long   MULTIBOOT_HEADER_MAGIC
     .long   MULTIBOOT_HEADER_FLAGS
@@ -22,7 +22,7 @@ multiboot_header:
 multiboot_entry:
     movl $(stack + STACK_SIZE), %esp
     
-    pushf $0
+    pushl $0
     popf
             
     pushl %ebx

@@ -15,11 +15,14 @@
 #define	__INITLOADER_H__
 
 #ifdef	__i386__
-#define	STARTUP_ARGS_ADDR 0x90000
+#define	STARTUP_ARGS_ADDR   0x100000UL
+#define STARTUP_ARGS_LEN    0x10000UL
 /* TODO Add other arch */
 #else
 #error "Unsupport arch!"
 #endif
+
+#define ARCH_SO_NAME "arch.so"
 
 #define STARTUP_MEMORY_AVAILABLE    1   /**<    该块内存是保留的*/
 #define STARTUP_MEMORY_RESERVED     2   /**<    该块内存是可用的*/
@@ -28,9 +31,11 @@
 /* 启动内存映射表 */
 struct startup_memory_map
 {
-    u64	start_address;  /**<    内存块首地址    */
-    u64	length;         /**<    内存快的长度    */
-    u32	type;           /**<    内存快的类型 */
+    u32	start_addr_lowpart;             /**<    内存块首地址,低32位    */
+    u32 start_addr_highpart;            /**<    内存块首地址,高32位    */
+    u32	length_lowpart;                 /**<    内存块的长度,低32位    */
+    u32 length_highpart;                /**<    内存块的长度,高32位     */
+    u32	type;                           /**<    内存快的类型 */
 };
 
 /* 启动视频信息 */

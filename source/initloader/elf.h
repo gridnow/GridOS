@@ -56,95 +56,20 @@ typedef u32	Elf(Word);
 #define ET_HIPROC		0xffff
 
 #define EM_NONE		  0	/* No machine */
-#define EM_M32		  1	/* AT&T WE 32100 */
-#define EM_SPARC	  2	/* SUN SPARC */
 #define EM_386		  3	/* Intel 80386 */
-#define EM_68K		  4	/* Motorola m68k family */
-#define EM_88K		  5	/* Motorola m88k family */
 #define EM_486		  6	/* Intel 80486 *//* Reserved for future use */
-#define EM_860		  7	/* Intel 80860 */
 #define EM_MIPS		  8	/* MIPS R3000 (officially, big-endian only) */
 #define EM_S370		  9	/* IBM System/370 */
 #define EM_MIPS_RS3_LE	 10	/* MIPS R3000 little-endian (Oct 4 1999 Draft) Deprecated */
 
 #define EM_PARISC	 15	/* HPPA */
 
-#define EM_VPP550	 17	/* Fujitsu VPP500 */
-#define EM_SPARC32PLUS	 18	/* Sun's "v8plus" */
-#define EM_960		 19	/* Intel 80960 */
-#define EM_PPC		 20	/* PowerPC */
-#define EM_PPC64	 21	/* 64-bit PowerPC */
-#define EM_S390		 22	/* IBM S/390 */
-#define EM_SPU		 23	/* Sony/Toshiba/IBM SPU */
-
-#define EM_V800		 36	/* NEC V800 series */
-#define EM_FR20		 37	/* Fujitsu FR20 */
-#define EM_RH32		 38	/* TRW RH32 */
-#define EM_MCORE	 39	/* Motorola M*Core */ /* May also be taken by Fujitsu MMA */
-#define EM_RCE		 39	/* Old name for MCore */
 #define EM_ARM		 40	/* ARM */
-#define EM_OLD_ALPHA	 41	/* Digital Alpha */
-#define EM_SH		 42	/* Renesas (formerly Hitachi) / SuperH SH */
-#define EM_SPARCV9	 43	/* SPARC v9 64-bit */
-#define EM_TRICORE	 44	/* Siemens Tricore embedded processor */
-#define EM_ARC		 45	/* ARC Cores */
-#define EM_H8_300	 46	/* Renesas (formerly Hitachi) H8/300 */
-#define EM_H8_300H	 47	/* Renesas (formerly Hitachi) H8/300H */
-#define EM_H8S		 48	/* Renesas (formerly Hitachi) H8S */
-#define EM_H8_500	 49	/* Renesas (formerly Hitachi) H8/500 */
+
 #define EM_IA_64	 50	/* Intel IA-64 Processor */
 #define EM_MIPS_X	 51	/* Stanford MIPS-X */
-#define EM_COLDFIRE	 52	/* Motorola Coldfire */
-#define EM_68HC12	 53	/* Motorola M68HC12 */
-#define EM_MMA		 54	/* Fujitsu Multimedia Accelerator */
-#define EM_PCP		 55	/* Siemens PCP */
-#define EM_NCPU		 56	/* Sony nCPU embedded RISC processor */
-#define EM_NDR1		 57	/* Denso NDR1 microprocesspr */
-#define EM_STARCORE	 58	/* Motorola Star*Core processor */
-#define EM_ME16		 59	/* Toyota ME16 processor */
-#define EM_ST100	 60	/* STMicroelectronics ST100 processor */
-#define EM_TINYJ	 61	/* Advanced Logic Corp. TinyJ embedded processor */
 #define EM_X86_64	 62	/* Advanced Micro Devices X86-64 processor */
 
-#define EM_PDP10	 64	/* Digital Equipment Corp. PDP-10 */
-#define EM_PDP11	 65	/* Digital Equipment Corp. PDP-11 */
-#define EM_FX66		 66	/* Siemens FX66 microcontroller */
-#define EM_ST9PLUS	 67	/* STMicroelectronics ST9+ 8/16 bit microcontroller */
-#define EM_ST7		 68	/* STMicroelectronics ST7 8-bit microcontroller */
-#define EM_68HC16	 69	/* Motorola MC68HC16 Microcontroller */
-#define EM_68HC11	 70	/* Motorola MC68HC11 Microcontroller */
-#define EM_68HC08	 71	/* Motorola MC68HC08 Microcontroller */
-#define EM_68HC05	 72	/* Motorola MC68HC05 Microcontroller */
-#define EM_SVX		 73	/* Silicon Graphics SVx */
-#define EM_ST19		 74	/* STMicroelectronics ST19 8-bit cpu */
-#define EM_VAX		 75	/* Digital VAX */
-#define EM_CRIS		 76	/* Axis Communications 32-bit embedded processor */
-#define EM_JAVELIN	 77	/* Infineon Technologies 32-bit embedded cpu */
-#define EM_FIREPATH	 78	/* Element 14 64-bit DSP processor */
-#define EM_ZSP		 79	/* LSI Logic's 16-bit DSP processor */
-#define EM_MMIX		 80	/* Donald Knuth's educational 64-bit processor */
-#define EM_HUANY	 81	/* Harvard's machine-independent format */
-#define EM_PRISM	 82	/* SiTera Prism */
-#define EM_AVR		 83	/* Atmel AVR 8-bit microcontroller */
-#define EM_FR30		 84	/* Fujitsu FR30 */
-#define EM_D10V		 85	/* Mitsubishi D10V */
-#define EM_D30V		 86	/* Mitsubishi D30V */
-#define EM_V850		 87	/* NEC v850 */
-#define EM_M32R		 88	/* Renesas M32R (formerly Mitsubishi M32R) */
-#define EM_MN10300	 89	/* Matsushita MN10300 */
-#define EM_MN10200	 90	/* Matsushita MN10200 */
-#define EM_PJ		 91	/* picoJava */
-#define EM_OPENRISC	 92	/* OpenRISC 32-bit embedded processor */
-#define EM_ARC_A5	 93	/* ARC Cores Tangent-A5 */
-#define EM_XTENSA	 94	/* Tensilica Xtensa Architecture */
-#define EM_IP2K		101	/* Ubicom IP2022 micro controller */
-#define EM_CR		103	/* National Semiconductor CompactRISC */
-#define EM_MSP430	105	/* TI msp430 micro controller */
-#define EM_BLACKFIN	106	/* ADI Blackfin */
-#define EM_ALTERA_NIOS2	113	/* Altera Nios II soft-core processor */
-#define EM_CRX		114	/* National Semiconductor CRX */
-#define EM_CR16		115	/* National Semiconductor CompactRISC - CR16 */
-#define EM_SCORE        135     /* Sunplus Score */
 
 #define EV_NONE			0
 #define EV_CURRENT		1
@@ -326,5 +251,8 @@ typedef struct {
 		Elf(Addr)	d_ptr;
 	} d_un;
 } Elf(Dyn);
+
+
+void *load_elf_from_mem(void *elf_mem);
 
 #endif	/* ELF_H */

@@ -8,6 +8,9 @@
 
 #include <arch/boot.h>
 
+#include "utils.h"
+#include "elf.h"
+
 #ifdef __i386__
 #include "grub.h"
 
@@ -16,32 +19,6 @@
 #define MAX_FLAGS               12
 typedef void (*fill_args_func)(struct startup_args *args, multiboot_info_t *mbi);
 
-static void *startup_args_base = (void *)STARTUP_ARGS_ADDR;
-static off_t alloc_offset = 0;
-static void* alloc_startup_args_mem(size_t size)
-{
-    char *ret = (char *)startup_args_base + alloc_offset;
-    /* size must align 4 bytes */
-    size = (size & 0x3) ? (size + (4 - (size & 0x3)) ) : size;
-    alloc_offset += size;
-    
-    return (void *)ret;
-}
-
-static int __strlen(const char *str)
-{
-    char *s = (char *)str;
-    while(*s++) /* nothing here */;
-    
-    return (int)((unsigned long)s - (unsigned long)str);
-}
-
-static void __strcpy(char *dst, char *src)
-{
-    while (*src)
-        *dst++ = *src++;
-    *dst = '\0';
-}
 
 static void mem_args(struct startup_args *args, multiboot_info_t *mbi)
 {
@@ -61,9 +38,9 @@ static void bootdev_args(struct startup_args *args, multiboot_info_t *mbi)
 
 static void cmd_line_args(struct startup_args *args, multiboot_info_t *mbi)
 {
-    args->knl_cmd_line_length   = __strlen(mbi->cmdline) + 1;
-    args->knl_cmd_line          = alloc_startup_args_mem(args->knl_cmd_line_length);
-    __strcpy((char *)args->knl_cmd_line, mbi->cmdline);
+    args->knl_cmd_line_length   = __strlen((const char*)mbi->cmdline) + 1;
+    args->knl_cmd_line          = (u32)alloc_startup_args_mem(args->knl_cmd_line_length);
+    __strcpy((char *)args->knl_cmd_line, (char *)mbi->cmdline);
 }
 
 static void mods_args(struct startup_args *args, multiboot_info_t *mbi)
@@ -98,7 +75,7 @@ static void void_args(struct startup_args *args, multiboot_info_t *mbi)
 
 static void mmap_args(struct startup_args *args, multiboot_info_t *mbi)
 {
-    memory_map_t grub_map;
+    memory_map_t *grub_map;
     struct startup_memory_map *mmap;
     
     unsigned long i;
@@ -110,9 +87,11 @@ static void mmap_args(struct startup_args *args, multiboot_info_t *mbi)
     grub_map = (memory_map_t *)mbi->mmap_addr;
     for (i = 0; i < mbi->mmap_length; i++)
     {
-        mmap[i].length  = (grub_map[i].length_high << 32) | grub_map[i].length_low;
-        mmap[i].start_address =
-                (grub_map[i].base_addr_high << 32) | grub_map[i].base_addr_low;
+        mmap[i].length_lowpart      = grub_map[i].length_low;
+        mmap[i].length_highpart     = grub_map[i].length_high;
+        mmap[i].start_addr_lowpart  = grub_map[i].base_addr_low;
+        mmap[i].start_addr_highpart = grub_map[i].base_addr_high;
+        
         mmap[i].type    = grub_map[i].type;
     }
     
@@ -123,10 +102,10 @@ static void mmap_args(struct startup_args *args, multiboot_info_t *mbi)
 
 static void vbe_args(struct startup_args *args, multiboot_info_t *mbi)
 {
-    
+    /* TODO: Add code here */
 }
 
-fill_args_func fill_args_ops[] = {
+static fill_args_func fill_args_ops[] = {
     mem_args,       /* bit  0: memory lower and memory high */
     bootdev_args,   /* bit  1: boot device number, int13h service */
     cmd_line_args,  /* bit  2: command line to kernal */
@@ -138,22 +117,29 @@ fill_args_func fill_args_ops[] = {
     void_args,      /* bit  8: biso config table, ignore   */
     void_args,      /* bit  9: boot loader name, ignore   */
     void_args,      /* bit 10: apm table, ignore   */
-                    /* bit 11: vbe information  */
+    void_args       /* bit 11: vbe information  */
 };
 
 void init_main(unsigned long magic, unsigned long addr)
 {
     multiboot_info_t *mbi;
     struct startup_args *args;
+    struct startup_modules *mods;
+    struct startup_modules *mod_arch;
+    u32 i;
     int flag;
+    void (*arch_entry)(void);
+    
+    cls();
     
     if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
     {
         /* not a multiboot loader, invalid boot magic */
+        printf("Invalid boot magic\n");
         return;
     }
     
-    mbi = (multiboot_info_t)addr;
+    mbi = (multiboot_info_t*)addr;
     
     args = alloc_startup_args_mem(sizeof(struct startup_args));
     for (flag = 0; flag < MAX_FLAGS; flag++)
@@ -161,5 +147,28 @@ void init_main(unsigned long magic, unsigned long addr)
         fill_args_ops[flag](args, mbi);
     }
     
+    /* search arch module */
+    mods = (struct startup_modules *)args->mods;
+    mod_arch = NULL;
+    for (i = 0; i < args->nr_mods; i++)
+    {
+        if (!__strcmp((char *)mods[i].mod_name, ARCH_SO_NAME))
+        {
+            mod_arch = &mods[i];
+            break;
+        }
+    }
+    
+    if (!mod_arch)
+    {
+        printf("The " ARCH_SO_NAME " was not loaded!\n");
+        return;
+    }
+    
+    printf("Grid OS will start\n");
+    arch_entry = (void (*)())load_elf_from_mem((void *)mod_arch->mod_addr);
+    
+    arch_entry();
 }
+
 #endif /* __i386__ */
