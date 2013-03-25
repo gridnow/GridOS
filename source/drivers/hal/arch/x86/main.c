@@ -142,6 +142,9 @@ void hal_arch_init(int step)
 	case HAL_ARCH_INIT_PHASE_EARLY:
 		x86_serial_init();
 		early_cpu_init();
+		hal_irq_early_init();
+		arch_init_irq();
+		arch_trap_init();
 		//tsc_init();printk("\n%s->%s->%d.",__FILE__,__FUNCTION__,__LINE__);
 		break;
 	case HAL_ARCH_INIT_PHASE_MIDDLE:

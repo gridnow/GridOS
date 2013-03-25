@@ -4,10 +4,10 @@ include ../../../hal_include.mk
 ADD_INCLUDE +=$(HAL_INCLUDE)
 
 #要编译的文件列表
-OBJS 	= string_$(BITS).o memcpy_$(BITS).o rwlock.o delay.o
-PARTS 	=
+OBJS 	= apic.o
+PARTS 	= 
 
 all:  subs_parts $(OBJS)
-	$(LD) -r -o ../lib.o *.o $(ARCH_LD_FLAGS)
+	$(LD) -r -o ../apic.o *.o $(ARCH_LD_FLAGS)
 
 include $(MY_BUILD_BASE)/cc.mk
