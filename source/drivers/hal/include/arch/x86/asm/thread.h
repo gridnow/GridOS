@@ -5,8 +5,8 @@
 *   Wuxin
 *   平台线程描述
 */
-#ifndef ARCH_THREAD_H
-#define ARCH_THREAD_H
+#ifndef HAL_ARCH_THREAD_H
+#define HAL_ARCH_THREAD_H
 #include <linkage.h>
 #include <asm/processor.h>
 

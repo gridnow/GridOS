@@ -19,9 +19,13 @@ static void build_ram_list()
  	kc_init();
 	kp_init();
 	kt_init();
-	rtc_init();
+
+	hal_time_init();
+	
 	local_irq_enable();
-	while (1);
+	printk("Hal startup ok.\n");
+	
+	while (1) dumy_idle_ops(0);
 }
 
 void __init __noreturn hal_main()

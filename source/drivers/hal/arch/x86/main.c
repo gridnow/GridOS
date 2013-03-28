@@ -145,7 +145,9 @@ void hal_arch_init(int step)
 		hal_irq_early_init();
 		arch_init_irq();
 		arch_trap_init();
-		//tsc_init();printk("\n%s->%s->%d.",__FILE__,__FUNCTION__,__LINE__);
+		printk("\n%s->%s->%d.",__FILE__,__FUNCTION__,__LINE__);
+		time_init();
+		printk("\n%s->%s->%d.",__FILE__,__FUNCTION__,__LINE__);
 		break;
 	case HAL_ARCH_INIT_PHASE_MIDDLE:
 		arch_init_irq();

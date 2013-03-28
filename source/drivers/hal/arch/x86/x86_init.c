@@ -1,6 +1,7 @@
 #include <types.h>
 #include <asm/x86_init.h>
 #include <asm/irq.h>
+#include <asm/timex.h>
 
 void __cpuinit x86_init_noop(void) { }
 void __init x86_init_uint_noop(unsigned int unused) { }
@@ -18,6 +19,14 @@ struct x86_init_ops x86_init __initdata = {
 		.intr_init		= native_init_IRQ,
 		.trap_init		= x86_init_noop,
 	},
+
+	.timers = {
+		.setup_percpu_clockev	= NULL,
+		.tsc_pre_init		= x86_init_noop,
+		.timer_init 	= hpet_time_init,
+		.wallclock_init 	= x86_init_noop,
+	},
+
 };
 
 static void default_nmi_init(void) { };

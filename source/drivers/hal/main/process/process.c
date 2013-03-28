@@ -12,13 +12,20 @@
 #include "object.h"
 static struct ko_thread *init_process;
 
-static bool process_close(struct cl_object *obj)
+static bool object_close(real_object_t *obj)
 {
 
 }
 
+static void object_init(real_object_t *obj)
+{
+	struct ko_process *p = (struct ko_process *)obj;
+	
+}
+
 static struct cl_object_ops process_object_ops = {
-	.close				= process_close,
+	.close				= object_close,
+	.init				= object_init,
 };
 
 static bool alloc_space(struct cl_object_type *type, void **base, size_t *size, enum cl_object_memory_type memory_type)
@@ -59,9 +66,36 @@ static struct cl_object_type process_type = {
 	.free_space	= free_space,
 };
 
+/**
+	@brief 获取系统进程对象
+*/
 struct ko_process *kp_get_system()
 {
 	return init_process;
+}
+
+/**
+	@brief 创立一个空的进程对象
+*/
+struct ko_process *kp_create(int cpl, xstring name)
+{
+	struct ko_process *p;
+	
+	if (cpl != KP_CPL0 || cpl != KP_USER)
+		goto err;
+	p = cl_object_create(&process_type);
+	if (!p) goto err;
+	
+	p->cpl = cpl;
+	if (!cl_object_set_name(CL_OBJECT_REAL_TO_REAL(p), name))
+		goto err1;
+	
+	return p;
+	
+err1:
+	cl_object_close(CL_OBJECT_REAL_TO_REAL(p));
+err:
+	return NULL;
 }
 
 bool kp_init()

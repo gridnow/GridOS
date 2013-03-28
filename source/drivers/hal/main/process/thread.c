@@ -7,9 +7,9 @@
 */
 
 #include "thread.h"
-#include "process.h"
 #include "memory.h"
 #include "object.h"
+#include "process.h"
 #include "cpu.h"
 #include "sched.h"
 #include "kernel.h"

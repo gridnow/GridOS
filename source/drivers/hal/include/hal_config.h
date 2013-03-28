@@ -56,7 +56,7 @@
 #define PAGE_MASK							(~((1 << PAGE_SHIFT) - 1))
 #define CONFIG_HZ							250
 #define CONFIG_GENERIC_CLOCKEVENTS_BUILD	1								/* Clockchips.h 需要 */
-
+#define CONFIG_CLKEVT_I8253					1								/* 8253 可以作为时钟事件 */
 /* Basic HAL memory conversion */
 #define HAL_GET_BASIC_KADDRESS(PHY) ((PHY) + CONFIG_HAL_KERNEL_BASE)
 #define HAL_GET_BASIC_PHYADDRESS(LOG) ((unsigned long)(LOG) - CONFIG_HAL_KERNEL_BASE)

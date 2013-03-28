@@ -63,6 +63,9 @@ struct cl_object_type
 	struct object_tree_node *node;
 };
 
+/* Useful macro */
+#define CL_OBJECT_REAL_TO_REAL(P) ((real_object_t)(P))
+
 /* 方法 */
 /**
 	@brief 创立一个指定类型的对象	
@@ -78,5 +81,11 @@ void cl_object_close(void *object);
 	@brief Register type
 */
 void cl_object_type_register(struct cl_object_type *type);
+
+//name.c
+/**
+	@brief 设置对象的名称
+*/
+xstring cl_object_set_name(real_object_t who, xstring what);
 
 #endif

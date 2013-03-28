@@ -16,7 +16,7 @@ struct kc_cpu tmp_boot_cpu;
 static struct kc_cpu * this_cpu = &tmp_boot_cpu;
 static struct ko_thread dummy_kmt = {1}/*Use DATA segment, 否则占用过多的BSS，防止其他模块破坏内核*/;
 
-static void dumy_idle_ops(int type)
+void dumy_idle_ops(int type)
 {
 #ifdef __i386__
 	__asm volatile("hlt\n");

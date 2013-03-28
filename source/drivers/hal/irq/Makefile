@@ -8,7 +8,7 @@ OBJS = manage.o chip.o spurious.o irqdesc.o handle.o dummychip.o hal.o resend.o 
 PARTS = 
 
 all:  subs_parts $(OBJS)
-	ld -r -o ../irq.o *.o $(ARCH_LD_FLAGS)
+	$(LD) -r -o ../irq.o *.o $(ARCH_LD_FLAGS)
 
 
 include $(MY_BUILD_BASE)/cc.mk

@@ -3,16 +3,20 @@
 *   See the license.txt at the root directory of this project for the copyright information about this file and project.
 *
 *   Wuxin
-*   对象管理器
+*   HAL 时间管理
 */
 
-#include "object.h"
+#include <types.h>
+#include <time.h>
+#include <clockchips.h>
 
-/**
-	@brief 设置对象的名称
-*/
-xstring cl_object_set_name(real_object_t who, xstring what)
+#include <asm/timex.h>
+
+void (*__initdata late_time_init)(void);
+
+void hal_time_init()
 {
-	//TODO: 使用名字空间来分配
-	return what;
+	rtc_init();
+	late_time_init();
 }
+
