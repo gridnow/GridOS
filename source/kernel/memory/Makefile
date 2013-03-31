@@ -1,5 +1,5 @@
 include $(MY_BUILD_BASE)/config.mk
-include ../../hal_include.mk
+include ../kernel.mk
 
 ADD_INCLUDE +=-I../include $(HAL_INCLUDE)
 
