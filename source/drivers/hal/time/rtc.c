@@ -11,7 +11,7 @@
 
 #include <mc146818rtc.h>
 
-static raw_spinlock_t rtc_lock;
+static DEFINE_SPINLOCK(rtc_lock);
 static unsigned long rtc_port;
 static int rtc_irq;
 
@@ -69,9 +69,9 @@ static inline unsigned char rtc_is_updating(void)
 	unsigned long flags;
 	unsigned char uip;
 
-	raw_spin_lock_irqsave(&rtc_lock, flags);
+	spin_lock_irqsave(&rtc_lock, flags);
 	uip = (CMOS_READ(RTC_FREQ_SELECT) & RTC_UIP);
-	raw_spin_unlock_irqrestore(&rtc_lock, flags);
+	spin_unlock_irqrestore(&rtc_lock, flags);
 	return uip;
 }
 #ifdef RTC_IRQ
@@ -229,9 +229,9 @@ no_irq2:
 		val |= (16 - tmp);
 		CMOS_WRITE(val, RTC_FREQ_SELECT);
 
-		raw_spin_lock_irqsave(&rtc_lock, flags);
+		spin_lock_irqsave(&rtc_lock, flags);
 		set_rtc_irq_bit_locked(RTC_PIE);
-		raw_spin_unlock_irqrestore(&rtc_lock, flags);
+		spin_unlock_irqrestore(&rtc_lock, flags);
 	} while (0);
 
 
@@ -265,7 +265,7 @@ void rtc_get_rtc_time(struct rtc_time *rtc_tm)
 	 * RTC has RTC_DAY_OF_WEEK, we should usually ignore it, as it is
 	 * only updated by the RTC when initially set to a non-zero value.
 	 */
-	raw_spin_lock_irqsave(&rtc_lock, flags);
+	spin_lock_irqsave(&rtc_lock, flags);
 	rtc_tm->tm_sec = CMOS_READ(RTC_SECONDS);
 	rtc_tm->tm_min = CMOS_READ(RTC_MINUTES);
 	rtc_tm->tm_hour = CMOS_READ(RTC_HOURS);
@@ -279,7 +279,7 @@ void rtc_get_rtc_time(struct rtc_time *rtc_tm)
 	real_year = CMOS_READ(RTC_DEC_YEAR);
 #endif
 	ctrl = CMOS_READ(RTC_CONTROL);
-	raw_spin_unlock_irqrestore(&rtc_lock, flags);
+	spin_unlock_irqrestore(&rtc_lock, flags);
 
 	if (!(ctrl & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
 		rtc_tm->tm_sec = bcd2bin(rtc_tm->tm_sec);
@@ -314,12 +314,12 @@ void get_rtc_alm_time(struct rtc_time *alm_tm)
 	 * Only the values that we read from the RTC are set. That
 	 * means only tm_hour, tm_min, and tm_sec.
 	 */
-	raw_spin_lock_irqsave(&rtc_lock,flags);
+	spin_lock_irqsave(&rtc_lock,flags);
 	alm_tm->tm_sec = CMOS_READ(RTC_SECONDS_ALARM);
 	alm_tm->tm_min = CMOS_READ(RTC_MINUTES_ALARM);
 	alm_tm->tm_hour = CMOS_READ(RTC_HOURS_ALARM);
 	ctrl = CMOS_READ(RTC_CONTROL);
-	raw_spin_unlock_irqrestore(&rtc_lock,flags);
+	spin_unlock_irqrestore(&rtc_lock,flags);
 
 	if (!(ctrl & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
 		alm_tm->tm_sec = bcd2bin(alm_tm->tm_sec);

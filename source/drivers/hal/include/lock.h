@@ -37,6 +37,9 @@ struct ke_spinlock
 	{					\
 	.lock = __ARCH_SPIN_LOCK_UNLOCKED,	\
 	}
+#define __RAW_SPIN_LOCK_UNLOCKED(lockname)	\
+	(raw_spinlock_t) __RAW_SPIN_LOCK_INITIALIZER(lockname)
+
 #define __KE_SPIN_LOCK_UNLOCKED(lockname)	\
 	(struct ke_spinlock) __RAW_SPIN_LOCK_INITIALIZER(lockname)
 # define __spin_lock_init(lock)				\

@@ -15,6 +15,7 @@
 #define _STDIO_H
 
 #include <types.h>
+#include <stdarg.h>
 
 BEGIN_C_DECLS;
 

@@ -35,7 +35,9 @@ enum __irqreturn__ {
 typedef enum __irqreturn__ irqreturn_t;
 #define IRQ_RETVAL(x)	((x) != IRQ_NONE)
 typedef irqreturn_t (*irq_handler_t)(int, void *);
- 
+
+/*  请求中断时的flag */
+#define IRQF_SHARED		0x00000080
 #endif
 
 /** @} */

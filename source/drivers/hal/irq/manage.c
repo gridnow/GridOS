@@ -6,6 +6,8 @@
 #include <debug.h>
 #include "internals.h"
 
+#include <ddk/slab.h>
+
 #include <asm/processor.h>
 
 /*

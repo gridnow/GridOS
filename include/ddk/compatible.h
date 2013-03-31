@@ -5,33 +5,49 @@
 #define DDK_COMPATIBLE_INTERFACE
 
 /* Memory */
-#define GFP_KERNEL 0
-static inline void *kzalloc(size_t size, int flags)
+inline static void * ke_vm_basic(unsigned long basic_physical)
 {
-	return NULL;
+	/*  将基本物理内存（一般是低端内存）转换成内核、驱动能直接访问的虚拟地址*/
+	void *p = (void*)(basic_physical + 0x80000000UL);
+	//TODO
+	return p;
 }
+#define __va(phy) ke_vm_basic(phy)
 
-static void inline kfree(void *p)
-{
-	
-}
 
 /* LOCK */
 typedef struct __raw_spinlock
 {
 	struct ke_spinlock lock;
 } raw_spinlock_t;
+typedef struct ke_spinlock spinlock_t;
+
 #define raw_spin_lock_irqsave(L, flags) flags = ke_spin_lock_irqsave(&((L)->lock))
 #define raw_spin_unlock_irqrestore(L, flags) ke_spin_unlock_irqrestore(&((L)->lock), flags)
 #define raw_spin_lock(L) ke_spin_lock(&((L)->lock))
 #define raw_spin_unlock(L) ke_spin_unlock(&((L)->lock))
 #define raw_spin_lock_init(L) ke_spin_init(&((L)->lock))
-#define spin_lock(L) ke_spin_lock(&((L)->lock))
-#define spin_unlock(L) ke_spin_unlock(&((L)->lock))
-#define spin_lock_irq(L) ke_spin_lock_irq(&((L)->lock))
-#define spin_unlock_irq(L) ke_spin_unlock_irq(&((L)->lock))
+#define spin_lock(L) ke_spin_lock(L)
+#define spin_unlock(L) ke_spin_unlock(L)
+#define spin_lock_irq(L) ke_spin_lock_irq(L)
+#define spin_unlock_irq(L) ke_spin_unlock_irq(L)
+#define spin_lock_irqsave(L, flags) flags = ke_spin_lock_irqsave(L)
+#define spin_unlock_irqrestore(L, flags) ke_spin_unlock_irqrestore(L, flags)
+#define DEFINE_RAW_SPINLOCK(x)	raw_spinlock_t x = {{0}} //TODO: 不同的ARCH，计数器初始化未必一样
+#define DEFINE_SPINLOCK(x) spinlock_t x = {0}//TODO: 不同的ARCH，计数器初始化未必一样
 
-#define __RAW_SPIN_LOCK_UNLOCKED(lockname)	\
-	(raw_spinlock_t) __RAW_SPIN_LOCK_INITIALIZER(lockname)
-#define DEFINE_RAW_SPINLOCK(x)	raw_spinlock_t x = __RAW_SPIN_LOCK_UNLOCKED(x)
+/* Device */
+struct device
+{
+	int dummy;
+};
+
+/* Atomic types */
+#ifndef HAL_ATOMIC_H/*No conflict with HAL */
+typedef struct ke_atomic atomic_t;
+#endif
+
+/* MISC */
+#define EXPORT_SYMBOL_GPL(X)
+
 #endif
