@@ -11,10 +11,24 @@
 
 
 /**
+	@brief Sleep milliseconds 
+
+	休眠milliseconds并且不退出休眠直到时间流逝完
+*/
+void hal_msleep(unsigned int msecs);
+
+/**
+	@brief Sleep in us unit
+
+	由于US的单位比较小，线程不一定进入休眠状态，可能进入轮询状态
+*/
+void hal_usleep(unsigned int us);
+
+/**
 	@brief Sleep in 1/1000 second unit
 */
-#define msleep ke_msleep
-#define udelay(us) ke_usleep(us)
+#define msleep hal_msleep
+#define udelay(us) hal_usleep(us)
 #define MAX_UDELAY_MS	5
 #define mdelay(n) ( \
 	(__builtin_constant_p(n) && (n)<=MAX_UDELAY_MS) ? udelay((n)*1000) : \

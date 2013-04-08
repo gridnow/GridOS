@@ -366,12 +366,7 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	}
 	action = kzalloc(sizeof(struct irqaction), GFP_KERNEL);
 	if (!action)
-	{
-		printk("%s->%s->%d: Using temp irqaction...\n",__FILE__,__FUNCTION__,__LINE__);
-		static struct irqaction t ={0};
-		action = &t;
-		//return -ENOMEM;
-	}
+		return -ENOMEM;
 	
 	action->handler = handler;
 	action->thread_fn = thread_fn;

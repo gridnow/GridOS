@@ -20,6 +20,7 @@ struct ke_atomic
 	int counter;
 };
 
+
 #endif
 
 /** @} */

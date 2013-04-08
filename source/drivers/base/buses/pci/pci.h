@@ -9,6 +9,7 @@
 #include <ddk/resource.h>
 #include <ddk/pci/pci.h>
 #include <ddk/obj.h>
+#include <ddk/compatible_atomic.h>
 
 extern u8 pci_dfl_cache_line_size;
 extern u8 pci_cache_line_size;

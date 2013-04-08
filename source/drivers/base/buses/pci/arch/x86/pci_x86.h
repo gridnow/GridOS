@@ -223,7 +223,7 @@ struct x86_init_ops
 {
 	struct x86_init_pci		pci;
 };
-extern struct x86_init_ops x86_init;
+extern struct x86_init_ops x86_init_pci;
 
 /* Topology of x86 pci */
 void x86_pci_root_bus_resources(int bus, struct list_head *resources);

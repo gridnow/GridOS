@@ -64,7 +64,6 @@ struct cl_object_type
 };
 
 /* Useful macro */
-#define CL_OBJECT_REAL_TO_REAL(P) ((real_object_t)(P))
 
 /* 方法 */
 /**
@@ -76,6 +75,9 @@ void *cl_object_create(struct cl_object_type *type);
 	@brief 关闭对对象的使用
 */
 void cl_object_close(void *object);
+
+void cl_object_dec_ref(void *object);
+void cl_object_inc_ref(void *object);
 
 /**
 	@brief Register type

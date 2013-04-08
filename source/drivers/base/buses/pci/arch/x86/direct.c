@@ -11,6 +11,7 @@
 #include <ddk/pci/class.h>
 #include <ddk/pci/global_ids.h>
 #include <ddk/compatible_io.h>
+#include <ddk/compatible_irq.h>
 
 #include <FIRMWARE/dmi/dmi.h>
 

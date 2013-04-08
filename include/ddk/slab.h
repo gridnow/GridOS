@@ -14,10 +14,8 @@
 #define GFP_KERNEL 0
 
 /* Memory allocation type */
-static inline void * hal_malloc(int size)
-{
-	return NULL;
-}
+void * hal_malloc(int size);
+
 void hal_free(void * hal_address);
 
 /*

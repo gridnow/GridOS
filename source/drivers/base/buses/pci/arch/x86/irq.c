@@ -1152,7 +1152,7 @@ void __init pcibios_irq_init(void)
 			pirq_table = NULL;
 	}
 
-	x86_init.pci.fixup_irqs();
+	x86_init_pci.pci.fixup_irqs();
 
 	if (io_apic_assign_pci_irqs && pci_routeirq) {
 		struct pci_dev *dev = NULL;

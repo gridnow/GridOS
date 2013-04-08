@@ -93,8 +93,7 @@ int pci_bus_add_device(struct pci_dev *dev)
 	pci_fixup_device(pci_fixup_final, dev);
 
 	/* 注册，并设置名字 */
-	do_register_device(dev, dev->bus/*该设备的BUS应该是其父设备，但是在pci_setup_device中，parent是bridge*/,
-		pci_get_device_type());
+	do_register_device(dev, dev->bus/*该设备的BUS应该是其父设备，但是在pci_setup_device中，parent是bridge*/);
 	do_set_device_name(dev, "%04x:%02x:%02x.%d", pci_domain_nr(dev->bus),
 		dev->bus->number, PCI_SLOT(dev->devfn),
 		PCI_FUNC(dev->devfn));

@@ -22,7 +22,12 @@ static void build_ram_list()
 
 	hal_time_init();
 	
+	hal_malloc_init();
+	
 	local_irq_enable();
+
+	printk("Starting up modules...");
+	ke_module_entry();
 	printk("Hal startup ok.\n");
 	
 	while (1) dumy_idle_ops(0);

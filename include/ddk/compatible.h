@@ -42,11 +42,6 @@ struct device
 	int dummy;
 };
 
-/* Atomic types */
-#ifndef HAL_ATOMIC_H/*No conflict with HAL */
-typedef struct ke_atomic atomic_t;
-#endif
-
 /* MISC */
 #define EXPORT_SYMBOL_GPL(X)
 

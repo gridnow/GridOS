@@ -59,3 +59,12 @@ void cl_object_close(void *object)
 {
 	//TODO: Decrease the counter 
 }
+
+void cl_object_dec_ref(void *object)
+{
+	//TODO
+}
+void cl_object_inc_ref(void *object)
+{
+	//TODO
+}

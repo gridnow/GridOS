@@ -29,5 +29,6 @@ typedef struct {
 
 #include <asm-generic/atomic-long.h>
 
+
 #endif /* HAL_ATOMIC_H */
 

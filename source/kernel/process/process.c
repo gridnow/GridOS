@@ -87,13 +87,13 @@ struct ko_process *kp_create(int cpl, xstring name)
 	if (!p) goto err;
 	
 	p->cpl = cpl;
-	if (!cl_object_set_name(CL_OBJECT_REAL_TO_REAL(p), name))
+	if (!cl_object_set_name(p, name))
 		goto err1;
 	
 	return p;
 	
 err1:
-	cl_object_close(CL_OBJECT_REAL_TO_REAL(p));
+	cl_object_close(p);
 err:
 	return NULL;
 }

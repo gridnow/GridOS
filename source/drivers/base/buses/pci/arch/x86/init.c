@@ -6,7 +6,7 @@
 
 #include <pci.h>
 #include "pci_x86.h"
-struct x86_init_ops x86_init = {
+struct x86_init_ops x86_init_pci = {
 	.pci = {
 		.init			= x86_default_pci_init,
 		.init_irq		= x86_default_pci_init_irq,
@@ -26,7 +26,7 @@ __init int pci_arch_init(void)
  	if (!(pci_probe & PCI_PROBE_NOEARLY))
  		pci_mmcfg_early_init();
  
- 	if (x86_init.pci.arch_init && !x86_init.pci.arch_init())
+ 	if (x86_init_pci.pci.arch_init && !x86_init_pci.pci.arch_init())
  		return 0;
 
 #ifdef CONFIG_PCI_BIOS

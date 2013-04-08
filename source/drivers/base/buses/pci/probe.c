@@ -7,6 +7,7 @@
 #include <ddk/pci/pci_regs.h>
 #include <ddk/pci/global_ids.h>
 #include <ddk/slab.h>
+#include <ddk/obj.h>
 #include <ddk/delay.h>
 
 #include "arch/pci-bridge.h"
@@ -20,13 +21,18 @@ void __init pci_sort_breadthfirst(void)
 
 struct do_device_type bridge_type = 
 {
-
+	.name				="PCI桥",
+	.size_of_device 	= sizeof(struct pci_host_bridge),
 };
 
 struct do_device_type bus_type =
 {
-
+	.name 				= "PCI总线",
+	.size_of_device 	= sizeof(struct pci_bus),
+	
 };
+
+extern struct do_device_type pci_dev_type;
 
 #define CARDBUS_LATENCY_TIMER	176	/* secondary latency timer */
 #define CARDBUS_RESERVE_BUSNR	3
@@ -412,7 +418,7 @@ static struct pci_bus * pci_alloc_bus(void)
 {
 	struct pci_bus *b;
 
-	b = kzalloc(sizeof(*b), GFP_KERNEL);
+	b = do_alloc_raw(&bus_type);
 	if (b) {
 		INIT_LIST_HEAD(&b->node);
 		INIT_LIST_HEAD(&b->children);
@@ -429,7 +435,7 @@ static struct pci_host_bridge *pci_alloc_host_bridge(struct pci_bus *b)
 {
 	struct pci_host_bridge *bridge;
 
-	bridge = kzalloc(sizeof(*bridge), GFP_KERNEL);
+	bridge = do_alloc_raw(&bridge_type);
 	if (bridge) {
 		INIT_LIST_HEAD(&bridge->windows);
 		bridge->bus = b;
@@ -1122,7 +1128,7 @@ struct pci_dev *alloc_pci_dev(void)
 {
 	struct pci_dev *dev;
 
-	dev = kzalloc(sizeof(struct pci_dev), GFP_KERNEL);
+	dev = do_alloc_raw(&pci_dev_type);
 	if (!dev)
 		return NULL;
 
@@ -1433,11 +1439,11 @@ struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
 		把桥和pci总线设备注册到设备管理器中,
 		bridge 的parent 是 parent, bus 的parent是bridge。
 	*/
-	if (do_register_device(bridge, parent, &bridge_type) == false)
+	if (do_register_device(bridge, parent) == false)
 		goto bridge_register_err;
 	if (do_set_device_name(bridge, "pci%04x:%02x", pci_domain_nr(b), bus) == false)
 		goto bridge_name_err;
-	if (do_register_device(b, bridge, &bus_type) == false)
+	if (do_register_device(b, bridge) == false)
 		goto bus_register_err;
 	if (do_set_device_name(b, "%04x:%02x", pci_domain_nr(b), bus) == false)
 		goto bus_name_err;

@@ -8,7 +8,7 @@ LDFLAGS					=-L$(SYSTEM_DIR) --entry=start
 DEPENDS 				= --warn-unresolved-symbols
 ADD_LDFLAGS				+= -T arch/$(ARCH_DIR)/lds$(BITS).txt
 
-DEPENDS					+= ../../libs/common/*.o ../../kernel/*.a
+DEPENDS					+= ../../libs/common/*.o ../../kernel/*.a ../base/*.a
 #要编译的文件列表
 OBJS	= 
 PARTS	= irq main time libs arch

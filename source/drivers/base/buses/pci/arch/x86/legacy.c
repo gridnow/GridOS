@@ -75,11 +75,11 @@ int __init pci_subsys_init(void)
 	 * The init function returns an non zero value when
 	 * pci_legacy_init should be invoked.
 	 */
- 	if (x86_init.pci.init())
+ 	if (x86_init_pci.pci.init())
 		pci_legacy_init();
 	
 	pcibios_fixup_peer_bridges();
-	x86_init.pci.init_irq();
+	x86_init_pci.pci.init_irq();
 	pcibios_init();
 
 	return 0;

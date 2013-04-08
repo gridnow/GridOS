@@ -20,7 +20,8 @@ typedef void * driver_t;
 struct do_device_type
 {
 	const char * name;
-
+	int size_of_device;
+	
 	/**
 		@brief 该类型设备与驱动的匹配方法
 	*/
@@ -33,6 +34,10 @@ struct do_device_type
 		@brief 探测某个设备是否是该类型的
 	*/
 	bool (*probe)(device_t device);
+
+	/* Not filled by driver, reserved for manager (cl_object_type) */
+	unsigned long dummy;
+	unsigned char dummy_byte[256];	
 };
 
 /**
@@ -41,8 +46,7 @@ struct do_device_type
 	在设备管理器中添加一个新设备，并匹配存在的驱动程序，如果匹配成功则启动驱动程序使用该硬件。
 
 	@param[in] device 要注册的新设备
-	@param[in] parent 新设备的父设备
-	@param[in] type 新设备的类型描述信息和该类型设备的操作方法
+	@param[in] parent 新设备的父设备	
 
 	@return
 		成功返回true，失败返回false，如果该设备曾经注册过，那么返回false
@@ -51,7 +55,7 @@ struct do_device_type
 		1,如果parent存在，那么parent将被增加一次引用，因此，要删除parent先得删除device
 		2,type必须由驱动发现者提供，描述该设备的类型信息和类型操作方法
 */
-bool do_register_device(void * device, void * parent, struct do_device_type * type);
+bool do_register_device(device_t device, device_t parent);
 
 /**
 	@brief 从设备管理器中撤销一个设备的注册信息
@@ -88,6 +92,11 @@ char *do_get_device_name(device_t device);
 device_t do_put_device(device_t device);
 
 /**
+	@brief 分配设备对象的地址
+*/
+void *do_alloc_raw(struct do_device_type *type);
+
+/**
 	@brief 驱动中要增加一个引用指针
 */
 device_t do_get_device(device_t device);
@@ -105,6 +114,8 @@ device_t do_get_device(device_t device);
 */
 device_t do_find_device(struct do_device_type * type, device_t start, void * data, bool (*match)(device_t dev, void *data));
 
+
+//@param[in] type 新设备的类型描述信息和该类型设备的操作方法
 #endif
 
 /** @} */

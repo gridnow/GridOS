@@ -29,10 +29,11 @@ static bool match_driver(void * dev, void * driver)
 	return result == 0 ? true:false;
 }
 
-static struct do_device_type pci_dev_type =
+struct do_device_type pci_dev_type =
 {
-	.name = "PCI类型的设备",
-	.match = match_driver,
+	.name 				= "PCI类型的设备",
+	.size_of_device 	= sizeof(struct pci_dev),
+	.match 				= match_driver,
 };
 
 LIST_HEAD(quirk_final);
