@@ -17,5 +17,6 @@ DLLEXPORT bool ke_module_entry(int type)
 #endif
 
 	/* 启动内嵌驱动模块 */
-//	start_embeded_driver();	
+	printk("Starting embedded drivers...\n");
+	start_embeded_driver();	
 }
