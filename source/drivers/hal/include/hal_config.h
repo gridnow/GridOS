@@ -15,6 +15,7 @@
 #define CONFIG_HAL_KERNEL_BASE				0x80000000UL
 #define CONFIG_HAL_KERNEL_MEM_LEN			0x40000000
 #define CONFIG_X86_L1_CACHE_SHIFT			6								//from the generated from of autoconf.h
+#define CONFIG_X86_INTERNODE_CACHE_SHIFT	6								//节点之间共享内存的对齐.
 #define CONFIG_X86_LOCAL_APIC				1
 #define CONFIG_X86_32						1
 #define PAGE_SHIFT							12								//4kb page
@@ -55,7 +56,7 @@
 #define PAGE_MASK							(~((1 << PAGE_SHIFT) - 1))
 #define CONFIG_HZ							250
 #define CONFIG_GENERIC_CLOCKEVENTS_BUILD	1								/* Clockchips.h 需要 */
-
+#define CONFIG_CLKEVT_I8253					1								/* 8253 可以作为时钟事件 */
 /* Basic HAL memory conversion */
 #define HAL_GET_BASIC_KADDRESS(PHY) ((PHY) + CONFIG_HAL_KERNEL_BASE)
 #define HAL_GET_BASIC_PHYADDRESS(LOG) ((unsigned long)(LOG) - CONFIG_HAL_KERNEL_BASE)

@@ -18,14 +18,15 @@ struct cl_object
 {
 	char					*name;					/* 对象名 */
 	struct cl_object_type	*type;					/* 指向type */
-	struct list_head		list;					/* 同一类对象链表 */
 	struct ke_atomic		ref;					/* 对象引用计数器 */
+	struct list_head		list;					/* 同一类对象链表 */
 };
+typedef void *real_object_t;
 
 struct cl_object_ops
 {
-	/* 进程关闭一个对象，具体子系统应该对其作出反应 */
-	bool (*close)(struct cl_object *obj);
+	bool (*close)(real_object_t *object);
+	void (*init)(real_object_t *object);
 };
 
 enum cl_object_memory_type
@@ -35,9 +36,17 @@ enum cl_object_memory_type
 	COMMON_OBJECT_MEMORY_TYPE_NODE,
 };
 
+struct object_tree_node
+{
+	char *node_name;
+	struct object_tree_node *parent;
+	struct list_head son;
+	struct list_head siblings;
+	unsigned long flags;
+};
+
 struct cl_object_type
 {
-	/* 对象基本信息 */
 	const char	*name;
 	size_t		size;
 
@@ -49,9 +58,12 @@ struct cl_object_type
 	struct cl_object_ops *ops;
 
 	/* HIDE to user */
-	/* 对象分配器 */
-	struct cl_bkb allocator;
+	struct cl_bkb obj_allocator, node_allocator;
+	struct list_head unname_objects;
+	struct object_tree_node *node;
 };
+
+/* Useful macro */
 
 /* 方法 */
 /**
@@ -64,9 +76,18 @@ void *cl_object_create(struct cl_object_type *type);
 */
 void cl_object_close(void *object);
 
+void cl_object_dec_ref(void *object);
+void cl_object_inc_ref(void *object);
+
 /**
 	@brief Register type
 */
 void cl_object_type_register(struct cl_object_type *type);
+
+//name.c
+/**
+	@brief 设置对象的名称
+*/
+xstring cl_object_set_name(real_object_t who, xstring what);
 
 #endif

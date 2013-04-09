@@ -15,6 +15,7 @@
 	__HEAD
 ENTRY(start)
 ENTRY(_stext)
+	cli
 	call arch_early_init
 	
 	/*

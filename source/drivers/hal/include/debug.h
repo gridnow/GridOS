@@ -67,7 +67,7 @@ extern void hal_do_panic();
 #define BUG()	\
 	do {	\
 		printk("文件%s中的函数%s第%d行不应该执行.\n", __FILE__, __FUNCTION__, __LINE__);	\
-		hal_do_panic();	\
+		ke_panic("BUG");	\
 	} while(0)	
 #define BUG_ON(condition) do { if (unlikely(condition)) BUG(); } while(0)
 

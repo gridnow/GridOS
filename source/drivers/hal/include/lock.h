@@ -38,23 +38,20 @@ struct ke_spinlock
 	.lock = __ARCH_SPIN_LOCK_UNLOCKED,	\
 	}
 #define __RAW_SPIN_LOCK_UNLOCKED(lockname)	\
+	(raw_spinlock_t) __RAW_SPIN_LOCK_INITIALIZER(lockname)
+
+#define __KE_SPIN_LOCK_UNLOCKED(lockname)	\
 	(struct ke_spinlock) __RAW_SPIN_LOCK_INITIALIZER(lockname)
-# define raw_spin_lock_init(lock)				\
-	do { *(lock) = __RAW_SPIN_LOCK_UNLOCKED(lock); } while (0)
+# define __spin_lock_init(lock)				\
+	do { *(lock) = __KE_SPIN_LOCK_UNLOCKED(lock); } while (0)
 
 STATIC inline void ke_spin_init(struct ke_spinlock * lock)
 {
-	raw_spin_lock_init(lock);
+	__spin_lock_init(lock);
 }
 
 STATIC inline void ke_spin_lock(struct ke_spinlock * lock)
 {
-	/* Sanity check */
-	if (!lock||(unsigned long)lock < 0x100) 
-	{
-		printk("Error return for spinlock %x.\n", __builtin_return_address(0));
-		return;
-	}
 	arch_spin_lock((arch_spinlock_t*)lock);
 }
 

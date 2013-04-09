@@ -24,7 +24,7 @@ void *cl_object_create(struct cl_object_type *type)
 	bool expaned_memory = false;
 
 again:
-	object = (struct cl_object *)cl_bkb_alloc(&type->allocator);
+	object = (struct cl_object *)cl_bkb_alloc(&type->obj_allocator);
 	if (object == NULL)
 	{
 		void *base;
@@ -35,7 +35,7 @@ again:
 			if (type->add_space(type, &base, &size, COMMON_OBJECT_MEMORY_TYPE_OBJ) == true)
 			{
 				/* Add the space to allocator */
-				cl_bkb_extend(&type->allocator, base, size, object_free_handler, type);
+				cl_bkb_extend(&type->obj_allocator, base, size, object_free_handler, type);
 				goto again;
 			}			
 		}
@@ -44,7 +44,27 @@ again:
 	}
 	memset(object, 0, type->size);
 	object->type = type;
+	object->ref.counter++;
+	if (type->ops->init)
+		type->ops->init((real_object_t*)(object + 1));
 
 end:
-	return object;	
+	return object + 1;	
+}
+
+/**
+	@brief 关闭对对象的使用
+ */
+void cl_object_close(void *object)
+{
+	//TODO: Decrease the counter 
+}
+
+void cl_object_dec_ref(void *object)
+{
+	//TODO
+}
+void cl_object_inc_ref(void *object)
+{
+	//TODO
 }
