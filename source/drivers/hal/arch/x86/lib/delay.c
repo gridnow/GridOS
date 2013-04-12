@@ -98,7 +98,8 @@ void __delay(unsigned long loops)
 inline void __const_udelay(unsigned long xloops)
 {
 	int d0;
-
+	//TODO To support percpu-variable
+#if 0
 	xloops *= 4;
 	asm("mull %%edx"
 		:"=d" (xloops), "=&a" (d0)
@@ -106,6 +107,7 @@ inline void __const_udelay(unsigned long xloops)
 		(this_cpu_read(cpu_info.loops_per_jiffy) * (HZ/4)));
 
 	__delay(++xloops);
+#endif
 }
 
 void __udelay(unsigned long usecs)

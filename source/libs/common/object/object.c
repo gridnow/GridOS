@@ -44,9 +44,27 @@ again:
 	}
 	memset(object, 0, type->size);
 	object->type = type;
+	object->ref.counter++;
 	if (type->ops->init)
 		type->ops->init((real_object_t*)(object + 1));
 
 end:
 	return object + 1;	
+}
+
+/**
+	@brief 关闭对对象的使用
+ */
+void cl_object_close(void *object)
+{
+	//TODO: Decrease the counter 
+}
+
+void cl_object_dec_ref(void *object)
+{
+	//TODO
+}
+void cl_object_inc_ref(void *object)
+{
+	//TODO
 }

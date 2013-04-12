@@ -6,7 +6,7 @@
 #define CLOCK_TICK_RATE		PIT_TICK_RATE
 
 /* Merged the original time.h */
-#include <private/clocksource.h>
+#include <clocksource.h>
 #include <asm/mc146818rtc.h>
 
 extern void hpet_time_init(void);

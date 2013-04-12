@@ -1,10 +1,10 @@
 include $(MY_BUILD_BASE)/config.mk
 include ../../../hal_include.mk
 
-ADD_INCLUDE +=$(HAL_INCLUDE) -include hal_config.h
+ADD_INCLUDE +=$(HAL_INCLUDE)
 
 #要编译的文件列表
-OBJS 	= string_$(BITS).o memcpy_$(BITS).o rwlock.o
+OBJS 	= string_$(BITS).o memcpy_$(BITS).o rwlock.o delay.o
 PARTS 	=
 
 all:  subs_parts $(OBJS)

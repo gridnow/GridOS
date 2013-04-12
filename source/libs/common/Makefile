@@ -1,7 +1,7 @@
 include $(MY_BUILD_BASE)/config.mk
 
 #要编译的文件列表
-OBJS	= blkbuf.o
+OBJS	= blkbuf.o malloc.o
 PARTS	= object misc cpu
 ADD_INCLUDE +=-Iinclude
 

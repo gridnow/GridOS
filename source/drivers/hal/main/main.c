@@ -5,7 +5,7 @@
 *   Wuxin
 *   HAL Main
 */
-
+#include <irqflags.h>
 #include <arch/arch.h>
 
 static void build_ram_list()
@@ -19,13 +19,25 @@ static void build_ram_list()
  	kc_init();
 	kp_init();
 	kt_init();
-	while (1);
+
+	hal_time_init();
+	
+	hal_malloc_init();
+	
+	local_irq_enable();
+
+	printk("Starting up modules...");
+	ke_module_entry();
+	printk("Hal startup ok.\n");
+	
+	while (1) dumy_idle_ops(0);
 }
 
 void __init __noreturn hal_main()
 {
 	/* 开辟鸿蒙,谁为情种？最初的一切*/
 	hal_arch_init(HAL_ARCH_INIT_PHASE_EARLY);
+
 	km_cluster_init();
 	build_ram_list();
 

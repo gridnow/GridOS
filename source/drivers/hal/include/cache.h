@@ -30,6 +30,19 @@
 	__section__(".data..cacheline_aligned")))
 #endif /* __cacheline_aligned */
 
+/* These could be inter-node cacheline sizes/L3 cacheline size etc.  */
+#ifndef INTERNODE_CACHE_SHIFT
+#define INTERNODE_CACHE_SHIFT L1_CACHE_SHIFT
+#endif
+#if !defined(____cacheline_internodealigned_in_smp)
+#if defined(CONFIG_SMP)
+#define ____cacheline_internodealigned_in_smp \
+	__attribute__((__aligned__(1 << (INTERNODE_CACHE_SHIFT))))
+#else
+#define ____cacheline_internodealigned_in_smp
+#endif
+#endif
+
 #ifndef __cacheline_aligned_in_smp
 #ifdef CONFIG_SMP
 #define __cacheline_aligned_in_smp __cacheline_aligned

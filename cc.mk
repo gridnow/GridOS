@@ -5,7 +5,7 @@
 .S.o:
 	$(CC) $(my_cflags) $(ADD_INCLUDE) -D__ASSEMBLY__ $(COMMON_CC_FLAGS) $(LAST_INCLUDE) -o $@ $<
 clean:
-	@rm -f *.o *.a *.ad
+	@rm -f *.o *.a *.so
 	@for i in $(PARTS); do $(MAKE) -C $$i clean; done
 
 subs_parts:

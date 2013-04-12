@@ -17,7 +17,7 @@ CFLAGS_arm         = -c -O2
 CFLAGS_i386        = -c -O2
 CFGAGS_MIPS64      = -c -O2 -mabi=64 -mips3 -EL -G0 
 CFGAGS_MIPS32      = -c -O2 -mabi=32 -mips2 -EL -G0 
-STD_INCLUDE        = -I$(MY_BUILD_BASE)/include
+STD_INCLUDE        = -I$(MY_BUILD_BASE)/include -I$(MY_BUILD_BASE)/include/arch/$(ARCH_DIR)
 COMMON_CC_FLAGS    += -Wimplicit-function-declaration
 COMMON_CC_FLAGS    += -fvisibility=hidden
 

@@ -45,11 +45,15 @@
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="..\source\drivers\hal\arch\x86\lib\Makefile" />
+    <None Include="..\source\drivers\hal\arch\x86\lib\rwlock.S" />
     <None Include="..\source\drivers\hal\hal_include.mk" />
+    <None Include="..\source\drivers\hal\irq\Makefile" />
     <None Include="..\source\drivers\hal\main\Makefile" />
     <None Include="..\source\drivers\hal\main\memory\Makefile" />
     <None Include="..\source\drivers\hal\main\process\Makefile" />
     <None Include="..\source\drivers\hal\Makefile" />
+    <None Include="..\source\drivers\hal\time\Makefile" />
     <None Include="..\source\libs\common\cpu\Makefile" />
     <None Include="..\source\libs\common\object\Makefile" />
   </ItemGroup>
@@ -59,6 +63,31 @@
     <Text Include="..\source\drivers\hal\problem list.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\drivers\hal\arch\x86\dt.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\i8259.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\io_delay.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\irq.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\irqinit.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\irq_32.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\lib\delay.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\lib\memcpy_32.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\lib\string_32.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\main.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\pci_early.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\rtc.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\serial.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\smp.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\traps.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\tsc.c" />
+    <ClCompile Include="..\source\drivers\hal\arch\x86\x86_init.c" />
+    <ClCompile Include="..\source\drivers\hal\irq\chip.c" />
+    <ClCompile Include="..\source\drivers\hal\irq\dpc.c" />
+    <ClCompile Include="..\source\drivers\hal\irq\dummychip.c" />
+    <ClCompile Include="..\source\drivers\hal\irq\hal.c" />
+    <ClCompile Include="..\source\drivers\hal\irq\handle.c" />
+    <ClCompile Include="..\source\drivers\hal\irq\irqdesc.c" />
+    <ClCompile Include="..\source\drivers\hal\irq\manage.c" />
+    <ClCompile Include="..\source\drivers\hal\irq\resend.c" />
     <ClCompile Include="..\source\drivers\hal\main\main.c" />
     <ClCompile Include="..\source\drivers\hal\main\memory\pa.c" />
     <ClCompile Include="..\source\drivers\hal\main\memory\page.c" />
@@ -66,6 +95,8 @@
     <ClCompile Include="..\source\drivers\hal\main\process\process.c" />
     <ClCompile Include="..\source\drivers\hal\main\process\sched.c" />
     <ClCompile Include="..\source\drivers\hal\main\process\thread.c" />
+    <ClCompile Include="..\source\drivers\hal\time\rtc.c" />
+    <ClCompile Include="..\source\drivers\hal\time\timer.c" />
     <ClCompile Include="..\source\libs\common\blkbuf.c" />
     <ClCompile Include="..\source\libs\common\cpu\bit.c" />
     <ClCompile Include="..\source\libs\common\cpu\bitmap.c" />
@@ -76,6 +107,8 @@
   <ItemGroup>
     <ClInclude Include="..\include\compiler.h" />
     <ClInclude Include="..\include\ctype.h" />
+    <ClInclude Include="..\include\ddk\compatible.h" />
+    <ClInclude Include="..\include\ddk\irq.h" />
     <ClInclude Include="..\include\kernel\ke_lock.h" />
     <ClInclude Include="..\include\limits.h" />
     <ClInclude Include="..\include\stdarg.h" />
@@ -84,6 +117,7 @@
     <ClInclude Include="..\include\string.h" />
     <ClInclude Include="..\include\types.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\arch.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\abicall.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\alternative-asm.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\alternative.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\apic.h" />
@@ -93,9 +127,12 @@
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\barrier.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\bitops.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\cache.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\cmpxchg.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\cmpxchg_32.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\cpu.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\cpufeature.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\cpufeature_def.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\debugreg.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\delay.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\desc.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\desc_defs.h" />
@@ -103,18 +140,22 @@
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\dwarf2.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\fixmap.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\frame.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\hw_irq.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\hypervisor.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\i387.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\i8259.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\io.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\irq.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\irqflags.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\irq_vectors.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\ldt.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\linkage.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\mc146818rtc.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\mce.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\mpspec.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\msr-index.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\msr.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\param.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\pci-direct.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\pci_x86.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\processor-flags.h" />
@@ -131,10 +172,15 @@
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\string.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\string_32.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\system.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\thread.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\timer.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\timex.h" />
+    <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\traps.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\tsc.h" />
     <ClInclude Include="..\source\drivers\hal\include\arch\x86\asm\x86_init.h" />
+    <ClInclude Include="..\source\drivers\hal\include\atomic.h" />
+    <ClInclude Include="..\source\drivers\hal\include\bcd.h" />
+    <ClInclude Include="..\source\drivers\hal\include\bitops.h" />
     <ClInclude Include="..\source\drivers\hal\include\cache.h" />
     <ClInclude Include="..\source\drivers\hal\include\compiler.h" />
     <ClInclude Include="..\source\drivers\hal\include\console.h" />
@@ -142,16 +188,28 @@
     <ClInclude Include="..\source\drivers\hal\include\cpu.h" />
     <ClInclude Include="..\source\drivers\hal\include\cpumask.h" />
     <ClInclude Include="..\source\drivers\hal\include\debug.h" />
+    <ClInclude Include="..\source\drivers\hal\include\delay.h" />
     <ClInclude Include="..\source\drivers\hal\include\hal_config.h" />
+    <ClInclude Include="..\source\drivers\hal\include\hardirq.h" />
+    <ClInclude Include="..\source\drivers\hal\include\irq.h" />
+    <ClInclude Include="..\source\drivers\hal\include\irqdesc.h" />
     <ClInclude Include="..\source\drivers\hal\include\irqflags.h" />
     <ClInclude Include="..\source\drivers\hal\include\linkage.h" />
+    <ClInclude Include="..\source\drivers\hal\include\lock.h" />
+    <ClInclude Include="..\source\drivers\hal\include\mc146818rtc.h" />
     <ClInclude Include="..\source\drivers\hal\include\misc.h" />
+    <ClInclude Include="..\source\drivers\hal\include\param.h" />
     <ClInclude Include="..\source\drivers\hal\include\percpu-defs.h" />
     <ClInclude Include="..\source\drivers\hal\include\percpu.h" />
+    <ClInclude Include="..\source\drivers\hal\include\preempt.h" />
+    <ClInclude Include="..\source\drivers\hal\include\rtc.h" />
     <ClInclude Include="..\source\drivers\hal\include\screen.h" />
     <ClInclude Include="..\source\drivers\hal\include\smp.h" />
     <ClInclude Include="..\source\drivers\hal\include\string.h" />
+    <ClInclude Include="..\source\drivers\hal\include\tick.h" />
     <ClInclude Include="..\source\drivers\hal\include\types.h" />
+    <ClInclude Include="..\source\drivers\hal\irq\internals.h" />
+    <ClInclude Include="..\source\drivers\hal\irq\settings.h" />
     <ClInclude Include="..\source\drivers\hal\main\include\cpu.h" />
     <ClInclude Include="..\source\drivers\hal\main\include\memory.h" />
     <ClInclude Include="..\source\drivers\hal\main\include\priority.h" />

@@ -4,8 +4,8 @@ include ../hal_include.mk
 ADD_INCLUDE +=$(HAL_INCLUDE) -include hal_config.h
 
 #要编译的文件列表
-OBJS	= main.o cpu.o
-PARTS	= arch memory process
+OBJS	= main.o interface.o dma.o obj.o resource.o malloc.o
+PARTS	=
 
 all:  subs_parts $(OBJS)
 	$(LD) -r -o ../main.o *.o $(ARCH_LD_FLAGS)

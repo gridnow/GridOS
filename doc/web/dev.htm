@@ -1,0 +1,160 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3c.org/TR/1999/REC-html401-19991224/loose.dtd">
+<HTML lang=en xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><HEAD><TITLE>云操作系统 操作系统 操作系统开发 自主操作系统 国产操作系统 云OS YUNOS</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=utf-8">
+<META content="我的操作系统" name=Description>
+<META content="国产操作系统,国产自主操作系统,操作系统,自主操作系统开发,操作系统开发,云操作系统" name=Keywords>
+<META content=yes name=allow-search>
+<LINK 
+href="css/fa.css" type=text/css rel=stylesheet><LINK 
+href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
+<SCRIPT src="css/pngfix.js" defer type=text/javascript></SCRIPT>
+<![endif]-->
+<META content="MSHTML 6.00.2900.3395" name=GENERATOR>
+<style type="text/css">
+<!--
+.STYLE3 {font-size: 12px}
+.STYLE4 {font-size: 10}
+.STYLE5 {font-size: 76px}
+-->
+</style>
+</HEAD>
+<BODY>
+<DIV id=container>
+<DIV id=header>
+  <p>&nbsp;</p>
+  <p><span class="STYLE5">GridOS</span>&nbsp;
+  </p>
+  <H1>&nbsp;
+  </H1></DIV>
+<DIV id=menu>
+  <table>
+    <tbody>
+      <tr>
+        <td><a href="index.htm">系统介绍</a></td>
+        <td><a href="dev.htm">系统模块</a></td>
+        <td><a href="http://www.yunos.org/bbs"><span class="STYLE4">技术WIKI</span></a></td>
+      </tr>
+    </tbody>
+  </table>
+</DIV>
+<DIV id=content>
+<p>&nbsp;</p>
+<h2><span class="news-title">一，本阶段模块/任务细分(更多的内容将随着项目进展而添加,欢迎到BBS讨论）</span></h2>
+<DIV id=news>
+  <DIV class=news-item>
+    <TABLE width=808 
+        border=1 align="center" cellPadding=0 cellSpacing=0 borderColor=#ffccff>
+      <TBODY>
+        <TR align="center">
+          <TD width="74">分类</TD>
+          <TD width="143">模块名</TD>
+          <TD width="269">描述</TD>
+          <TD width="312">备注</TD>
+        </TR>
+
+        <TR align="center">
+          <TD rowspan="4">内核</TD>
+          <TD><table cellspacing="0" cellpadding="0">
+  <td height="26" width="307">物理内存页管理</td>
+          </table></TD>
+          <TD>管理系统中所有的物理内存的分配和回收，并支持NUMA内存节点亲近特性。</TD>
+          <TD>开发中</TD>
+        </TR>
+        <TR align="center">
+          <TD><table cellspacing="0" cellpadding="0">
+    <td height="26" width="307">逻辑上N级V2P（虚拟转物理地址）转换表</td>
+          </table></TD>
+          <TD>操作虚拟地址到物理地址转换表。为上层提供平台无关性的地址转换功能。</TD>
+          <TD>开发中</TD>
+        </TR>
+        <TR align="center">
+          <TD>线程切换框架</TD>
+          <TD>抽象的线程切换流程（流程中以后可实现负载均衡，线程迁移等环节）。</TD>
+          <TD>开发中</TD>
+        </TR>
+        <TR align="center">
+          <TD>x86线程切换算法</TD>
+          <TD>x86平台上的线程上下文保存和回复。</TD>
+          <TD>&nbsp;</TD>
+        </TR>
+        <TR align="center">
+          <TD rowspan="8">硬件抽象层（HAL）</TD>
+          <TD>引导程序</TD>
+          <TD>支持MULTIBOOT的引导程序</TD>
+          <TD>开发中</TD>
+        </TR>
+        <TR align="center">
+          <TD>平台内存布局信息收集</TD>
+          <TD>通过固件和引导程序获机器内存布局情况。</TD>
+          <TD>&nbsp;</TD>
+        </TR>
+        <TR align="center">
+          <TD>CPU处理能力收集</TD>
+          <TD>探测CPU处理能力。</TD>
+          <TD>现阶段是探测x86</TD>
+        </TR>
+        <TR align="center">
+          <TD>CPU中断异常处理框架</TD>
+          <TD><p>CPU的中断与异常处理流程。</p>
+            <p>1，硬件中断控制器描述符以及特定型号的中断控制器操作方法。</p>
+            <p>2，特定CPU的中断处理表和处理函数。</p>
+            <p>3，抽象的中断处理流程和中断处理函数的管理（为驱动程序提供相应接口）。</p>
+            <p>4，特定CPU的异常与内核的异常处理框架对接。</p></TD>
+          <TD><p>1，完成平台无关的中断注册、中断处理流程，目前在x86-32上测试通过。还缺少中断处理函数的反注册，多处理器中断问题。</p>
+            <p>2，给驱动程序提供的中断处理函数注册接口还未提供。</p></TD>
+        </TR>
+        <TR align="center">
+          <TD>多CPU管理框架</TD>
+          <TD>探测和发现多CPU，启动和停止多CPU，与进程调度器的结合，等其他与多CPU相关的处理。</TD>
+          <TD>&nbsp;</TD>
+        </TR>
+        <TR align="center">
+          <TD>设备管理器</TD>
+          <TD>设备和驱动程序描述符的管理、操作。以及设备和驱动所用到的资源（内存资源IO资源）的管理。（注册设备，注册驱动，注册设备所拥有的资源，以及他们的被系统其他应用单位的对接口）。</TD>
+          <TD>1。完成了设备对象的注册封装。该封装是对设备最抽象的描述，其中主要包括2类信息的结合：设备管理器的设备信息与驱动程序对于设备的详细描述。详细描述用于具体驱动程序，高层信息用于设备管理器内部。</TD>
+        </TR>
+        <TR align="center">
+          <TD>PCI总线驱动</TD>
+          <TD>在设备管理器提供的管理框架中，支持平台无关的PCI总线的设备扫描、使能、资源操作接口。</TD>
+          <TD>1，上层代PCI设备扫描码部署完毕，并与设备管理器对接完成。支持的硬件平台可以有很多种，目前是x86。许多其他依赖接口还未编写完成，没有测试。</TD>
+        </TR>
+        <TR align="center">
+          <TD>简单控制台封装</TD>
+          <TD>实现系统调试。</TD>
+          <TD>&nbsp;</TD>
+        </TR>
+        <TR align="center">
+          <TD rowspan="3">公共库</TD>
+          <TD>块分配器</TD>
+          <TD>&nbsp;</TD>
+          <TD>&nbsp;</TD>
+        </TR>
+        <TR align="center">
+          <TD>对象管理器</TD>
+          <TD>&nbsp;</TD>
+          <TD>&nbsp;</TD>
+        </TR>
+        <TR align="center">
+          <TD>字符串操作</TD>
+          <TD>&nbsp;</TD>
+          <TD>&nbsp;</TD>
+        </TR>
+      </TBODY>
+    </TABLE>
+    <h2 class="news-title">二，本阶段主要目标</h2>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;1，内核具备分页机制的虚拟内存，支持多线程运行，在多CPU上能进行简单的负载均衡,识别到PCI硬件。</p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;2，支持虚拟文件系统。</p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;3，支持基本libc编程接口，可操作文件 。    </p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;4，支持简单控制台。</p>
+    <p class="news-title">&nbsp;</p>
+    <DIV id=div><DIV class=news-item></DIV>
+</DIV>
+</DIV>
+  <HR>
+</DIV>
+</DIV><!-- content -->
+<DIV id=footer><span class="STYLE3">Grid Operating System Developing Group<br />
+冀ICP备05027565号</span>
+  <script language="javascript" type="text/javascript" src="http://js.users.51.la/2447598.js"></script>
+</DIV>
+</DIV><!-- container --></BODY></HTML>
