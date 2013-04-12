@@ -131,6 +131,7 @@ void init_main(unsigned long magic, unsigned long addr)
     void (*arch_entry)(void);
     
     cls();
+    printf("Starting GridOS...\n");
     
     if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
     {
@@ -168,7 +169,7 @@ void init_main(unsigned long magic, unsigned long addr)
     printf("Grid OS will start\n");
     arch_entry = (void (*)())load_elf_from_mem((void *)mod_arch->mod_addr);
     
-    arch_entry();
+//    arch_entry();
 }
 
 #endif /* __i386__ */

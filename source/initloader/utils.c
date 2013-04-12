@@ -52,7 +52,7 @@ void __strcpy(char *dst, char *src)
  * mode: 80 x 25, 16 colors
  * base address: 0xb8000
  */
-#define VID_BASEADDR    0xB80000
+#define VID_BASEADDR    0xB8000
 #define VID_WIDTH       80
 #define VID_HEIGHT      25
 
