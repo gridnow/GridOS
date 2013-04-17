@@ -566,6 +566,13 @@ DLLEXPORT int pci_enable_device(struct pci_dev *dev)
 	return __pci_enable_device_flags(dev, IORESOURCE_MEM | IORESOURCE_IO);
 }
 
+static struct pci_devres * find_pci_dr(struct pci_dev *pdev)
+{
+	if (pci_is_managed(pdev))
+		return devres_find(&pdev->dev, pcim_release, NULL, NULL);
+	return NULL;
+}
+
 DLLEXPORT int pcim_enable_device(struct pci_dev *pdev)
 {
 	return pci_enable_device(pdev);
@@ -710,3 +717,213 @@ int pci_resource_bar(struct pci_dev *dev, int resno, enum pci_bar_type *type)
 	dev_err(&dev->dev, "BAR %d: invalid resource\n", resno);
 	return 0;
 }
+
+void pci_release_region(struct pci_dev *pdev, int bar)
+{
+	struct pci_devres *dr;
+	
+	if (pci_resource_len(pdev, bar) == 0)
+		return;
+	if (pci_resource_flags(pdev, bar) & IORESOURCE_IO)
+		release_region(pci_resource_start(pdev, bar),
+					   pci_resource_len(pdev, bar));
+	else if (pci_resource_flags(pdev, bar) & IORESOURCE_MEM)
+		release_mem_region(pci_resource_start(pdev, bar),
+						   pci_resource_len(pdev, bar));
+	
+	dr = find_pci_dr(pdev);
+	if (dr)
+		dr->region_mask &= ~(1 << bar);	
+}
+
+static int __pci_request_region(struct pci_dev *pdev, int bar, const char *res_name,
+								int exclusive)
+{
+	struct pci_devres *dr;
+	
+	if (pci_resource_len(pdev, bar) == 0)
+		return 0;
+	
+	if (pci_resource_flags(pdev, bar) & IORESOURCE_IO) {
+		if (!request_region(pci_resource_start(pdev, bar),
+							pci_resource_len(pdev, bar), res_name))
+			goto err_out;
+	}
+	else if (pci_resource_flags(pdev, bar) & IORESOURCE_MEM) {
+		if (!__request_mem_region(pci_resource_start(pdev, bar),
+								  pci_resource_len(pdev, bar), res_name,
+								  exclusive))
+			goto err_out;
+	}
+	
+	dr = find_pci_dr(pdev);
+	if (dr)
+		dr->region_mask |= 1 << bar;
+	
+	return 0;
+	
+err_out:
+	dev_warn(&pdev->dev, "BAR %d: can't reserve %pR\n", bar,
+			 &pdev->resource[bar]);
+	return -EBUSY;
+}
+
+void pci_release_selected_regions(struct pci_dev *pdev, int bars)
+{
+	int i;
+	
+	for (i = 0; i < 6; i++)
+		if (bars & (1 << i))
+			pci_release_region(pdev, i);
+}
+
+int __pci_request_selected_regions(struct pci_dev *pdev, int bars,
+								   const char *res_name, int excl)
+{
+	int i;
+	
+	for (i = 0; i < 6; i++)
+		if (bars & (1 << i))
+			if (__pci_request_region(pdev, i, res_name, excl))
+				goto err_out;
+	return 0;
+	
+err_out:
+	while(--i >= 0)
+		if (bars & (1 << i))
+			pci_release_region(pdev, i);
+	
+	return -EBUSY;
+}
+
+int pci_request_selected_regions(struct pci_dev *pdev, int bars,
+								 const char *res_name)
+{
+	return __pci_request_selected_regions(pdev, bars, res_name, 0);
+}
+
+void pci_release_regions(struct pci_dev *pdev)
+{
+	pci_release_selected_regions(pdev, (1 << 6) - 1);
+}
+
+DLLEXPORT int pci_request_regions(struct pci_dev *pdev, const char *res_name)
+{
+	return pci_request_selected_regions(pdev, ((1 << 6) - 1), res_name);
+}
+
+/**
+ * pci_set_cacheline_size - ensure the CACHE_LINE_SIZE register is programmed
+ * @dev: the PCI device for which MWI is to be enabled
+ *
+ * Helper function for pci_set_mwi.
+ * Originally copied from drivers/net/acenic.c.
+ * Copyright 1998-2001 by Jes Sorensen, <jes@trained-monkey.org>.
+ *
+ * RETURNS: An appropriate -ERRNO error value on error, or zero for success.
+ */
+int pci_set_cacheline_size(struct pci_dev *dev)
+{
+	u8 cacheline_size;
+	
+	if (!pci_cache_line_size)
+		return -EINVAL;
+	
+	/* Validate current setting: the PCI_CACHE_LINE_SIZE must be
+	 equal to or multiple of the right value. */
+	pci_read_config_byte(dev, PCI_CACHE_LINE_SIZE, &cacheline_size);
+	if (cacheline_size >= pci_cache_line_size &&
+	    (cacheline_size % pci_cache_line_size) == 0)
+		return 0;
+	
+	/* Write the correct value. */
+	pci_write_config_byte(dev, PCI_CACHE_LINE_SIZE, pci_cache_line_size);
+	/* Read it back. */
+	pci_read_config_byte(dev, PCI_CACHE_LINE_SIZE, &cacheline_size);
+	if (cacheline_size == pci_cache_line_size)
+		return 0;
+	
+	dev_printk(KERN_DEBUG, &dev->dev, "cache line size of %d is not "
+			   "supported\n", pci_cache_line_size << 2);
+	
+	return -EINVAL;
+}
+
+#ifdef PCI_DISABLE_MWI
+int pci_set_mwi(struct pci_dev *dev)
+{
+	return 0;
+}
+
+int pci_try_set_mwi(struct pci_dev *dev)
+{
+	return 0;
+}
+
+void pci_clear_mwi(struct pci_dev *dev)
+{
+}
+
+#else
+
+/**
+ * pci_set_mwi - enables memory-write-invalidate PCI transaction
+ * @dev: the PCI device for which MWI is enabled
+ *
+ * Enables the Memory-Write-Invalidate transaction in %PCI_COMMAND.
+ *
+ * RETURNS: An appropriate -ERRNO error value on error, or zero for success.
+ */
+DLLEXPORT int
+pci_set_mwi(struct pci_dev *dev)
+{
+	int rc;
+	u16 cmd;
+	
+	rc = pci_set_cacheline_size(dev);
+	if (rc)
+		return rc;
+	
+	pci_read_config_word(dev, PCI_COMMAND, &cmd);
+	if (! (cmd & PCI_COMMAND_INVALIDATE)) {
+		dev_dbg(&dev->dev, "enabling Mem-Wr-Inval\n");
+		cmd |= PCI_COMMAND_INVALIDATE;
+		pci_write_config_word(dev, PCI_COMMAND, cmd);
+	}
+	
+	return 0;
+}
+
+/**
+ * pci_try_set_mwi - enables memory-write-invalidate PCI transaction
+ * @dev: the PCI device for which MWI is enabled
+ *
+ * Enables the Memory-Write-Invalidate transaction in %PCI_COMMAND.
+ * Callers are not required to check the return value.
+ *
+ * RETURNS: An appropriate -ERRNO error value on error, or zero for success.
+ */
+int pci_try_set_mwi(struct pci_dev *dev)
+{
+	int rc = pci_set_mwi(dev);
+	return rc;
+}
+
+/**
+ * pci_clear_mwi - disables Memory-Write-Invalidate for device dev
+ * @dev: the PCI device to disable
+ *
+ * Disables PCI Memory-Write-Invalidate transaction on the device
+ */
+DLLEXPORT void 
+pci_clear_mwi(struct pci_dev *dev)
+{
+	u16 cmd;
+	
+	pci_read_config_word(dev, PCI_COMMAND, &cmd);
+	if (cmd & PCI_COMMAND_INVALIDATE) {
+		cmd &= ~PCI_COMMAND_INVALIDATE;
+		pci_write_config_word(dev, PCI_COMMAND, cmd);
+	}
+}
+#endif /* ! PCI_DISABLE_MWI */

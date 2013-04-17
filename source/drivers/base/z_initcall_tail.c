@@ -1,2 +1,3 @@
 #include <ddk/compiler.h>
-driver_initcall(0);
+
+define_driver_initcall_tail(0);
