@@ -22,19 +22,10 @@
 #define outl hal_outl
 #define outl_p hal_outl_p
 
-#define readl hal_readl
+#define writeb hal_writeb
+#define writew hal_writew
 #define writel hal_writel
 #define readb hal_readb
-
-static inline unsigned int ioread8(void __iomem *addr)
-{
-	TODO("");
-}
-
-static inline unsigned int ioread32(void __iomem *addr)
-{
-	return readl(addr);
-}
-
-
+#define readw hal_readw
+#define readl hal_readl
 #endif

@@ -159,14 +159,16 @@ static inline unsigned long dr_type(const struct resource *res)
 /************************************************************************/
 /* 传统驱动直接用的接口，我们要对其转换                                       */
 /************************************************************************/
-#define request_region(start, n, name)	dr_register(DR_RESOURCE_TYPE_IO, start, n, name, 0)
-#define release_region(start, n)		dr_release(DR_RESOURCE_TYPE_IO, start, n)
-#define insert_resource(parent, new)	(dr_insert(parent, new) == NULL?0:-EBUSY/*兼容返回值*/)
-#define insert_resource_conflict		dr_insert
-#define get_ioport_resource()			dr_get_constance_resource(DR_RESOURCE_TYPE_IO)
-#define get_iomem_resource()			dr_get_constance_resource(DR_RESOURCE_TYPE_MEM)
-#define resource_type					dr_type
-#define adjust_resource					dr_adjust_resource
+#define request_region(start, n, name)				dr_register(DR_RESOURCE_TYPE_IO, start, n, name, 0)
+#define __request_mem_region(start,n,name, excl)	dr_register(DR_RESOURCE_TYPE_MEM, (start), (n), (name), excl)
+#define release_mem_region(start,n)					dr_release(DR_RESOURCE_TYPE_MEM, (start), (n))
+#define release_region(start, n)					dr_release(DR_RESOURCE_TYPE_IO, start, n)
+#define insert_resource(parent, new)				(dr_insert(parent, new) == NULL?0:-EBUSY/*兼容返回值*/)
+#define insert_resource_conflict					dr_insert
+#define get_ioport_resource()						dr_get_constance_resource(DR_RESOURCE_TYPE_IO)
+#define get_iomem_resource()						dr_get_constance_resource(DR_RESOURCE_TYPE_MEM)
+#define resource_type								dr_type
+#define adjust_resource								dr_adjust_resource
 #endif
 
 /** @} */

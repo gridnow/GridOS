@@ -20,6 +20,7 @@ struct ke_atomic
 	int counter;
 };
 
+int ke_atomic_add_return(struct ke_atomic * atomic, int count);
 
 #endif
 

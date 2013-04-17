@@ -26,9 +26,13 @@ typedef int (*initcall_t)(void);
 #define __define_initcall(level,fn,id) \
 	static initcall_t __initcall_##fn##id __used \
 	__attribute__((__section__(".initcall" level ".init"))) = fn
+
 #define driver_initcall(fn)		__define_initcall("6",fn,6)
 #define define_driver_initcall_head(x)	\
 	static initcall_t x __used \
 	__attribute__((__section__(".initcall6.init")))
+#define define_driver_initcall_tail(x)	\
+	static initcall_t __initcall_tail_6 __used \
+	__attribute__((__section__(".initcall6.end")))
 
 #endif

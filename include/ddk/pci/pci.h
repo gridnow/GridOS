@@ -253,6 +253,28 @@ void pci_set_master(struct pci_dev *dev);
 struct pci_dev * pci_get_device(unsigned int vendor, unsigned int device, struct pci_dev *from);
 
 /**
+	@brief 设置设备的cache属性
+ 
+	@param[in] dev 到底要设置哪个pci设备的属性
+ 
+	@return 成功返回0，否则返回错误码
+*/
+int pci_set_mwi(struct pci_dev *dev);
+
+/**
+	@brief 为一个pci设备保留所有的设备资源
+ 
+	一般来说，pci设备驱动保留了设备资源用于对其映射访问
+ 
+	@brief dev 要操作的pci设备对象
+	@brief res_name 保留留者的名字
+ 
+	@return 成功返回0，否则返回错误码
+*/
+int pci_request_regions(struct pci_dev *dev, const char *res_name);
+
+
+/**
 	@brief 映射PCI地址
 */
 void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar);

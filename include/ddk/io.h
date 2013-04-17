@@ -61,19 +61,33 @@ void hal_outl_p(unsigned int val, unsigned long port);
 
 /**
 	@brief Read the memory map io
+ */
+u8 hal_readb(const volatile void *addr);
+
+/**
+	@brief Read the memory map io
+ */
+u16 hal_readw(const volatile void *addr);
+
+/**
+	@brief Read the memory map io
 */
 u32 hal_readl(const volatile void *addr);
 
 /**
 	@brief Read the memory map io
 */
-unsigned char  hal_readb(const volatile void *addr);
+void hal_writeb(u8 val, volatile void *addr);
 
 /**
 	@brief Read the memory map io
-*/
-void hal_writel(u32 val, volatile void *addr);
+ */
+void hal_writew(u16 val, volatile void *addr);
 
+/**
+	@brief Read the memory map io
+ */
+void hal_writel(u32 val, volatile void *addr);
 #endif
 
 /** @} */
