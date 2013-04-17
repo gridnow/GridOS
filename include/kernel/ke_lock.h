@@ -83,6 +83,8 @@ void ke_spin_lock_irq(struct ke_spinlock * lock);
 */
 void ke_spin_unlock_irq(struct ke_spinlock * lock);
 
+/* Old interface */
+#define spin_lock_init ke_spin_init
 #endif
 
 /** @} */

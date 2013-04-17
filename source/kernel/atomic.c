@@ -36,7 +36,7 @@ void ke_atomic_set(struct ke_atomic * atomic, int count)
 /**
 	@brief 设置一个原子计数器
 */
-int ke_atomic_add_return(struct ke_atomic * atomic, int count)
+DLLEXPORT int ke_atomic_add_return(struct ke_atomic * atomic, int count)
 {
 	return atomic_add_return(count, (atomic_t*)atomic);
 }

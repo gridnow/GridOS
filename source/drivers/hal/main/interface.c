@@ -79,9 +79,24 @@ DLLEXPORT u32 hal_readl(const volatile void *addr)
 	return readl(addr);
 }
 
-DLLEXPORT unsigned char  hal_readb(const volatile void *addr)
+DLLEXPORT u8 hal_readb(const volatile void *addr)
 {
 	return readb(addr);
+}
+
+DLLEXPORT u16 hal_readw(const volatile void *addr)
+{
+	return readw(addr);
+}
+
+DLLEXPORT void hal_writeb(u8 val, volatile void *addr)
+{
+	writeb(val, addr);
+}
+
+DLLEXPORT void hal_writew(u16 val, volatile void *addr)
+{
+	writew(val, addr);
 }
 
 DLLEXPORT void hal_writel(u32 val, volatile void *addr)
