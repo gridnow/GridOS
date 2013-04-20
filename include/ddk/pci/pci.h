@@ -185,7 +185,7 @@ void pci_unregister_driver(struct ddk_pci_driver *drv);
 /**
 	@brief 开启PCI设备
 */
-int pci_enable_device(struct pci_dev *dev);
+DLLEXPORT int pci_enable_device(struct pci_dev *dev);
 
 /**
 	@brief 停止PCI设备
@@ -200,28 +200,22 @@ void pci_dev_put(struct pci_dev *dev);
 /**
 	@brief 设置PCI设备的DMA地址长度
 */
-int pci_set_dma_mask(struct pci_dev *dev, u64 mask);
+DLLEXPORT int pci_set_dma_mask(struct pci_dev *dev, u64 mask);
 
 /**
 	@brief 设置PCI设备的consistent DMA地址长度
 */
-int pci_set_consistent_dma_mask(struct pci_dev *dev, u64 mask);
+DLLEXPORT int pci_set_consistent_dma_mask(struct pci_dev *dev, u64 mask);
 
 /**
 	@brief 使能PCI设备
 */
-int pcim_enable_device(struct pci_dev *pdev);
+DLLEXPORT int pcim_enable_device(struct pci_dev *pdev);
 
 /**
 	@brief <还未实现>有用吗？
 */
 void pcim_pin_device(struct pci_dev *pdev);
-
-/**
-	@brief msi功能的使能
-*/
-int pci_enable_msi_block(struct pci_dev *dev, unsigned int nvec);
-#define pci_enable_msi(pdev)	pci_enable_msi_block(pdev, 1)
 
 /**
 	@brief 还未实现
@@ -259,7 +253,7 @@ struct pci_dev * pci_get_device(unsigned int vendor, unsigned int device, struct
  
 	@return 成功返回0，否则返回错误码
 */
-int pci_set_mwi(struct pci_dev *dev);
+DLLEXPORT int pci_set_mwi(struct pci_dev *dev);
 
 /**
 	@brief 为一个pci设备保留所有的设备资源
@@ -271,7 +265,7 @@ int pci_set_mwi(struct pci_dev *dev);
  
 	@return 成功返回0，否则返回错误码
 */
-int pci_request_regions(struct pci_dev *dev, const char *res_name);
+DLLEXPORT int pci_request_regions(struct pci_dev *dev, const char *res_name);
 
 
 /**

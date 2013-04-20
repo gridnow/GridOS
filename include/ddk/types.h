@@ -20,8 +20,7 @@
 /* Base types */
 #include <types.h>
 typedef u64 phys_addr_t;
-typedef u64 dma_addr_t;
-//typedef unsigned  gfp_t;
+typedef unsigned long dma_addr_t;
 
 #ifdef __CHECKER__
 #define __bitwise__ __attribute__((bitwise))

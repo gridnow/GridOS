@@ -12,8 +12,7 @@
 
 extern struct net_device *alloc_etherdev_mqs(int sizeof_priv, unsigned int txqs,
 											 unsigned int rxqs);
-#define alloc_etherdev(sizeof_priv) alloc_etherdev_mq(sizeof_priv, 1)
-#define alloc_etherdev_mq(sizeof_priv, count) alloc_etherdev_mqs(sizeof_priv, count, count)
+
 
 /* Hardware interface define of ethernet device  */
 /*
@@ -27,6 +26,9 @@ extern struct net_device *alloc_etherdev_mqs(int sizeof_priv, unsigned int txqs,
 #define ETH_DATA_LEN	1500		/* Max. octets in payload	 */
 #define ETH_FRAME_LEN	1514		/* Max. octets in frame sans FCS */
 #define ETH_FCS_LEN	4		/* Octets in the FCS		 */
+
+/* 按照arp类型来定义一个局域网卡设备的类型 */
+#define ARPHRD_ETHER 	1		/* Ethernet 10Mbps		*/
 
 #endif
 /** @} */

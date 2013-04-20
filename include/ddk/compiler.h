@@ -12,12 +12,15 @@
 #define __pure				__attribute__((pure))
 #define __read_mostly	__attribute__((__section__(".data..read_mostly")))
 
-# define __section(S)		 __attribute__ ((__section__(#S)))
+#define __section(S)		 __attribute__ ((__section__(#S)))
 
 #define __init				__section(.init.text) __cold
 #define __devinit        __section(.devinit.text) __cold
 #define __devinitconst   __section(.devinit.rodata)
 #define __initdata			__section(.init.data)
+
+#define __acquires(x)
+#define __releases(x)
 
 /**
 	自动调用列表
@@ -35,4 +38,5 @@ typedef int (*initcall_t)(void);
 	static initcall_t __initcall_tail_6 __used \
 	__attribute__((__section__(".initcall6.end")))
 
+#include <compiler.h>
 #endif

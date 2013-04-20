@@ -8,7 +8,6 @@
 
 #ifndef _DDK_NET_MMI_H_
 #define _DDK_NET_MMI_H_
-struct net_device;
 
 struct mii_if_info {
 	int phy_id;

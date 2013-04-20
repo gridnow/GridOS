@@ -204,8 +204,10 @@ struct pci_dev
 	unsigned int	multifunction:1;/* Part of multi-function device */
 	unsigned int	is_added:1;
 	unsigned int	is_busmaster:1; /* device is busmaster */
-
+	unsigned int 	msi_enabled:1;
+	unsigned int	msix_enabled:1;
 	unsigned int	ari_enabled:1;	/* ARI forwarding */
+	unsigned int	is_managed:1;
 	unsigned int    is_hotplug_bridge:1;
 	unsigned int	io_window_1k:1;	/* Intel P2P bridge 1K I/O windows */
 	pci_dev_flags_t dev_flags;
@@ -299,6 +301,11 @@ static inline bool pci_is_pcie(struct pci_dev *dev)
 	return !!pci_pcie_cap(dev);
 }
 
+static inline int pci_is_managed(struct pci_dev *pdev)
+{
+	return pdev->is_managed;
+}
+
 /**
  * pci_ari_enabled - query ARI forwarding status
  * @bus: the PCI bus
@@ -372,6 +379,7 @@ int pci_find_capability(struct pci_dev *dev, int cap);
 int pci_find_ext_capability(struct pci_dev *dev, int cap);
 void pci_wakeup_bus(struct pci_bus *bus);
 int pci_resource_bar(struct pci_dev *dev, int resno, enum pci_bar_type *type);
+void pci_release_region(struct pci_dev *pdev, int bar);
 
 /* bus.c */
 #define PCI_SUBTRACTIVE_DECODE	0x1
@@ -477,8 +485,7 @@ static inline int pci_proc_domain(struct pci_bus *bus)
 #endif /* CONFIG_PCI_DOMAINS */
 
 #ifdef CONFIG_PCI_MMCONFIG
-extern void __init pci_mmcfg_early_init(void);
-extern void __init pci_mmcfg_late_init(void);
+#error "PCI MMCONFIG API should be defined."
 #else
 static inline void pci_mmcfg_early_init(void) { }
 static inline void pci_mmcfg_late_init(void) { }
@@ -494,10 +501,12 @@ static inline int pci_iov_resource_bar(struct pci_dev *dev, int resno,
 {
 	return 0;
 }
-
+#else
+#error "PCI_IOV API should be defined."
 #endif /* CONFIG_PCI_IOV */
 
 #ifdef CONFIG_PCIEASPM
+#error "PCI EASPM API should be defined."
 #else
 static inline void pcie_aspm_init_link_state(struct pci_dev *pdev)
 {
@@ -512,9 +521,25 @@ static inline void pcie_aspm_powersave_config_link(struct pci_dev *pdev)
 #endif
 
 #ifdef CONFIG_OF
+#error "PCI_OF API should be defined."
 #else
 static inline void pci_set_of_node(struct pci_dev *dev) { }
 #endif
+
+#ifndef CONFIG_PCI_MSI
+static inline int pci_enable_msi_block(struct pci_dev *dev, unsigned int nvec)
+{
+	return -1;
+}
+
+static inline void pci_disable_msix(struct pci_dev *dev)
+{ }
+static inline void pci_disable_msi(struct pci_dev *dev)
+{ }
+#else
+#error "MSI API should be defined."
+#endif
+
 
 static inline int pci_no_d1d2(struct pci_dev *dev)
 {

@@ -71,14 +71,14 @@ DLLEXPORT void pci_register_final_quirk(struct pci_fixup * q)
 	spin_unlock(&quirk_lock);
 }
 
-DLLEXPORT int pci_set_dma_mask(struct pci_dev *dev, u64 mask)
+int pci_set_dma_mask(struct pci_dev *dev, u64 mask)
 {
 	dev->dma_mask = mask;
 
 	return 0;
 }
 
-DLLEXPORT int pci_set_consistent_dma_mask(struct pci_dev *dev, u64 mask)
+int pci_set_consistent_dma_mask(struct pci_dev *dev, u64 mask)
 {
 	TODO("");
 	return 0;
@@ -89,11 +89,6 @@ DLLEXPORT void pcim_pin_device(struct pci_dev *pdev)
 	UNUSED("");
 }
 
-DLLEXPORT int pci_enable_msi_block(struct pci_dev *dev, unsigned int nvec)
-{
-	UNUSED("没有配置该功能");
-	return -ENOSYS;
-}
 
 DLLEXPORT void __iomem * const *pcim_iomap_table(struct pci_dev *pdev)
 {

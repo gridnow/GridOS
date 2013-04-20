@@ -561,9 +561,45 @@ static int __pci_enable_device_flags(struct pci_dev *dev,
  *  Beware, this function can fail.
  *
  */
-DLLEXPORT int pci_enable_device(struct pci_dev *dev)
+int pci_enable_device(struct pci_dev *dev)
 {
 	return __pci_enable_device_flags(dev, IORESOURCE_MEM | IORESOURCE_IO);
+}
+
+/*
+ * Managed PCI resources.  This manages device on/off, intx/msi/msix
+ * on/off and BAR regions.  pci_dev itself records msi/msix status, so
+ * there's no need to track it separately.  pci_devres is initialized
+ * when a device is enabled using managed PCI device enable interface.
+ */
+struct pci_devres {
+	unsigned int enabled:1;
+	unsigned int pinned:1;
+	unsigned int orig_intx:1;
+	unsigned int restore_intx:1;
+	u32 region_mask;
+};
+
+static void pcim_release(struct device *gendev, void *res)
+{
+	struct pci_dev *dev = container_of(gendev, struct pci_dev, dev);
+	struct pci_devres *this = res;
+	int i;
+	
+	if (dev->msi_enabled)
+		pci_disable_msi(dev);
+	if (dev->msix_enabled)
+		pci_disable_msix(dev);
+	
+	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++)
+		if (this->region_mask & (1 << i))
+			pci_release_region(dev, i);
+	
+	if (this->restore_intx)
+		pci_intx(dev, this->orig_intx);
+	
+	if (this->enabled && !this->pinned)
+		pci_disable_device(dev);
 }
 
 static struct pci_devres * find_pci_dr(struct pci_dev *pdev)
@@ -573,7 +609,7 @@ static struct pci_devres * find_pci_dr(struct pci_dev *pdev)
 	return NULL;
 }
 
-DLLEXPORT int pcim_enable_device(struct pci_dev *pdev)
+int pcim_enable_device(struct pci_dev *pdev)
 {
 	return pci_enable_device(pdev);
 }
@@ -622,15 +658,15 @@ DLLEXPORT void pci_intx(struct pci_dev *pdev, int enable)
 	}
 
 	if (new != pci_command) {
-		//struct pci_devres *dr;
+		struct pci_devres *dr;
 
 		pci_write_config_word(pdev, PCI_COMMAND, new);
 
-		//dr = find_pci_dr(pdev);
-		//if (dr && !dr->restore_intx) {
-		//	dr->restore_intx = 1;
-		//	dr->orig_intx = !enable;
-		//}
+		dr = find_pci_dr(pdev);
+		if (dr && !dr->restore_intx) {
+			dr->restore_intx = 1;
+			dr->orig_intx = !enable;
+		}
 	}
 }
 
@@ -807,7 +843,7 @@ void pci_release_regions(struct pci_dev *pdev)
 	pci_release_selected_regions(pdev, (1 << 6) - 1);
 }
 
-DLLEXPORT int pci_request_regions(struct pci_dev *pdev, const char *res_name)
+int pci_request_regions(struct pci_dev *pdev, const char *res_name)
 {
 	return pci_request_selected_regions(pdev, ((1 << 6) - 1), res_name);
 }
@@ -874,7 +910,7 @@ void pci_clear_mwi(struct pci_dev *dev)
  *
  * RETURNS: An appropriate -ERRNO error value on error, or zero for success.
  */
-DLLEXPORT int
+int
 pci_set_mwi(struct pci_dev *dev)
 {
 	int rc;

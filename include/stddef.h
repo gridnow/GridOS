@@ -40,7 +40,7 @@
 #define ALIGN(x, a)				__ALIGN__((x), (a))
 #define __ALIGN__(x, a)			__ALIGN__MASK(x, (typeof(x))(a) - 1)
 #define __ALIGN__MASK(x, mask)	(((x) + (mask)) & ~(mask))
-
+#define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
 
 #endif
 

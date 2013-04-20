@@ -4,12 +4,16 @@
 #include <errno.h>
 
 #include <ddk/log.h>
+#include <ddk/resource.h>
+#include <ddk/dma.h>
+
 #include <ddk/pci/pci.h>
 #include <ddk/pci/global_ids.h>
 
 #include <ddk/compatible_io.h>
-#include <ddk/net/mii.h>
+#include <ddk/compatible.h>
 #include <ddk/net/etherdevice.h>
+#include <ddk/net/mii.h>
 #include <ddk/net/ethtool.h>
 
 #define DRV_NAME		"8139cp"
@@ -365,6 +369,10 @@ static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
 	int rc;
 	struct net_device *dev;
 	struct cp_private *cp;
+	void __iomem *regs;
+	resource_size_t pciaddr;
+	unsigned int addr_len, i, pci_using_dac;
+
 	
 	/* May be old 8139 */
 	if (pdev->vendor == PCI_VENDOR_ID_REALTEK &&
@@ -374,7 +382,6 @@ static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
 				pdev->vendor, pdev->device, pdev->revision);
 			return -ENODEV;
 	}
-	printk("rtl8139 driver startup...\n");
 
 	dev = alloc_etherdev(sizeof(struct cp_private));
 	if (!dev)
@@ -396,7 +403,7 @@ static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
 	/* Enable the pci device */
 	rc = pci_enable_device(pdev);
 	if (rc)
-		goto err;
+		goto err_out_free;
 
 	rc = pci_set_mwi(pdev);
 	if (rc)
@@ -439,14 +446,14 @@ static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
 					"No usable consistent DMA configuration, aborting\n");
 			goto err_out_res;
 		}
-	}
+	}printk("TODO: iomapping %x...\n", (unsigned long)pciaddr);
 	
 	cp->cpcmd = (pci_using_dac ? PCIDAC : 0) |
 	PCIMulRW | RxChkSum | CpRxOn | CpTxOn;
 	
 	dev->features |= NETIF_F_RXCSUM;
 	dev->hw_features |= NETIF_F_RXCSUM;
-	
+#if 0
 	regs = ioremap(pciaddr, CP_REGS_SIZE);
 	if (!regs) {
 		rc = -EIO;
@@ -496,7 +503,7 @@ static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
 	
 	if (cp->wol_enabled)
 		cp_set_d3_state (cp);
-	
+#endif
 	return 0;
 	
 err_out_iomap:

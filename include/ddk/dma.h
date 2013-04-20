@@ -10,8 +10,11 @@
 
 #include <ddk/types.h>
 #include <ddk/log.h>
+#include <ddk/slab.h>
 
+struct device;
 struct ddk_dma_pool;
+
 #define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
 #define DMA_MASK_NONE	0x0ULL
 #define CONFIG_NEED_SG_DMA_LENGTH 1

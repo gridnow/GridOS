@@ -14,6 +14,7 @@ DLLEXPORT bool ke_module_entry(int type)
 
 	pci_arch_init();
 	pci_subsys_init();
+	pci_apply_final_quirks();/* Setup the pci_cache_line_size */
 #endif
 
 	/* 启动内嵌驱动模块 */
