@@ -10,7 +10,7 @@
 #include "memory.h"
 
 #include "object.h"
-static struct ko_thread *init_process;
+static struct ko_process *init_process;
 
 static bool object_close(real_object_t *obj)
 {
@@ -20,7 +20,8 @@ static bool object_close(real_object_t *obj)
 static void object_init(real_object_t *obj)
 {
 	struct ko_process *p = (struct ko_process *)obj;
-	
+	INIT_LIST_HEAD(&p->vm_list);
+	ke_spin_init(&p->vm_list_lock);
 }
 
 static struct cl_object_ops process_object_ops = {
@@ -81,7 +82,7 @@ struct ko_process *kp_create(int cpl, xstring name)
 {
 	struct ko_process *p;
 	
-	if (cpl != KP_CPL0 || cpl != KP_USER)
+	if (cpl != KP_CPL0 && cpl != KP_USER)
 		goto err;
 	p = cl_object_create(&process_type);
 	if (!p) goto err;
@@ -100,9 +101,8 @@ err:
 
 bool kp_init()
 {
-	/* The first thread in system, which is the idle thread for BSP */
 	cl_object_type_register(&process_type);
-	init_process = cl_object_create(&process_type);
+	init_process = kp_create(KP_CPL0, "OS");
 	if (!init_process) 
 		goto err;
 

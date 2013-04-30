@@ -15,7 +15,7 @@ void ke_atomic_inc(struct ke_atomic * atomic)
 void ke_atomic_dec(struct ke_atomic * atomic)
 {
 	atomic_dec((atomic_t*)atomic);
-}
+} 
 
 /**
 	@brief ¶ÁÈ¡¼ÆÊıÆ÷

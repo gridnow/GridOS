@@ -18,7 +18,7 @@ static struct ko_thread dummy_kmt = {1}/*Use DATA segment, 否则占用过多的BSS，防
 
 void dumy_idle_ops(int type)
 {
-#ifdef __i386__
+#ifdef __i386__ 
 	__asm volatile("hlt\n");
 #endif
 }

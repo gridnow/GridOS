@@ -19,6 +19,7 @@ static void build_ram_list()
  	kc_init();
 	kp_init();
 	kt_init();
+	ks_init();
 
 	hal_time_init();
 	
@@ -29,6 +30,8 @@ static void build_ram_list()
 	printk("Starting up modules...");
 	ke_module_entry();
 	printk("Hal startup ok.\n");
+	
+	kernel_test();
 	
 	while (1) dumy_idle_ops(0);
 }
