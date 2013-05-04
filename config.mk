@@ -3,6 +3,17 @@
 #
 
 #
+#苹果的平台的交叉编译器
+#
+ifeq ($(TERM_PROGRAM),Apple_Terminal)
+ifeq ($(ARCH),arm)
+export GCC_PREFIX=arm-linux-gnueabi-
+else
+export GCC_PREFIX=i686-linux-
+endif
+endif
+
+#
 #工具宏
 #
 CC				= $(GCC_PREFIX)gcc

@@ -52,6 +52,12 @@ typedef signed long long s64;									/**< x86-32平台上的有符号64位数据 */
 		typedef signed long long s64;
 		#define BITS_PER_LONG 32
 	#endif
+
+#elif defined(__arm__)
+typedef unsigned long long	u64;								/**< ARM 平台上的无符号64位数据 */
+typedef signed long long s64;									/**< ARM 平台上的有符号64位数据 */
+#define BITS_PER_LONG		32									/**< ARM 平台上，一个long型变量是32位 */
+
 #else
 #error "平台的数据类型没有定义"
 #endif

@@ -28,4 +28,7 @@
 #define readb hal_readb
 #define readw hal_readw
 #define readl hal_readl
+
+#include <kernel/ke_memory.h>
+#define ioremap(__address__, __size__) km_map_physical(__address__, __size__, 0)
 #endif
