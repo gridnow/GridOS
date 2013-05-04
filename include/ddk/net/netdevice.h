@@ -50,14 +50,14 @@ struct ddk_net_device
 	unsigned short		hard_header_len;	/* hardware hdr length	*/
 	
 	/* Interface address info. */
-	
+	unsigned char		perm_addr[MAX_ADDR_LEN]; /* permanent hw address */
 	unsigned char		addr_assign_type; /* hw address assignment type */
 	unsigned char		addr_len;	/* hardware address length	*/
 	
 	unsigned char		broadcast[MAX_ADDR_LEN];	/* hw bcast add	*/
 	unsigned long		tx_queue_len;	/* Max frames per queue allowed */
 	
-	
+	unsigned char		dev_addr[MAX_ADDR_LEN];/*dev_addr_init*/
 };
 
 #define	NETDEV_ALIGN		32
@@ -87,6 +87,11 @@ enum {
 static inline void *netdev_priv(const struct net_device *dev)
 {
 	return (char *)dev + ALIGN(sizeof(struct net_device), NETDEV_ALIGN);
+}
+
+static inline void netdev_reset_queue(struct net_device *dev_queue)
+{
+	
 }
 
 #endif

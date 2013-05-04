@@ -19,6 +19,7 @@
 #define __always_inline		inline __attribute__((always_inline))
 #define barrier()			__asm__ __volatile__("": : :"memory")
 #define __maybe_unused		__attribute__((unused))
+#define __attribute_const__		__attribute__((__const__))
 
 #define __bitwise
 #define RELOC_HIDE(ptr, off)					\

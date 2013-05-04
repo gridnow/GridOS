@@ -133,6 +133,7 @@ void *km_page_alloc_kerneled(int page_count);
 */
 void km_page_dealloc_kerneled(void *kernel_page, unsigned long size);
 
+
 /* Useful macro */
 #define KM_PAGE_ADDRESS_TO_PFN(PAGE_ADDRESS) ((unsigned long)(PAGE_ADDRESS) >> PAGE_SHIFT)
 #define KM_PAGE_ROUND_COUNT(__size__) ((__size__ + PAGE_SIZE - 1) / PAGE_SIZE)

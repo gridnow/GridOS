@@ -31,6 +31,7 @@ struct net_device *alloc_netdev_mqs(int sizeof_priv, const char *name,
 	}
 	
 	dev = PTR_ALIGN(p, NETDEV_ALIGN);
+	setup(dev);
 	return dev;
 	
 free_p:

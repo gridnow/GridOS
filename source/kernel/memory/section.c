@@ -7,6 +7,7 @@
  */
 
 #include <types.h>
+#include <stdarg.h>
 
 #include "object.h"
 
@@ -67,16 +68,22 @@ static struct cl_object_type section_type = {
 	.free_space	= free_space,
 };
 
-struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsigned long base, unsigned long size)
+struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsigned long base, size_t size)
 {
-	struct ko_section *p;//printk("%s %s %d.\n", __FILE__, __FUNCTION__, __LINE__);
+	struct ko_section *p;
+	
+	if (size == 0)
+		goto err;
 	
 	p = cl_object_create(&section_type);
-	if (!p) goto err;
+	if (!p)
+		goto err;
 	
-	p->node.size = size;
-	p->node.start = base;
-	if (km_vm_create(where, &p->node) == false) goto err1;
+	p->type 	= type;
+	p->node.size 	= size;
+	p->node.start 	= base;
+	if (km_vm_create(where, &p->node) == false)
+		goto err1;
 	
 	return p;
 	
@@ -86,17 +93,20 @@ err:
 	return NULL;
 }
 
+void ks_close(struct ko_section *ks)
+{
+	cl_object_close(ks);
+}
+
 void __init ks_init()
 {
 	cl_object_type_register(&section_type);
 }
 
 //------------test-----------------
+#include <kernel/ke_memory.h>
+
 void kernel_test()
 {
-	struct ko_section *ks;
-	printk("\nTesting kernel...");
-	
-	ks = ks_create(kp_get_system(), KS_TYPE_PRIVATE, 0, 1000);
-	printk("\n    ks = %p, virtual start = %p, size = %d.\n", ks, ks->node.start, ks->node.size);
+	km_map_physical(0, 100, 0);
 }

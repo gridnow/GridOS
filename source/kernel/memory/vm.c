@@ -162,13 +162,15 @@ bool km_vm_create(struct ko_process *where, struct km_vm_node *node)
 {
 	unsigned long range_start, range_len;
 	unsigned long start = NULL;
+	unsigned long size = ALIGN(node->size, PAGE_SIZE);
 
 	km_get_vm_range(where->cpl, &range_start, &range_len);
-		
+
 	spin_lock(&where->vm_list_lock);
-	start = alloc_virtual_space(&where->vm_list, range_start, range_len, node->start, node->size);
+	start = alloc_virtual_space(&where->vm_list, range_start, range_len, node->start, size);
 	if (start == NULL) goto end;
 	node->start = start;
+	node->size = size;
 	
 	/* Actually insertion will not fail, or the alloc_virtual_space has BUG */
 	if (insert_virtual_space(&where->vm_list, node, false) == false)
