@@ -84,7 +84,7 @@ static struct cl_object_type thread_type = {
 static void init_idle_thread(struct kc_cpu *cpu, struct ko_thread **idle)
 {
 	struct ko_thread *p;
-	cl_object_type_register(&thread_type);
+	
 	p = cl_object_create(&thread_type);
 	if (!p) 
 		goto end;
@@ -192,6 +192,7 @@ end:
 
 bool kt_init()
 {
+	cl_object_type_register(&thread_type);
 	init_idle_thread(kc_get_raw(), &init_thread);
 	return true;
 }

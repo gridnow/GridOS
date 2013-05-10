@@ -2,6 +2,9 @@
 #define KP_PROCESS_H
 
 #include <types.h>
+#include <list.h>
+
+#include "spinlock.h"
 
 /* Process privilege level */
 #define KP_CPL0						0
@@ -10,10 +13,12 @@
 struct ko_process
 {
 	int cpl;
+	
+	struct ke_spinlock vm_list_lock;
+	struct list_head vm_list;
 };
 
 //process.c
-
 struct ko_process *kp_get_system();
 
 struct ko_process *kp_create(int cpl, xstring name);

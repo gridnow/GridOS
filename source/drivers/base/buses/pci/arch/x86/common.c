@@ -465,6 +465,7 @@ struct pci_bus * __devinit pcibios_scan_root(int busnum)
 
 void __init pcibios_set_cache_line_size(void)
 {
+	//TODO, get the cacheline size from cpu
 	pci_dfl_cache_line_size = 32 >> 2;
 	printk(KERN_DEBUG "PCI: Unknown cacheline size. Setting to 32 bytes\n");
 }

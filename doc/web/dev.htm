@@ -78,7 +78,7 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
           <TD>&nbsp;</TD>
         </TR>
         <TR align="center">
-          <TD rowspan="8">硬件抽象层（HAL）</TD>
+          <TD rowspan="10">硬件抽象层（HAL）</TD>
           <TD>引导程序</TD>
           <TD>支持MULTIBOOT的引导程序</TD>
           <TD>开发中</TD>
@@ -100,8 +100,13 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
             <p>2，特定CPU的中断处理表和处理函数。</p>
             <p>3，抽象的中断处理流程和中断处理函数的管理（为驱动程序提供相应接口）。</p>
             <p>4，特定CPU的异常与内核的异常处理框架对接。</p></TD>
-          <TD><p>1，完成平台无关的中断注册、中断处理流程，目前在x86-32上测试通过。还缺少中断处理函数的反注册，多处理器中断问题。</p>
-            <p>2，给驱动程序提供的中断处理函数注册接口还未提供。</p></TD>
+          <TD><p>2013-3-25：增加了中断管理框架，部分中断处理相关的逻辑来自Linux。</p>
+            </TD>
+        </TR>
+        <TR align="center">
+          <TD>自旋锁</TD>
+          <TD>&nbsp;</TD>
+          <TD>2013-3-15：实现了x86平台上的自旋锁，并封装了抽象接口。</TD>
         </TR>
         <TR align="center">
           <TD>多CPU管理框架</TD>
@@ -111,12 +116,18 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
         <TR align="center">
           <TD>设备管理器</TD>
           <TD>设备和驱动程序描述符的管理、操作。以及设备和驱动所用到的资源（内存资源IO资源）的管理。（注册设备，注册驱动，注册设备所拥有的资源，以及他们的被系统其他应用单位的对接口）。</TD>
-          <TD>1。完成了设备对象的注册封装。该封装是对设备最抽象的描述，其中主要包括2类信息的结合：设备管理器的设备信息与驱动程序对于设备的详细描述。详细描述用于具体驱动程序，高层信息用于设备管理器内部。</TD>
+          <TD>2013-4-8：完成了设备对象的注册封装。该封装是对设备最抽象的描述，其中主要包括2类信息的结合：设备管理器的设备信息与驱动程序对于设备的详细描述。详细描述用于具体驱动程序，高层信息用于设备管理器内部。</TD>
         </TR>
         <TR align="center">
           <TD>PCI总线驱动</TD>
           <TD>在设备管理器提供的管理框架中，支持平台无关的PCI总线的设备扫描、使能、资源操作接口。</TD>
-          <TD>1，上层代PCI设备扫描码部署完毕，并与设备管理器对接完成。支持的硬件平台可以有很多种，目前是x86。许多其他依赖接口还未编写完成，没有测试。</TD>
+          <TD><p>2013-3-31：移植了PCI总线驱动，但是没有测试，许多依赖接口并未完成。</p>
+            <p>2013-4-8：上层的PCI设备扫描码部署完毕，并与设备管理器对接完成。支持的硬件平台可以有很多种，目前是x86，总线扫描成功，并把扫描到的PCI设备放到设备管理器中去管理。</p></TD>
+          </TR>
+        <TR align="center">
+          <TD>&nbsp;</TD>
+          <TD>&nbsp;</TD>
+          <TD>&nbsp;</TD>
         </TR>
         <TR align="center">
           <TD>简单控制台封装</TD>
@@ -132,20 +143,30 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
         <TR align="center">
           <TD>对象管理器</TD>
           <TD>&nbsp;</TD>
-          <TD>&nbsp;</TD>
+          <TD><p>2013-3-16：完成了对象管理器的关键数据结构定义。</p>
+            <p>2013-3-18：为了测试对象管理器，编写了线程对象的创立方法。</p>
+            <p>&nbsp;</p></TD>
         </TR>
         <TR align="center">
           <TD>字符串操作</TD>
           <TD>&nbsp;</TD>
-          <TD>&nbsp;</TD>
+          <TD><p>2013-3-6：printk代码编写完成，在x86平台上可以向串口输出内容。</p>            </TD>
+        </TR>
+        <TR align="center">
+          <TD>驱动程序</TD>
+          <TD>以太网</TD>
+          <TD>8139cp</TD>
+          <TD><p>2013-4-20：8139cp到了映射PCI 地址空间的位置，这部分需要内核的内存管理器的支持。我们现在的重点在驱动上，内核的这部分还没做。</p>
+            <p>&nbsp;</p></TD>
         </TR>
       </TBODY>
     </TABLE>
     <h2 class="news-title">二，本阶段主要目标</h2>
     <p>&nbsp;&nbsp;&nbsp;&nbsp;1，内核具备分页机制的虚拟内存，支持多线程运行，在多CPU上能进行简单的负载均衡,识别到PCI硬件。</p>
     <p>&nbsp;&nbsp;&nbsp;&nbsp;2，支持虚拟文件系统。</p>
-    <p>&nbsp;&nbsp;&nbsp;&nbsp;3，支持基本libc编程接口，可操作文件 。    </p>
-    <p>&nbsp;&nbsp;&nbsp;&nbsp;4，支持简单控制台。</p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;3，支持PCI总线、AHCI硬盘控制器、几款网卡设备（满足虚拟机的测试）。</p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;4，支持基本libc编程接口，可操作文件 。    </p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;5，支持简单控制台。</p>
     <p class="news-title">&nbsp;</p>
     <DIV id=div><DIV class=news-item></DIV>
 </DIV>

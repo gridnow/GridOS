@@ -10,10 +10,10 @@
 #ifndef HAL_CONFIG_H
 #define HAL_CONFIG_H
 
-/* config of x86 */
 #if defined(__i386__)
 #define CONFIG_HAL_KERNEL_BASE				0x80000000UL
 #define CONFIG_HAL_KERNEL_MEM_LEN			0x40000000
+#define CONFIG_HAL_KERNEL_VM_LEN			0X40000000						//虚拟内存长度
 #define CONFIG_X86_L1_CACHE_SHIFT			6								//from the generated from of autoconf.h
 #define CONFIG_X86_INTERNODE_CACHE_SHIFT	6								//节点之间共享内存的对齐.
 #define CONFIG_X86_LOCAL_APIC				1
@@ -21,9 +21,14 @@
 #define PAGE_SHIFT							12								//4kb page
 #define CONFIG_GENERIC_FIND_FIRST_BIT		1
 #define CONFIG_GENERIC_HARDIRQS				1
+
 #elif defined(__mips__)
 #define CONFIG_HAL_KERNEL_BASE				0xFFFFFFFF80000000UL
 #define CONFIG_GENERIC_FIND_FIRST_BIT
+
+#elif defined(__arm__)
+#define CONFIG_HAL_KERNEL_BASE				0xc0000000
+#define __LINUX_ARM_ARCH__					6
 #else
 #error "config.h of hal is invalid"
 #endif

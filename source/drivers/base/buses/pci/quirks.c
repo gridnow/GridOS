@@ -1,7 +1,11 @@
 #include "pci.h"
 
 #include <ddk/pci/pci.h>
+#include <ddk/pci/pci_regs.h>
 #include <ddk/log.h>
+
+static bool pci_apply_fixup_final_quirks;
+
 static void pci_do_fixups(struct pci_dev *dev, struct list_head * t)
 {
 	struct pci_fixup * f;
@@ -51,4 +55,45 @@ void pci_fixup_device(enum pci_fixup_pass pass, struct pci_dev *dev)
 
 	if (!t) return;
 	pci_do_fixups(dev, t);
+}
+
+int __init pci_apply_final_quirks(void)
+{
+	struct pci_dev *dev = NULL;
+	u8 cls = 0;
+	u8 tmp;
+	
+	if (pci_cache_line_size)
+		printk(KERN_DEBUG "PCI: CLS %u bytes\n",
+		       pci_cache_line_size << 2);
+	
+	pci_apply_fixup_final_quirks = true;
+	for_each_pci_dev(dev) {
+		pci_fixup_device(pci_fixup_final, dev);
+		/*
+		 * If arch hasn't set it explicitly yet, use the CLS
+		 * value shared by all PCI devices.  If there's a
+		 * mismatch, fall back to the default value.
+		 */
+		if (!pci_cache_line_size) {
+			pci_read_config_byte(dev, PCI_CACHE_LINE_SIZE, &tmp);
+			if (!cls)
+				cls = tmp;
+			if (!tmp || cls == tmp)
+				continue;
+			
+			printk(KERN_DEBUG "PCI: CLS mismatch (%u != %u), "
+			       "using %u bytes\n", cls << 2, tmp << 2,
+			       pci_dfl_cache_line_size << 2);
+			pci_cache_line_size = pci_dfl_cache_line_size;
+		}
+	}
+	
+	if (!pci_cache_line_size) {
+		printk(KERN_DEBUG "PCI: CLS %u bytes, default %u\n",
+		       cls << 2, pci_dfl_cache_line_size << 2);
+		pci_cache_line_size = cls ? cls : pci_dfl_cache_line_size;
+	}
+	
+	return 0;
 }

@@ -19,17 +19,20 @@ static void build_ram_list()
  	kc_init();
 	kp_init();
 	kt_init();
+	ks_init();
 
 	hal_time_init();
 	
 	hal_malloc_init();
 	
 	local_irq_enable();
+	
+	
 
 	printk("Starting up modules...");
 	ke_module_entry();
 	printk("Hal startup ok.\n");
-	
+	kernel_test();
 	while (1) dumy_idle_ops(0);
 }
 
@@ -70,7 +73,12 @@ void __init __noreturn hal_main()
 	}
 }
 
-void ke_panic(char *why)
+void hal_do_panic(char *why)
 {
 	printk("ÄÚºËÒì³£:%s.\n", why);
+}
+
+void ke_panic(char *why)
+{
+	hal_do_panic(why);
 }

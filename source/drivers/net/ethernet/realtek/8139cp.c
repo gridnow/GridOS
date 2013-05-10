@@ -4,17 +4,23 @@
 #include <errno.h>
 
 #include <ddk/log.h>
+#include <ddk/resource.h>
+#include <ddk/dma.h>
+#include <ddk/byteorder.h>
+
 #include <ddk/pci/pci.h>
 #include <ddk/pci/global_ids.h>
 
 #include <ddk/compatible_io.h>
-#include <ddk/net/mii.h>
+#include <ddk/compatible.h>
 #include <ddk/net/etherdevice.h>
+#include <ddk/net/mii.h>
 #include <ddk/net/ethtool.h>
 
 #define DRV_NAME		"8139cp"
 static int debug = -1;
 
+//TODO
 #define ____cacheline_aligned __attribute__((__aligned__(1<<6)))
 
 #define CP_DEF_MSG_ENABLE	(NETIF_MSG_DRV		| \
@@ -360,11 +366,147 @@ static void mdio_write(struct net_device *dev, int phy_id, int location,
 		cpw16(mii_2_8139_map[location], value);
 }
 
+static void cp_stop_hw (struct cp_private *cp)
+{
+	cpw16(IntrStatus, ~(cpr16(IntrStatus)));
+	cpw16_f(IntrMask, 0);
+	cpw8(Cmd, 0);
+	cpw16_f(CpCmd, 0);
+	cpw16_f(IntrStatus, ~(cpr16(IntrStatus)));
+	
+	cp->rx_tail = 0;
+	cp->tx_head = cp->tx_tail = 0;
+	
+	netdev_reset_queue(cp->dev);
+}
+
+
+/* Serial EEPROM section. */
+
+/*  EEPROM_Ctrl bits. */
+#define EE_SHIFT_CLK	0x04	/* EEPROM shift clock. */
+#define EE_CS			0x08	/* EEPROM chip select. */
+#define EE_DATA_WRITE	0x02	/* EEPROM chip data in. */
+#define EE_WRITE_0		0x00
+#define EE_WRITE_1		0x02
+#define EE_DATA_READ	0x01	/* EEPROM chip data out. */
+#define EE_ENB			(0x80 | EE_CS)
+
+/* Delay between EEPROM clock transitions.
+ No extra delay is needed with 33Mhz PCI, but 66Mhz may change this.
+ */
+
+#define eeprom_delay()	readb(ee_addr)
+
+/* The EEPROM commands include the alway-set leading bit. */
+#define EE_EXTEND_CMD	(4)
+#define EE_WRITE_CMD	(5)
+#define EE_READ_CMD		(6)
+#define EE_ERASE_CMD	(7)
+
+#define EE_EWDS_ADDR	(0)
+#define EE_WRAL_ADDR	(1)
+#define EE_ERAL_ADDR	(2)
+#define EE_EWEN_ADDR	(3)
+
+#define CP_EEPROM_MAGIC PCI_DEVICE_ID_REALTEK_8139
+
+static void eeprom_cmd_start(void __iomem *ee_addr)
+{
+	writeb (EE_ENB & ~EE_CS, ee_addr);
+	writeb (EE_ENB, ee_addr);
+	eeprom_delay ();
+}
+
+static void eeprom_cmd(void __iomem *ee_addr, int cmd, int cmd_len)
+{
+	int i;
+	
+	/* Shift the command bits out. */
+	for (i = cmd_len - 1; i >= 0; i--) {
+		int dataval = (cmd & (1 << i)) ? EE_DATA_WRITE : 0;
+		writeb (EE_ENB | dataval, ee_addr);
+		eeprom_delay ();
+		writeb (EE_ENB | dataval | EE_SHIFT_CLK, ee_addr);
+		eeprom_delay ();
+	}
+	writeb (EE_ENB, ee_addr);
+	eeprom_delay ();
+}
+
+static void eeprom_cmd_end(void __iomem *ee_addr)
+{
+	writeb(0, ee_addr);
+	eeprom_delay ();
+}
+
+static void eeprom_extend_cmd(void __iomem *ee_addr, int extend_cmd,
+							  int addr_len)
+{
+	int cmd = (EE_EXTEND_CMD << addr_len) | (extend_cmd << (addr_len - 2));
+	
+	eeprom_cmd_start(ee_addr);
+	eeprom_cmd(ee_addr, cmd, 3 + addr_len);
+	eeprom_cmd_end(ee_addr);
+}
+
+static u16 read_eeprom (void __iomem *ioaddr, int location, int addr_len)
+{
+	int i;
+	u16 retval = 0;
+	void __iomem *ee_addr = ioaddr + Cfg9346;
+	int read_cmd = location | (EE_READ_CMD << addr_len);
+	
+	eeprom_cmd_start(ee_addr);
+	eeprom_cmd(ee_addr, read_cmd, 3 + addr_len);
+	
+	for (i = 16; i > 0; i--) {
+		writeb (EE_ENB | EE_SHIFT_CLK, ee_addr);
+		eeprom_delay ();
+		retval =
+		(retval << 1) | ((readb (ee_addr) & EE_DATA_READ) ? 1 :
+						 0);
+		writeb (EE_ENB, ee_addr);
+		eeprom_delay ();
+	}
+	
+	eeprom_cmd_end(ee_addr);
+	
+	return retval;
+}
+
+static void write_eeprom(void __iomem *ioaddr, int location, u16 val,
+						 int addr_len)
+{
+	int i;
+	void __iomem *ee_addr = ioaddr + Cfg9346;
+	int write_cmd = location | (EE_WRITE_CMD << addr_len);
+	
+	eeprom_extend_cmd(ee_addr, EE_EWEN_ADDR, addr_len);
+	
+	eeprom_cmd_start(ee_addr);
+	eeprom_cmd(ee_addr, write_cmd, 3 + addr_len);
+	eeprom_cmd(ee_addr, val, 16);
+	eeprom_cmd_end(ee_addr);
+	
+	eeprom_cmd_start(ee_addr);
+	for (i = 0; i < 20000; i++)
+		if (readb(ee_addr) & EE_DATA_READ)
+			break;
+	eeprom_cmd_end(ee_addr);
+	
+	eeprom_extend_cmd(ee_addr, EE_EWDS_ADDR, addr_len);
+}
+
 static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
 {
 	int rc;
 	struct net_device *dev;
 	struct cp_private *cp;
+	void __iomem *regs;
+	resource_size_t pciaddr;
+	unsigned int addr_len, i, pci_using_dac;
+
 	
 	/* May be old 8139 */
 	if (pdev->vendor == PCI_VENDOR_ID_REALTEK &&
@@ -374,7 +516,6 @@ static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
 				pdev->vendor, pdev->device, pdev->revision);
 			return -ENODEV;
 	}
-	printk("rtl8139 driver startup...\n");
 
 	dev = alloc_etherdev(sizeof(struct cp_private));
 	if (!dev)
@@ -396,7 +537,7 @@ static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
 	/* Enable the pci device */
 	rc = pci_enable_device(pdev);
 	if (rc)
-		goto err;
+		goto err_out_free;
 
 	rc = pci_set_mwi(pdev);
 	if (rc)
@@ -446,7 +587,7 @@ static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
 	
 	dev->features |= NETIF_F_RXCSUM;
 	dev->hw_features |= NETIF_F_RXCSUM;
-	
+
 	regs = ioremap(pciaddr, CP_REGS_SIZE);
 	if (!regs) {
 		rc = -EIO;
@@ -456,16 +597,18 @@ static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
 		goto err_out_res;
 	}
 	cp->regs = regs;
-	
+
 	cp_stop_hw(cp);
-	
+
 	/* read MAC address from EEPROM */
 	addr_len = read_eeprom (regs, 0, 8) == 0x8129 ? 8 : 6;
 	for (i = 0; i < 3; i++)
 		((__le16 *) (dev->dev_addr))[i] =
 		cpu_to_le16(read_eeprom (regs, i + 7, addr_len));
 	memcpy(dev->perm_addr, dev->dev_addr, dev->addr_len);
-	
+	printk("dev->addr_len = %d, MAC %02x:%02x:%02x:%02x:%02x:%02x.\n",dev->addr_len,
+																dev->perm_addr[0], dev->perm_addr[1], dev->perm_addr[2], dev->perm_addr[3], dev->perm_addr[4], dev->perm_addr[5]);
+#if 0
 	dev->netdev_ops = &cp_netdev_ops;
 	netif_napi_add(dev, &cp->napi, cp_rx_poll, 16);
 	dev->ethtool_ops = &cp_ethtool_ops;
@@ -496,7 +639,7 @@ static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
 	
 	if (cp->wol_enabled)
 		cp_set_d3_state (cp);
-	
+#endif
 	return 0;
 	
 err_out_iomap:
