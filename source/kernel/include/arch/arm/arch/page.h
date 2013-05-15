@@ -2,6 +2,13 @@
 #define ARM_PAGE_H
 
 #ifdef CONFIG_ARM_LPAE
+#include "pgtable-3level.h"
+#else
+#include "pgtable-2level.h"
+#endif
+
+#ifndef __ASSEMBLER__
+#ifdef CONFIG_ARM_LPAE
 #include "pgtable-3level-types.h"
 #else
 #include "pgtable-2level-types.h"
@@ -9,11 +16,6 @@
 
 #include <const.h>
 
-#ifdef CONFIG_ARM_LPAE
-#include "pgtable-3level.h"
-#else
-#include "pgtable-2level.h"
-#endif
 /*
  * Architecture ioremap implementation.
  */
@@ -40,4 +42,10 @@ struct mem_type {
 	unsigned int domain;
 };
 
+struct cpu_user_fns {
+	void (*cpu_clear_user_highpage)(void *page, unsigned long vaddr);
+	void (*cpu_copy_user_highpage)(void *to_page, void *from_page,
+								   unsigned long vaddr, void *vm_area);
+};
+#endif /*Assemmbler */
 #endif

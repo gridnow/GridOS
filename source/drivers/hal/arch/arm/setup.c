@@ -11,6 +11,32 @@
 #include <asm/system_info.h>
 #include <asm/cputype.h>
 
+unsigned int processor_id;
+unsigned int __machine_arch_type __read_mostly;
+unsigned int cacheid __read_mostly;
+unsigned int __atags_pointer __initdata;
+unsigned int system_rev;
+unsigned int system_serial_low;
+unsigned int system_serial_high;
+unsigned int elf_hwcap __read_mostly;
+
+#ifdef MULTI_CPU
+struct processor processor __read_mostly;
+#endif
+#ifdef MULTI_TLB
+struct cpu_tlb_fns cpu_tlb __read_mostly;
+#endif
+#ifdef MULTI_USER
+struct cpu_user_fns cpu_user __read_mostly;
+#endif
+#ifdef MULTI_CACHE
+struct cpu_cache_fns cpu_cache __read_mostly;
+#endif
+#ifdef CONFIG_OUTER_CACHE
+struct outer_cache_fns outer_cache __read_mostly;
+EXPORT_SYMBOL(outer_cache);
+#endif
+
 /*
  * Cached cpu_architecture() result for use by assembler code.
  * C code should use the cpu_architecture() function instead of accessing this
@@ -111,11 +137,19 @@ static void __init setup_processor(void)
 #endif
 }
 
-void __init setup_arch(char **cmdline)
+void __init __arm_main0(char **cmdline)
 {
 	serial_puts("This is the first function.\n");
 	paging_init();
 	serial_puts("paging init ok.\n");
 	
+	arch_enable_mmu();
 	while(1);
+}
+
+void __init __arm_main1()
+{
+	serial_puts("MMU opened.");
+	while (1);
+
 }

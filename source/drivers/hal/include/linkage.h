@@ -52,6 +52,19 @@ name:
 	END(name)
 #endif
 
+/* For assembly routines */
+#define __HEAD		.section	".head.text","ax"
+#define __INIT		.section	".init.text","ax"
+#define __FINIT		.previous
+
+#define __INITDATA	.section	".init.data","aw",%progbits
+#define __INITRODATA	.section	".init.rodata","a",%progbits
+#define __FINITDATA	.previous
+
+#define __CPUINIT        .section	".cpuinit.text", "ax"
+#define __CPUINITDATA    .section	".cpuinit.data", "aw"
+#define __CPUINITRODATA  .section	".cpuinit.rodata", "a"
+
 #endif /* __ASSEMBLY__ */
 
 #endif /* HAL_LINKAGE_H */
