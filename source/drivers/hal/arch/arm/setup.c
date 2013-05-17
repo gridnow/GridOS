@@ -7,9 +7,18 @@
  *
  */
 #include <compiler.h>
+#include <debug.h>
+
+#include <stddef.h>
 
 #include <asm/system_info.h>
 #include <asm/cputype.h>
+#include <asm/procinfo.h>
+#include <asm/cp15.h>
+#include <asm/hwcap.h>
+#include <asm/proc-fns.h>
+#include <asm/ptrace.h>
+#include <asm/cachetype.h>
 
 unsigned int processor_id;
 unsigned int __machine_arch_type __read_mostly;
@@ -43,6 +52,42 @@ EXPORT_SYMBOL(outer_cache);
  * variable directly.
  */
 int __cpu_architecture __read_mostly = CPU_ARCH_UNKNOWN;
+
+struct stack {
+	u32 irq[3];
+	u32 abt[3];
+	u32 und[3];
+} ____cacheline_aligned;
+
+static struct stack stacks[NR_CPUS];
+
+static const char *cpu_name;
+static const char *machine_name;
+struct machine_desc *machine_desc __initdata;
+
+static union { char c[4]; unsigned long l; } endian_test __initdata = { { 'l', '?', '?', 'b' } };
+#define ENDIANNESS ((char)endian_test.l)
+
+
+static const char *proc_arch[] = {
+	"undefined/unknown",
+	"3",
+	"4",
+	"4T",
+	"5",
+	"5T",
+	"5TE",
+	"5TEJ",
+	"6TEJ",
+	"7",
+	"?(11)",
+	"?(12)",
+	"?(13)",
+	"?(14)",
+	"?(15)",
+	"?(16)",
+	"?(17)",
+};
 
 static int __get_cpu_architecture(void)
 {
@@ -82,11 +127,148 @@ int __pure cpu_architecture(void)
 	return __cpu_architecture;
 }
 
-static void __init setup_processor(void)
+static int cpu_has_aliasing_icache(unsigned int arch)
 {
-	__cpu_architecture = __get_cpu_architecture();
+	int aliasing_icache;
+	unsigned int id_reg, num_sets, line_size;
 	
-#if 0
+	/* PIPT caches never alias. */
+	if (icache_is_pipt())
+		return 0;
+	
+	/* arch specifies the register format */
+	switch (arch) {
+		case CPU_ARCH_ARMv7:
+			asm("mcr	p15, 2, %0, c0, c0, 0 @ set CSSELR"
+				: /* No output operands */
+				: "r" (1));
+			isb();
+			asm("mrc	p15, 1, %0, c0, c0, 0 @ read CCSIDR"
+				: "=r" (id_reg));
+			line_size = 4 << ((id_reg & 0x7) + 2);
+			num_sets = ((id_reg >> 13) & 0x7fff) + 1;
+			aliasing_icache = (line_size * num_sets) > PAGE_SIZE;
+			break;
+		case CPU_ARCH_ARMv6:
+			aliasing_icache = read_cpuid_cachetype() & (1 << 11);
+			break;
+		default:
+			/* I-cache aliases will be handled by D-cache aliasing code */
+			aliasing_icache = 0;
+	}
+	
+	return aliasing_icache;
+}
+
+static void __init cacheid_init(void)
+{
+	unsigned int cachetype = read_cpuid_cachetype();
+	unsigned int arch = cpu_architecture();
+	
+	if (arch >= CPU_ARCH_ARMv6) {
+		if ((cachetype & (7 << 29)) == 4 << 29) {
+			/* ARMv7 register format */
+			arch = CPU_ARCH_ARMv7;
+			cacheid = CACHEID_VIPT_NONALIASING;
+			switch (cachetype & (3 << 14)) {
+				case (1 << 14):
+					cacheid |= CACHEID_ASID_TAGGED;
+					break;
+				case (3 << 14):
+					cacheid |= CACHEID_PIPT;
+					break;
+			}
+		} else {
+			arch = CPU_ARCH_ARMv6;
+			if (cachetype & (1 << 23))
+				cacheid = CACHEID_VIPT_ALIASING;
+			else
+				cacheid = CACHEID_VIPT_NONALIASING;
+		}
+		if (cpu_has_aliasing_icache(arch))
+			cacheid |= CACHEID_VIPT_I_ALIASING;
+	} else {
+		cacheid = CACHEID_VIVT;
+	}
+	
+	printk("CPU: %s data cache, %s instruction cache\n",
+		   cache_is_vivt() ? "VIVT" :
+		   cache_is_vipt_aliasing() ? "VIPT aliasing" :
+		   cache_is_vipt_nonaliasing() ? "PIPT / VIPT nonaliasing" : "unknown",
+		   cache_is_vivt() ? "VIVT" :
+		   icache_is_vivt_asid_tagged() ? "VIVT ASID tagged" :
+		   icache_is_vipt_aliasing() ? "VIPT aliasing" :
+		   icache_is_pipt() ? "PIPT" :
+		   cache_is_vipt_nonaliasing() ? "VIPT nonaliasing" : "unknown");
+}
+
+extern struct proc_info_list *lookup_processor_type(unsigned int);
+
+static void __init feat_v6_fixup(void)
+{
+	int id = read_cpuid_id();
+	
+	if ((id & 0xff0f0000) != 0x41070000)
+		return;
+	
+	/*
+	 * HWCAP_TLS is available only on 1136 r1p0 and later,
+	 * see also kuser_get_tls_init.
+	 */
+	if ((((id >> 4) & 0xfff) == 0xb36) && (((id >> 20) & 3) == 0))
+		elf_hwcap &= ~HWCAP_TLS;
+}
+
+/*
+ * cpu_init - initialise one CPU.
+ *
+ * cpu_init sets up the per-CPU stacks.
+ */
+void cpu_init(void)
+{
+	unsigned int cpu = 0;
+	struct stack *stk = &stacks[cpu];
+	
+	cpu_proc_init();
+	
+	/*
+	 * Define the placement constraint for the inline asm directive below.
+	 * In Thumb-2, msr with an immediate value is not allowed.
+	 */
+#ifdef CONFIG_THUMB2_KERNEL
+#define PLC	"r"
+#else
+#define PLC	"I"
+#endif
+	
+	/*
+	 * setup stacks for re-entrant exception handlers
+	 */
+	__asm__ (
+			 "msr	cpsr_c, %1\n\t"
+			 "add	r14, %0, %2\n\t"
+			 "mov	sp, r14\n\t"
+			 "msr	cpsr_c, %3\n\t"
+			 "add	r14, %0, %4\n\t"
+			 "mov	sp, r14\n\t"
+			 "msr	cpsr_c, %5\n\t"
+			 "add	r14, %0, %6\n\t"
+			 "mov	sp, r14\n\t"
+			 "msr	cpsr_c, %7"
+			 :
+			 : "r" (stk),
+			 PLC (PSR_F_BIT | PSR_I_BIT | IRQ_MODE),
+			 "I" (offsetof(struct stack, irq[0])),
+			 PLC (PSR_F_BIT | PSR_I_BIT | ABT_MODE),
+			 "I" (offsetof(struct stack, abt[0])),
+			 PLC (PSR_F_BIT | PSR_I_BIT | UND_MODE),
+			 "I" (offsetof(struct stack, und[0])),
+			 PLC (PSR_F_BIT | PSR_I_BIT | SVC_MODE)
+			 : "r14");
+}
+
+static void __init setup_processor(void)
+{	
 	struct proc_info_list *list;
 	
 	/*
@@ -121,10 +303,7 @@ static void __init setup_processor(void)
 	       cpu_name, read_cpuid_id(), read_cpuid_id() & 15,
 	       proc_arch[cpu_architecture()], cr_alignment);
 	
-	snprintf(init_utsname()->machine, __NEW_UTS_LEN + 1, "%s%c",
-			 list->arch_name, ENDIANNESS);
-	snprintf(elf_platform, ELF_PLATFORM_SIZE, "%s%c",
-			 list->elf_name, ENDIANNESS);
+
 	elf_hwcap = list->elf_hwcap;
 #ifndef CONFIG_ARM_THUMB
 	elf_hwcap &= ~HWCAP_THUMB;
@@ -134,22 +313,41 @@ static void __init setup_processor(void)
 	
 	cacheid_init();
 	cpu_init();
-#endif
 }
+
 
 void __init __arm_main0(char **cmdline)
 {
-	serial_puts("This is the first function.\n");
+	serial_puts("ARM Main0...");
 	paging_init();
-	serial_puts("paging init ok.\n");
-	
-	arch_enable_mmu();
 	while(1);
 }
 
 void __init __arm_main1()
 {
-	serial_puts("MMU opened.");
+	printk("ARM Main1...OK, MMU is working.\n");
+	setup_processor();
+	
+	//TODO: init exceptions handler, etc.
+	printk("%s %s %d: adds more initialization code here.\n", __FILE__, __FUNCTION__, __LINE__);
 	while (1);
+}
 
+__weak size_t strnlen(const char *s, size_t count)
+{
+	const char *sc;
+	
+	for (sc = s; count-- && *sc != '\0'; ++sc)
+	/* nothing */;
+	return sc - s;
+}
+
+__weak void *memcpy(void *dest, const void *src, size_t count)
+{
+	char *tmp = dest;
+	const char *s = src;
+	
+	while (count--)
+		*tmp++ = *s++;
+	return dest;
 }

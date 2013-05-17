@@ -28,7 +28,9 @@
 
 #elif defined(__arm__)
 #define CONFIG_CPU_USE_DOMAINS				1
+#define CONFIG_CPU_HAS_ASID					1
 #define CONFIG_CPU_TLB_V6					1
+#define CONFIG_CPU_V6						1
 #define	CONFIG_MMU							1
 #define CONFIG_HAL_KERNEL_BASE				0xc0000000
 #define PHYS_OFFSET							0x50000000						//不同的平台不一样，此处要挪走

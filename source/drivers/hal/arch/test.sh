@@ -2,7 +2,7 @@
 
 make ARCH=arm
 
-arm-linux-gnueabi-ld -o arm.bin arm.o -Tarm/lds32.txt -entry=stext
+arm-linux-gnueabi-ld -o arm.bin arm.o ../../../libs/common/misc.o ../libs/*.o -Tarm/lds32.txt -entry=stext
 cp arm.bin arm.elf
 arm-linux-gnueabi-objcopy -O binary -S arm.bin
 

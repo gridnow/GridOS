@@ -14,9 +14,9 @@
 	.arm
 
 	__HEAD
-#define ARCH_BOOT_STACK_SIZE 0x10000
+#define ARCH_BOOT_STACK_SIZE 0x8000
 arch_boot_stack:
-.fill ARCH_BOOT_STACK_SIZE
+	.fill ARCH_BOOT_STACK_SIZE
 
 ENTRY(stext)
 	@ ensure svc mode and all interrupts masked
@@ -41,15 +41,6 @@ ENTRY(arch_enable_mmu)
 	bl	__lookup_processor_type		@ r5=procinfo r9=cpuid
 	movs	r10, r5					@ invalid processor (r5=0)?
 
-#ifndef CONFIG_XIP_KERNEL
-	adr	r3, 2f
-	ldmia	r3, {r4, r8}
-	sub	r4, r3, r4			@ (PHYS_OFFSET - PAGE_OFFSET)
-	add	r8, r8, r4			@ PHYS_OFFSET
-#else
-	ldr	r8, =PHYS_OFFSET		@ always constant in this case
-#endif
-
 	/*
 		r4 is the page table base for enable_mmu
 	*/
@@ -67,10 +58,6 @@ ENTRY(arch_enable_mmu)
 	THUMB(	mov	pc, r12				)
 1:	b	__enable_mmu
 ENDPROC(arch_enable_mmu)
-#ifndef CONFIG_XIP_KERNEL
-2:		.long	.
-.long	PAGE_OFFSET
-#endif
 
 /*
  * Setup common bits before finally enabling the MMU.  Essentially
