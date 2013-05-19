@@ -5,6 +5,8 @@
 *   Wuxin
 *   线程管理
 */
+#include <linkage.h>
+#include <bitops.h>
 
 #include "thread.h"
 #include "memory.h"

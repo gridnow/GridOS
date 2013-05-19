@@ -24,7 +24,7 @@ RES				= fares
 CP				= cp
 OBJCOPY			= $(GCC_PREFIX)objcopy
 
-CFLAGS_arm         = -c -O2
+CFLAGS_arm         = -c -O2 -march=armv6k
 CFLAGS_i386        = -c -O2
 CFGAGS_MIPS64      = -c -O2 -mabi=64 -mips3 -EL -G0 
 CFGAGS_MIPS32      = -c -O2 -mabi=32 -mips2 -EL -G0 

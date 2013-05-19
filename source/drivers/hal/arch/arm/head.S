@@ -18,7 +18,7 @@
 arch_boot_stack:
 	.fill ARCH_BOOT_STACK_SIZE
 
-ENTRY(stext)
+ENTRY(start)
 	@ ensure svc mode and all interrupts masked
 	safe_svcmode_maskall r9
 
@@ -28,7 +28,7 @@ ENTRY(stext)
 	/*Goto C code*/
 	b __arm_main0
 
-ENDPROC(stext)
+ENDPROC(start)
 
 /*
  r0 = table base

@@ -15,20 +15,7 @@ typedef struct {
 	int counter;
 } atomic_t;
 
-#ifdef CONFIG_64BIT
-typedef struct {
-	long counter;
-} atomic64_t;
-#else
-typedef struct {
-	u64 __aligned(8) counter;
-} atomic64_t;
-#endif
-
 #include <asm/atomic.h>
-
-#include <asm-generic/atomic-long.h>
-
 
 #endif /* HAL_ATOMIC_H */
 

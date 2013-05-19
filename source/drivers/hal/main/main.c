@@ -8,9 +8,22 @@
 #include <irqflags.h>
 #include <arch/arch.h>
 
+/* If we have extern module */
+__weak ke_module_entry()
+{
+	
+}
+
 static void build_ram_list()
 {
+	unsigned long node = 0;
+#ifdef __arm__
+	unsigned long reserved = 0x100000;
+	unsigned long start = 0x50000000 + reserved;
+	unsigned long size = 128*1024*1024 - reserved;
+#else
 	unsigned long start = 0x1000000, size = 128*1024*1024, node = 0;
+#endif
 	int count = 0;
 	
 	//TODO: call the arch to add memory

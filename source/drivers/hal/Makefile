@@ -27,6 +27,9 @@ ifeq ($(ARCH),i386)
 	$(CP) $(TARGET) $(TARGET).org
 	$(OBJCOPY) -O binary -S $(TARGET)
 	$(CP) $(TARGET) $(SYSTEM_DIR)
+else ifeq ($(ARCH),arm)
+	$(OBJCOPY) -O binary -S $(TARGET)
+	$(CP) $(TARGET) /private/tftpboot/C0A80163.img
 endif
 
 include $(MY_BUILD_BASE)/cc.mk

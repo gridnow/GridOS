@@ -47,7 +47,7 @@ extern void hal_do_panic();
 	} while(0)	
 #define TODO(__what__)	\
 	do {	\
-		printk("文件%s中的函数%s第%d行需要完善 %s.\n", __FILE__, __FUNCTION__, __LINE__, __what__);	\
+		printk("%s->%s line %d TODO %s.\n", __FILE__, __FUNCTION__, __LINE__, __what__);	\
 	} while(0)	
 #define TRACE_UNIMPLEMENTED(__info__) \
 	do {	\

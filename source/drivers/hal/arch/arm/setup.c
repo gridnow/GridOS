@@ -20,6 +20,8 @@
 #include <asm/ptrace.h>
 #include <asm/cachetype.h>
 
+#include <arch/arch.h>
+
 unsigned int processor_id;
 unsigned int __machine_arch_type __read_mostly;
 unsigned int cacheid __read_mostly;
@@ -316,38 +318,45 @@ static void __init setup_processor(void)
 }
 
 
-void __init __arm_main0(char **cmdline)
+void __init __noreturn __arm_main0(char **cmdline)
 {
 	serial_puts("ARM Main0...");
 	paging_init();
 	while(1);
 }
 
-void __init __arm_main1()
+void __init __noreturn __arm_main1()
 {
 	printk("ARM Main1...OK, MMU is working.\n");
 	setup_processor();
 	
-	//TODO: init exceptions handler, etc.
-	printk("%s %s %d: adds more initialization code here.\n", __FILE__, __FUNCTION__, __LINE__);
-	while (1);
+	/* OK, let's go through the HAL phase */
+	hal_main();
 }
 
-__weak size_t strnlen(const char *s, size_t count)
+/***********************************************************************
+								HAL ½Ó¿Ú
+***********************************************************************/
+void hal_arch_init(int step)
 {
-	const char *sc;
-	
-	for (sc = s; count-- && *sc != '\0'; ++sc)
-	/* nothing */;
-	return sc - s;
+	switch (step)
+	{
+		case HAL_ARCH_INIT_PHASE_EARLY:
+			printk("\n%s->%s->%d.",__FILE__,__FUNCTION__,__LINE__);
+			break;
+		case HAL_ARCH_INIT_PHASE_MIDDLE:
+			break;
+		case HAL_ARCH_INIT_PHASE_LATE:
+			break;
+	}
 }
 
-__weak void *memcpy(void *dest, const void *src, size_t count)
+const xstring hal_arch_get_name()
 {
-	char *tmp = dest;
-	const char *s = src;
-	
-	while (count--)
-		*tmp++ = *s++;
-	return dest;
+	return "ARM";
+}
+
+void hal_arch_setup_percpu(int cpu, unsigned long base)
+{
+	TODO("");
 }

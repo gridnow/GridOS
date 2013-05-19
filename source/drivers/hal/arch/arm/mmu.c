@@ -502,7 +502,7 @@ void __init paging_init(struct machine_desc *mdesc)
 	 */
 	md.virtual	= PAGE_OFFSET;
 	md.pfn		= __phys_to_pfn(PHYS_OFFSET);
-	md.length	= SECTION_SIZE * 4;/*最好是0x10000000 ，0x50000000 和0x60000000在一些机器上是同一个物理地址，避免回滚*/;
+	md.length	= CONFIG_HAL_KERNEL_MEM_LEN;/*最好是0x10000000 ，0x50000000 和0x60000000在一些机器上是同一个物理地址，避免回滚*/;
 	md.type		= MT_MEMORY;
 	create_mapping(&md);
 	

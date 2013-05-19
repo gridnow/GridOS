@@ -1,6 +1,16 @@
 #ifndef _ASM_GENERIC_ATOMIC_LONG_H
 #define _ASM_GENERIC_ATOMIC_LONG_H
 
+#include <types.h>
+
+/*
+ * Suppport for atomic_long_t
+ *
+ * Casts for parameters are avoided for existing atomic functions in order to
+ * avoid issues with cast-as-lval under gcc 4.x and other limitations that the
+ * macros of a platform may have.
+ */
+
 #if BITS_PER_LONG == 64
 
 typedef atomic64_t atomic_long_t;
@@ -220,6 +230,13 @@ static inline long atomic_long_dec_return(atomic_long_t *l)
 	atomic_t *v = (atomic_t *)l;
 
 	return (long)atomic_dec_return(v);
+}
+
+static inline long atomic_long_add_unless(atomic_long_t *l, long a, long u)
+{
+	atomic_t *v = (atomic_t *)l;
+
+	return (long)atomic_add_unless(v, a, u);
 }
 
 #define atomic_long_inc_not_zero(l) atomic_inc_not_zero((atomic_t *)(l))

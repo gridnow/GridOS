@@ -11,7 +11,6 @@
 
 #include <ddk/types.h>
 
-typedef phys_addr_t resource_size_t;
 #define DR_RESOURCE_TYPE_IO		0
 #define DR_RESOURCE_TYPE_MEM	1
 

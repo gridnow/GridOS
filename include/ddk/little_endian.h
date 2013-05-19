@@ -15,6 +15,9 @@
 
 #define __le16_to_cpu(x) ((__force __u16)(__le16)(x))
 
-/* Generial interface */
+/* Generic(.h) interface */
+#define le16_to_cpu __le16_to_cpu
 #define cpu_to_le16 __cpu_to_le16
+#define le32_to_cpu __le32_to_cpu
+#define cpu_to_le32 __cpu_to_le32
 #endif /* __BYTEORDER_LITTLE_ENDIAN_H */
