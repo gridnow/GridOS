@@ -327,6 +327,8 @@ void __init __noreturn __arm_main0(char **cmdline)
 
 void __init __noreturn __arm_main1()
 {
+	u32 tmp;
+	
 	printk("ARM Main1...OK, MMU is working.\n");
 	setup_processor();
 	

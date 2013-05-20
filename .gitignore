@@ -38,4 +38,4 @@ modules.builtin
 #
 !.gitignore
 !.mailmap
-
+!.S

@@ -28,6 +28,7 @@ ifeq ($(ARCH),i386)
 	$(OBJCOPY) -O binary -S $(TARGET)
 	$(CP) $(TARGET) $(SYSTEM_DIR)
 else ifeq ($(ARCH),arm)
+	$(CP) $(TARGET) $(TARGET).org
 	$(OBJCOPY) -O binary -S $(TARGET)
 	$(CP) $(TARGET) /private/tftpboot/C0A80163.img
 endif
