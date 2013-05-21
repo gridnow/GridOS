@@ -212,3 +212,13 @@ void serial_puts(const char *s)
 		serial_putc(*s++);
 	}
 }
+
+static int write_string(char *buffer, int size)
+{
+	serial_puts(buffer);
+}
+
+#include <console.h>
+struct hal_console_ops serial_console_ops = {
+	.write = write_string,
+};

@@ -23,6 +23,9 @@
 #define CPOLICY_WRITEBACK	3
 #define CPOLICY_WRITEALLOC	4
 
+
+static unsigned int *kernel_pgd = (unsigned int*)PAGE_OFFSET;
+
 static unsigned int cachepolicy __initdata = CPOLICY_WRITEBACK;
 static unsigned int ecc_mask __initdata = 0;
 pgprot_t pgprot_user;
@@ -402,9 +405,118 @@ static void __init build_mem_type_table(void)
 	}
 }
 
+struct map_desc {
+	unsigned long virtual;
+	unsigned long pfn;
+	unsigned long length;
+	unsigned int type;
+};
+#include <asm/tlbflush.h>
+/*
+ * Convert a physical address to a Page Frame Number and back
+ */
+#define	__phys_to_pfn(paddr)	((unsigned long)((paddr) >> PAGE_SHIFT))
+#define	__pfn_to_phys(pfn)	((phys_addr_t)(pfn) << PAGE_SHIFT)
+/* to align the pointer to the (next) page boundary */
+#define PAGE_ALIGN(addr) ALIGN(addr, PAGE_SIZE)
+
+#define PGDIR_SHIFT		20
+#define PGDIR_SIZE		(1UL << PGDIR_SHIFT)
+#define PGDIR_MASK		(~(PGDIR_SIZE-1))
+
+/* to find an entry in a page-table-directory */
+#define pgd_index(addr)			((addr) >> PGDIR_SHIFT)
+#define pgd_offset(mm, addr)	((u32*)mm + pgd_index(addr))
+#define pgd_offset_k(addr)		(pgd_t*)(pgd_offset(kernel_pgd, addr))
+#define pgd_addr_end(addr, end)						\
+({	unsigned long __boundary = ((addr) + PGDIR_SIZE) & PGDIR_MASK;	\
+(__boundary - 1 < (end) - 1)? __boundary: (end);		\
+})
+typedef u32 pgd_t;
+int h2c(char *p,unsigned long hex)
+{
+	int i;
+	int j=((sizeof(void*))*8)/4;						//*8 means bits,/4 means a char represent 4 bits
+	unsigned long mask,old=hex;
+	
+	j--;												//j-- means goto the end of the string
+	for(i=j;i>=0;i--)
+	{
+		hex&=0xf;
+		if(hex<=9)
+			hex+='0';
+		else
+			hex='a'+(hex-0xa);
+		*(p+i)=(char)hex;
+		old>>=4;
+		hex=old;
+	}
+	j++;												//goto the hex string end
+	*(p+j)='h';
+	j++;												//point to the next usable position
+	return j;
+}
+
+/*
+	一致性映射：
+	1，把物理地址开始到一定长度映射到逻辑开始到长度。
+	2，把调试设备地址得物理地址与逻辑地址做一致性映射。
+ 
+	note：
+		我们只做section级别的映射
+ */
+static bool __init create_mapping(struct map_desc *md)
+{
+	unsigned long phys, addr,  end;
+	const struct mem_type *type;
+	int length;
+	pgd_t *pgd;
+	
+	type = &mem_types[md->type];
+	addr = md->virtual & PAGE_MASK;
+	phys = __pfn_to_phys(md->pfn);
+	length = PAGE_ALIGN(md->length + (md->virtual & ~PAGE_MASK));
+		
+	pgd = pgd_offset_k(addr);
+	end = addr + length;
+	do {
+		unsigned long next = pgd_addr_end(addr, end);
+	
+		*pgd = phys | type->prot_sect;
+		flush_pmd_entry(pgd);
+		
+		phys += next - addr;
+		addr = next;
+	} while (pgd++, addr != end);
+}
+
 void __init paging_init(struct machine_desc *mdesc)
 {
-	void *zero_page;
+	struct map_desc md;
 	
 	build_mem_type_table();
+#if 1 
+	/*
+	 Map the kernel Area(CONFIG_PAGE_OFFSET ->CONFIG_PAGE_OFFSET+0x20000000)
+	 to Physical memory;
+	 */
+	md.virtual	= PAGE_OFFSET;
+	md.pfn		= __phys_to_pfn(PHYS_OFFSET);
+	md.length	= CONFIG_HAL_KERNEL_MEM_LEN;/*最好是0x10000000 ，0x50000000 和0x60000000在一些机器上是同一个物理地址，避免回滚*/;
+	md.type		= MT_MEMORY;
+	create_mapping(&md);
+	
+#if 1 //COM 口
+	md.virtual	= 0x7f000000;
+	md.pfn		= __phys_to_pfn(0x7f000000);
+	md.length	= SECTION_SIZE;
+	md.type		= MT_DEVICE;
+	create_mapping(&md);
+#endif
+#endif
+	/*
+	 Open the mmu and jump to arm_main1
+	 */
+	serial_puts("opening MMU...");
+	arch_enable_mmu(PHYS_OFFSET + ((unsigned long)kernel_pgd & 0xfffffff));
 }

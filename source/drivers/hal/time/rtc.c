@@ -1,3 +1,6 @@
+
+#ifdef CONFIG_RTC
+
 #include <lock.h>
 #include <rtc.h>
 #include <irq.h>
@@ -366,3 +369,8 @@ static void set_rtc_irq_bit_locked(unsigned char bit)
 	rtc_irq_data = 0;
 }
 #endif
+
+#else /* CONFIG_RTC */
+
+void rtc_init(){}
+#endif /* CONFIG_RTC */

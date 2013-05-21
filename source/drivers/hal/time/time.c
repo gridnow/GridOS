@@ -17,6 +17,7 @@ void (*__initdata late_time_init)(void);
 void hal_time_init()
 {
 	rtc_init();
-	late_time_init();
+	if (late_time_init)
+		late_time_init();
 }
 

@@ -161,7 +161,7 @@ void hal_arch_init(int step)
 	}
 }
 
-const xstring arch_hal_get_name()
+const xstring hal_arch_get_name()
 {
 #if defined(__i386__)
 	return "x86 32 bits";

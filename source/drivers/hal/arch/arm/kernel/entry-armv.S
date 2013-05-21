@@ -8,21 +8,20 @@
  */
 #include <linkage.h>
 #include <asm/assembler.h>
+#include <asm/cp15.h>
+#include <asm/asm-offsets.h>
 
-#define __HEAD		.section	".head.text","ax"
-	.arm
+	.data
 
-	__HEAD
-.fill 0x20000
+.globl	cr_alignment
+.globl	cr_no_alignment
+cr_alignment:
+	.space	4
+cr_no_alignment:
+	.space	4
 
-ENTRY(stext)
-	@ ensure svc mode and all interrupts masked
-	safe_svcmode_maskall r9
-
-	mov sp,#CONFIG_HAL_KERNEL_BASE								@ set stack;
-	orr sp,sp,#0x20000
-
-	/*Goto C code*/
-	b setup_arch
-
-ENDPROC(stext)
+#ifdef CONFIG_MULTI_IRQ_HANDLER
+	.globl	handle_arch_irq
+handle_arch_irq:
+	.space	4
+#endif

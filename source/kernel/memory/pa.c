@@ -336,7 +336,7 @@ bool km_insert_ram(unsigned long start, unsigned long size, int node)
 	struct km_cluster *ram;
 	unsigned long page_count, bitmap_size, flags, t;
 	int i;
-	bool r = false;	
+	bool r = false;
 
 	/* Must meet the boundary */
 	if (start & (PAGE_SIZE - 1)) goto out;	
@@ -360,7 +360,7 @@ bool km_insert_ram(unsigned long start, unsigned long size, int node)
 		if (!mem_node) goto insert_end;
 		list_add_tail(&mem_node->nodes, &km_global.ram_nodes);
 	}
-
+	
 	/* 把这个内存区域分解成一个一个CLUSTER，并找到对应的Cluster链表并插入 */
 	i = (size + KM_CLUSTER_SIZE - 1) / KM_CLUSTER_SIZE;
 	for (; i > 0; i--)
@@ -385,7 +385,7 @@ bool km_insert_ram(unsigned long start, unsigned long size, int node)
 
 		/* Insert to the cluster list */
 		list_add_tail(&ram->nodes, &mem_node->clusters);
-#ifdef __i386__
+#if defined (__i386__) || defined (__arm__)
 		printk("Cluster(%x.%d) page count is %d(map page %d), start is %p, end pfn %x.\n", ram, i, page_count, bitmap_size, start, ram->end_pfn);
 #endif
 		/* We serach next cluster by ram->nodes, no end checking, so gives a bit as the end node in list */

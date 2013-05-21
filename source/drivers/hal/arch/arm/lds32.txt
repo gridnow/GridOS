@@ -1,5 +1,5 @@
 
-/*jiffies = jiffies_64*/;
+jiffies = jiffies_64;
 
 SECTIONS
 {	
@@ -14,14 +14,37 @@ SECTIONS
 	 }
 
 	/*cpu struct*/
+	.init.proc.info : {
+		. = ALIGN(4);
+		__proc_info_begin = .;
+		*(.proc.info.init)
+		__proc_info_end = .;
+	}
+	.init.arch.info : {
+		__arch_info_begin = .;
+		*(.arch.info.init)
+		__arch_info_end = .;
+	}
+
+	__init_end = .;
+	. = ALIGN(0x1000);
+	__data_loc = .;
+
+	.data : AT(__data_loc) {
+		_data = .;		/* address in memory */
+		_sdata = .;
+
+
+	}
 
 	.bss : AT(ADDR(.bss) ) {
 	__bss_start = .;
 	*(.bss)
+	 __bss_stop = .;
  }
- __bss_stop = .;
+
 
  /* 最好是4KB对齐的，考虑到有的页时16KB，所有用最大的16KB对齐 */
  . = ALIGN(((0x4000)));
-	___end = .;
+	_end = .;
 };

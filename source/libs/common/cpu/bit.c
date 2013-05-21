@@ -5,9 +5,9 @@
 *   wuxin
 *   Bits
 */
+#include <bitops.h>
 
 #include "bits.h"
-#include "asm/bitops.h"
 
 #define BITOP_WORD(nr)		((nr) / BITS_PER_LONG)
 

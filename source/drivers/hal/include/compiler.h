@@ -11,15 +11,16 @@
 #include <ddk/compiler.h>
 
 #ifndef __weak
-#define __weak				__attribute__((weak))
+#define __weak					__attribute__((weak))
 #endif
 
-#define __aligned(x)		__attribute__((aligned(x)))
-#define notrace				__attribute__((no_instrument_function))
-#define __always_inline		inline __attribute__((always_inline))
-#define barrier()			__asm__ __volatile__("": : :"memory")
-#define __maybe_unused		__attribute__((unused))
+#define __aligned(x)			__attribute__((aligned(x)))
+#define notrace					__attribute__((no_instrument_function))
+#define __always_inline			inline __attribute__((always_inline))
+#define barrier()				__asm__ __volatile__("": : :"memory")
+#define __maybe_unused			__attribute__((unused))
 #define __attribute_const__		__attribute__((__const__))
+#define __exception				__attribute__((section(".exception.text")))
 
 #define __bitwise
 #define RELOC_HIDE(ptr, off)					\

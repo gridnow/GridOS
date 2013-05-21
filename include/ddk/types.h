@@ -20,6 +20,7 @@
 /* Base types */
 #include <types.h>
 typedef u64 phys_addr_t;
+typedef phys_addr_t resource_size_t;
 typedef unsigned long dma_addr_t;
 
 #ifdef __CHECKER__
