@@ -1,26 +1,38 @@
 /**
+ *   See the readme.txt at the root directory of this project for the idea and originality of this operating system.
+ *   See the license.txt at the root directory of this project for the copyright information about this file and project.
+ *
+ *   Wuxin
+ *   –Èƒ‚µÿ÷∑π‹¿Ì∆˜
+ */
+
+#include <types.h>
+#include <walk.h>
+
+
+/**
 	@brief Deallocate the pages in the section range
 */
-void km_page_dealloc_range(struct kmp_process * where, unsigned long start, unsigned long size)
+bool km_page_map_range(struct km *mem_dst, unsigned long start_va, unsigned long size, unsigned long physical_pfn)
 {
-	unsigned long i;
-	struct kmm * mem_dst;
+	long i;
 	struct km_walk_ctx dst_ctx;
-	unsigned long va_dst;
+	unsigned long physical_address = physical_pfn << PAGE_SHIFT;
 
-	/* Get the memory context */
-	KM_WALK_INIT(&dst_ctx);
-	dst_ctx.length				= size;
-	dst_ctx.virtual_address		= start;
-	dst_ctx.process				= where;
-	mem_dst = km_ctx_get(dst_ctx.process);
-	va_dst	= start;
-
-	/* Loop the translation table and do delete */
-	km_walk_loop(mem_dst, &dst_ctx, delete_page);
-
+	KM_WALK_INIT(mem_dst, &dst_ctx);
+	
+	if (unlikely(km_walk_to(&dst_ctx, start_va) == false))
+		goto err;
+	for (i = size; i > 0; i -= PAGE_SIZE, physical_address += PAGE_SIZE)
+	{
+		if (unlikely(km_pte_write_and_next(&dst_ctx, physical_address | km_arch_get_flags(dst_ctx.prot) | PAGE_FLAG_FROM_OTHER/*PHY is from other*/) == false))
+			goto err;
+	} 
+	
 end:
-	/* Flush the TLB */
-	km_arch_flush_range(mem_dst, va_dst, dst_ctx.length);
-	km_ctx_put(dst_ctx.process);
+	return true;
+	
+err:
+	TODO("Cleanup PTE for failed mapping");
+	return false;
 }

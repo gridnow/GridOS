@@ -4,6 +4,8 @@
 #include <types.h>
 #include <list.h>
 
+#include <walk.h>
+
 #include "spinlock.h"
 
 /* Process privilege level */
@@ -14,6 +16,7 @@ struct ko_process
 {
 	int cpl;
 	
+	struct km mem_ctx;
 	struct ke_spinlock vm_list_lock;
 	struct list_head vm_list;
 };

@@ -2,6 +2,7 @@ include $(MY_BUILD_BASE)/config.mk
 include ../../../hal_include.mk
 
 ADD_INCLUDE +=$(HAL_INCLUDE) -include hal_config.h -I$(MY_BUILD_BASE)/source/kernel/include/arch/arm
+ADD_INCLUDE +=-I$(MY_BUILD_BASE)/source/drivers/bsp/arm/include
 
 #要编译的文件列表
 OBJS 	= head.o serial.o setup.o mmu.o entry-armv.o fault.o traps.o

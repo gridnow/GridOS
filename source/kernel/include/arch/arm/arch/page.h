@@ -24,6 +24,8 @@
 #define MT_DEVICE_CACHED	2
 #define MT_DEVICE_WC		3
 #define MT_UNCACHED		4
+
+//TODO: should use BSP version
 #define MT_CACHECLEAN		5
 #define MT_MINICLEAN		6
 #define MT_LOW_VECTORS		7
@@ -48,21 +50,7 @@ struct cpu_user_fns {
 								   unsigned long vaddr, void *vm_area);
 };
 
-struct mm_struct
-{
-	unsigned int asid;
-};
-#ifdef CONFIG_CPU_HAS_ASID
-#define ASID_BITS	8
-#define ASID_MASK	((~0ULL) << ASID_BITS)
-#define ASID(mm)	((mm)->asid & ~ASID_MASK)
-#else
-#define ASID(mm)	(0)
-#endif
-struct vm_area_struct
-{
-	struct mm_struct *vm_mm;
-};
+
 
 #endif /*Assemmbler */
 #endif

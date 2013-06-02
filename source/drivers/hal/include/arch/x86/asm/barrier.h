@@ -1,6 +1,8 @@
 #ifndef _ASM_X86_BARRIER_H
 #define _ASM_X86_BARRIER_H
 
+#include <asm/alternative.h>
+
 /*
  * Force strict CPU ordering.
  * And yes, this is required on UP too when we're talking

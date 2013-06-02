@@ -12,6 +12,23 @@
 
 #ifdef CONFIG_MMU
 
+/* For flush compatible */
+struct mm_struct
+{
+	unsigned int asid;
+};
+#ifdef CONFIG_CPU_HAS_ASID
+#define ASID_BITS	8
+#define ASID_MASK	((~0ULL) << ASID_BITS)
+#define ASID(mm)	((mm)->asid & ~ASID_MASK)
+#else
+#define ASID(mm)	(0)
+#endif
+struct vm_area_struct
+{
+	struct mm_struct *vm_mm;
+};
+
 #include <asm/glue.h>
 
 #define TLB_V3_PAGE	(1 << 0)
