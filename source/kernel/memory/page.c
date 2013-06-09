@@ -9,17 +9,16 @@
 #include <types.h>
 #include <walk.h>
 
-
 /**
 	@brief Deallocate the pages in the section range
 */
-bool km_page_map_range(struct km *mem_dst, unsigned long start_va, unsigned long size, unsigned long physical_pfn)
+bool km_page_map_range(struct km *mem_dst, unsigned long start_va, unsigned long size, unsigned long physical_pfn, page_prot_t prot)
 {
 	long i;
 	struct km_walk_ctx dst_ctx;
 	unsigned long physical_address = physical_pfn << PAGE_SHIFT;
 
-	KM_WALK_INIT(mem_dst, &dst_ctx);
+	KM_WALK_INIT(mem_dst, &dst_ctx, prot);
 	
 	if (unlikely(km_walk_to(&dst_ctx, start_va) == false))
 		goto err;

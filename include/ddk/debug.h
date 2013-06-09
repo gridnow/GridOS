@@ -2,11 +2,9 @@
  *  @defgroup DDKDebuger
  *  @ingroup DDK
  *
- *  定义了驱动程序调试接口
+ *  定义了驱动日志记录功能，部分接口考虑兼容现有驱动
  *  @{
  */
-
-
 #ifndef _DDK_DEBUG_H_
 #define _DDK_DEBUG_H_
 
@@ -32,8 +30,12 @@ extern int printk(const char *fmt, ...);
 #define HAL_INFO		"HAL提示："
 #define HAL_WARNING		"HAL警告："
 #define HAL_ERR		"HAL错误："
-#define KERN_INFO	HAL_INFO
-#define KERN_WARNING HAL_WARNING
+
+#define KERN_ERR
+#define KERN_WARNING
+#define KERN_INFO
+#define KERN_DEBUG
+
 /* debug.c */
 extern void hal_do_panic();
 
@@ -61,6 +63,10 @@ extern void hal_do_panic();
 	do {	\
 		printk("文件%s中的%s函数（行号%d）运行。\n", __FILE__,__FUNCTION__,__LINE__);	\
 	} while(0)
+#define UNUSED(__what__)	\
+	do {	\
+	printk("文件%s中的函数%s第%d行无需 %s.\n", __FILE__, __FUNCTION__, __LINE__, __what__);	\
+	} while(0)	
 
 /**
 	@brief BUG 表示一个不应该去的流程.
@@ -74,10 +80,30 @@ extern void hal_do_panic();
 
 #define __WARN_printf(arg...)	do { printk(arg); } while (0)
 
+/* 目前有些warn的条件不好做，因此留空 */
+#define WARN_ON(x) (0)
+
+/* The real version of WARN_ON */
+#ifndef WARN_ON
 #define WARN_ON(condition) ({						\
 	int __ret_warn_on = !!(condition);				\
+	if (unlikely(__ret_warn_on))					\
+	__WARN();						\
 	unlikely(__ret_warn_on);					\
 })
+#endif
+
+#ifndef WARN_ON_ONCE
+#define WARN_ON_ONCE(condition)	({				\
+	static bool __section(.data.unlikely) __warned;		\
+	int __ret_warn_once = !!(condition);			\
+	\
+	if (unlikely(__ret_warn_once))				\
+	if (WARN_ON(!__warned)) 			\
+	__warned = true;			\
+	unlikely(__ret_warn_once);				\
+})
+#endif
 
 #define WARN(condition, format...) ({					\
 	int __ret_warn_on = !!(condition);				\
@@ -91,7 +117,18 @@ extern void hal_do_panic();
 */
 #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
 
+/* Runtime sanity check */
+#define __WARN() printk("警告：%s %d行有问题.\n", __FILE__, __LINE__)
+
+/* 记录特定设备对象的驱动运行日志,TODO to support this */
+#define dev_info(dev, format, arg...) printk("dev_inf："format, ##arg)
+#define dev_dbg dev_info
+#define dev_warn dev_info
+#define dev_printk(level, dev, format, arg...) printk("设备信息："format, ##arg)
+#define dev_err dev_info
+#define dev_trace(format, arg...) printk("设备跟踪："format, ##arg)
+#define dev_WARN(dev, format, arg...) printk("设备警告(%s.%d):"format"\n", __FUNCTION__, __LINE__, ##arg)
+
 #endif
 
 /** @} */
-

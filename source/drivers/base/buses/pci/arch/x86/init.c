@@ -1,5 +1,5 @@
 #include <ddk/types.h>
-#include <ddk/log.h>
+#include <ddk/debug.h>
 
 #include <compiler.h>
 #include <list.h>

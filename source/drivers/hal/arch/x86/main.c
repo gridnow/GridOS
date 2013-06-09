@@ -150,7 +150,15 @@ void hal_arch_init(int step)
 		printk("\n%s->%s->%d.",__FILE__,__FUNCTION__,__LINE__);
 		break;
 	case HAL_ARCH_INIT_PHASE_MIDDLE:
-		arch_init_irq();
+		{
+			unsigned long fb;
+			int w, h, bpp;
+			extern void x86_bootloader_get_video_info(unsigned long *fb, int *w, int *h, int *bpp);
+			
+			/* X86 has fb */
+			x86_bootloader_get_video_info(&fb, &w, &h, &bpp);
+			hal_fb_register_simple(fb, w, h, bpp);
+		}
 		break;
 	case HAL_ARCH_INIT_PHASE_LATE:
 		/* start smp and run cpu_init on each cpu */
@@ -171,21 +179,6 @@ const xstring hal_arch_get_name()
 	return "x86 unknowing";
 #endif
 }
-
-void hal_arch_video_init_screen(struct video_screen_info *main_screen)
-{
-	unsigned long fb;
-	int w, h, bpp;
-	memset(main_screen, 0, sizeof(*main_screen));
-
-	
-	//TODO: 通过引导程序填充该数据结构。
-	main_screen->bpp 			= 0;
-	main_screen->fb_physical 	= 0;
-	main_screen->height 		= 0;
-	main_screen->width 			= 0;	
-}
-
 
 void arch_get_fw_arg(unsigned long *argc, unsigned long *argv)
 {

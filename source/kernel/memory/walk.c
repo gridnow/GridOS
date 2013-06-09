@@ -69,14 +69,14 @@ bool km_walk_to(struct km_walk_ctx *ctx, unsigned long va)
 		ctx->hirarch_id[i]		= sub_id;
 		ctx->table_base[i]		= table;
 		ctx->level_id			= i;
-		
-		/* Get sub table from current table */
-		subtable = km_get_sub_table(table, sub_id);
+		printk("id %d, sub_id = %d, table = %p\n", i, sub_id, table);
 		
 		/* Level 0 has no subtable */
 		if (--i == 0)
 			break;
 		
+		/* Get sub table from current table */
+		subtable = km_get_sub_table(table, sub_id);
 		table = subtable;
 	} while (1);
 	r = true;

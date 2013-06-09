@@ -17,7 +17,7 @@
 
 #include <ddk/slab.h>
 #include <ddk/obj.h>
-#include <ddk/log.h>
+#include <ddk/debug.h>
 
 #include "object.h"
 

@@ -32,9 +32,6 @@ extern const xstring hal_arch_get_name();
 */
 extern void hal_arch_setup_percpu(int cpu, unsigned long base);
 
-
-extern void hal_arch_video_init_screen(struct video_screen_info *main_screen);
-
 #define HAL_ARCH_INIT_PHASE_EARLY 	0
 #define HAL_ARCH_INIT_PHASE_MIDDLE 	1
 #define HAL_ARCH_INIT_PHASE_LATE 	2

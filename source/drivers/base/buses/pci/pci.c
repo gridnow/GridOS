@@ -1,5 +1,5 @@
 #include <types.h>
-#include <ddk/log.h>
+#include <ddk/debug.h>
 #include <ddk/pci/pci_regs.h>
 #include <ddk/delay.h>
 

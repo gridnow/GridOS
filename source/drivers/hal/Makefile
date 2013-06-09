@@ -11,7 +11,7 @@ ADD_LDFLAGS				+= -T arch/$(ARCH_DIR)/lds$(BITS).txt
 DEPENDS					+= ../../libs/common/*.o ../../kernel/*.a
 #要编译的文件列表
 OBJS	= 
-PARTS	= irq main time libs arch
+PARTS	= irq main time libs arch console
 
 
 all:  subs_parts $(OBJS)

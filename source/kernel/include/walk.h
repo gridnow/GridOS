@@ -27,9 +27,10 @@
 #define KM_WALK_MAX_LEVEL	2
 #endif
 
-#define KM_WALK_INIT(MEM, WALK) do { \
+#define KM_WALK_INIT(MEM, WALK, PROT) do { \
 	(WALK)->miss_action = km_walk_miss; \
-	(WALK)->mem = MEM;	\
+	(WALK)->mem = (MEM);	\
+	(WALK)->prot = PROT;	\
 } while(0)
 
 struct km
@@ -107,6 +108,7 @@ static inline void km_pte_write(void *entry, pte_t what)
 	}
 	*p = what;
 }
+
 #endif
 
 /**
@@ -131,12 +133,11 @@ static inline bool km_pte_write_and_next(struct km_walk_ctx *ctx, unsigned long 
 	int i;
 	void *entry  = &(ctx->table_base[1][ctx->hirarch_id[1]]);
 	
-	//printk("kmm_pte_write: ctx->table_base[0] = %p, id %d, entry %p(%p), what %p.\n",
-	//   		ctx->table_base[0],
-	//   		ctx->temp_id[0],
-	//   		entry, *entry,
-	//   		what);
-	//printk("what %x\n", what);
+//	printk("kmm_pte_write: ctx->table_base[0] = %p, id %d, entry %p(%p), what %p.\n",
+//	   		ctx->table_base[1],
+//	   		ctx->hirarch_id[1],
+//	   		entry, *(unsigned long*)entry,
+//	   		what);
 	km_pte_write(entry, what);
 	return kmm_pte_next(ctx);
 }

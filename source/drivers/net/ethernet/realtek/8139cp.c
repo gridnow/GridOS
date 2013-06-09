@@ -3,7 +3,7 @@
 */
 #include <errno.h>
 
-#include <ddk/log.h>
+#include <ddk/debug.h>
 #include <ddk/resource.h>
 #include <ddk/dma.h>
 #include <ddk/byteorder.h>
@@ -333,37 +333,18 @@ static inline void cp_set_rxbufsize (struct cp_private *cp)
 		cp->rx_buf_sz = PKT_BUF_SZ;
 }
 
-static const char mii_2_8139_map[8] = {
-	BasicModeCtrl,
-	BasicModeStatus,
-	0,
-	0,
-	NWayAdvert,
-	NWayLPAR,
-	NWayExpansion,
-	0
-};
-
-static int mdio_read(struct net_device *dev, int phy_id, int location)
+static netdev_tx_t cp_start_xmit (struct sk_buff *skb, struct net_device *dev)
 {
-	struct cp_private *cp = netdev_priv(dev);
-
-	return location < 8 && mii_2_8139_map[location] ?
-	       readw(cp->regs + mii_2_8139_map[location]) : 0;
 }
 
-
-static void mdio_write(struct net_device *dev, int phy_id, int location,
-		       int value)
+static void cp_set_rx_mode (struct net_device *dev)
 {
-	struct cp_private *cp = netdev_priv(dev);
 
-	if (location == 0) {
-		cpw8(Cfg9346, Cfg9346_Unlock);
-		cpw16(BasicModeCtrl, value);
-		cpw8(Cfg9346, Cfg9346_Lock);
-	} else if (location < 8 && mii_2_8139_map[location])
-		cpw16(mii_2_8139_map[location], value);
+}
+
+static struct net_device_stats *cp_get_stats(struct net_device *dev)
+{
+
 }
 
 static void cp_stop_hw (struct cp_private *cp)
@@ -380,6 +361,68 @@ static void cp_stop_hw (struct cp_private *cp)
 	netdev_reset_queue(cp->dev);
 }
 
+static int cp_open (struct net_device *dev)
+{
+
+}
+
+static int cp_close (struct net_device *dev)
+{
+
+}
+
+static void cp_tx_timeout(struct net_device *dev)
+{
+
+}
+
+static int cp_change_mtu(struct net_device *dev, int new_mtu)
+{
+
+}
+
+static const char mii_2_8139_map[8] = {
+	BasicModeCtrl,
+	BasicModeStatus,
+	0,
+	0,
+	NWayAdvert,
+	NWayLPAR,
+	NWayExpansion,
+	0
+};
+
+static int mdio_read(struct net_device *dev, int phy_id, int location)
+{
+	struct cp_private *cp = netdev_priv(dev);
+
+	return location < 8 && mii_2_8139_map[location] ?
+		readw(cp->regs + mii_2_8139_map[location]) : 0;
+}
+
+
+static void mdio_write(struct net_device *dev, int phy_id, int location,
+					   int value)
+{
+	struct cp_private *cp = netdev_priv(dev);
+
+	if (location == 0) {
+		cpw8(Cfg9346, Cfg9346_Unlock);
+		cpw16(BasicModeCtrl, value);
+		cpw8(Cfg9346, Cfg9346_Lock);
+	} else if (location < 8 && mii_2_8139_map[location])
+		cpw16(mii_2_8139_map[location], value);
+}
+
+static int cp_set_features(struct net_device *dev, netdev_features_t features)
+{
+
+}
+
+static int cp_set_mac_address(struct net_device *dev, void *p)
+{
+
+}
 
 /* Serial EEPROM section. */
 
@@ -498,6 +541,18 @@ static void write_eeprom(void __iomem *ioaddr, int location, u16 val,
 	eeprom_extend_cmd(ee_addr, EE_EWDS_ADDR, addr_len);
 }
 
+static const struct ddk_net_device_ops cp_netdev_ops = {
+	.open		= cp_open,
+	.stop		= cp_close,
+	.set_mac_address 	= cp_set_mac_address,
+	.set_rx_mode	= cp_set_rx_mode,
+	.get_stats		= cp_get_stats,
+	.start_xmit		= cp_start_xmit,
+	.tx_timeout		= cp_tx_timeout,
+	.set_features	= cp_set_features,
+	.change_mtu		= cp_change_mtu,
+};
+
 static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
 {
 	int rc;
@@ -606,14 +661,9 @@ static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
 		((__le16 *) (dev->dev_addr))[i] =
 		cpu_to_le16(read_eeprom (regs, i + 7, addr_len));
 	memcpy(dev->perm_addr, dev->dev_addr, dev->addr_len);
-	printk("dev->addr_len = %d, MAC %02x:%02x:%02x:%02x:%02x:%02x.\n",dev->addr_len,
-																dev->perm_addr[0], dev->perm_addr[1], dev->perm_addr[2], dev->perm_addr[3], dev->perm_addr[4], dev->perm_addr[5]);
-#if 0
+
 	dev->netdev_ops = &cp_netdev_ops;
-	netif_napi_add(dev, &cp->napi, cp_rx_poll, 16);
-	dev->ethtool_ops = &cp_ethtool_ops;
-	dev->watchdog_timeo = TX_TIMEOUT;
-	
+		
 	dev->features |= NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX;
 	
 	if (pci_using_dac)
@@ -621,25 +671,23 @@ static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
 	
 	/* disabled by default until verified */
 	dev->hw_features |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_TSO |
-	NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX;
-	dev->vlan_features = NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_TSO |
-	NETIF_F_HIGHDMA;
+	NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX;	
 	
 	rc = register_netdev(dev);
 	if (rc)
 		goto err_out_iomap;
-	
+
 	netdev_info(dev, "RTL-8139C+ at 0x%p, %pM, IRQ %d\n",
 				regs, dev->dev_addr, pdev->irq);
-	
-	pci_set_drvdata(pdev, dev);
+		
+//	pci_set_drvdata(pdev, dev);
 	
 	/* enable busmastering and memory-write-invalidate */
 	pci_set_master(pdev);
 	
-	if (cp->wol_enabled)
-		cp_set_d3_state (cp);
-#endif
+//	if (cp->wol_enabled)
+//		cp_set_d3_state (cp);
+
 	return 0;
 	
 err_out_iomap:

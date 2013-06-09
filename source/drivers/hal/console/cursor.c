@@ -8,3 +8,17 @@
 #include <types.h>
 #include <screen.h>
 
+void console_cursor_toggle(int enable)
+{
+	
+}
+
+void console_cursor_move(unsigned int x, unsigned int y)
+{
+	
+}
+
+void console_cursor_set_height(int h)
+{
+	
+}

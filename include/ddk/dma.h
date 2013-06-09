@@ -9,7 +9,7 @@
 #define DDK_DMA_H
 
 #include <ddk/types.h>
-#include <ddk/log.h>
+#include <ddk/debug.h>
 #include <ddk/slab.h>
 
 struct device;

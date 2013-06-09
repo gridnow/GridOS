@@ -1,4 +1,5 @@
 #include <ddk/types.h>
+#include <ddk/debug.h>
 #include <ddk/pci/pci_regs.h>
 #include <ddk/pci/class.h>
 #include <ddk/pci/global_ids.h>

@@ -1,5 +1,3 @@
-#include <ddk/log.h>
-
 #include "arch/pci-bridge.h"
 #include "pci.h"
 #include <asm/pci.h>

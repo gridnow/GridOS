@@ -1,5 +1,5 @@
 #include <ddk/dma.h>
-#include <ddk/log.h>
+#include <ddk/debug.h>
 
 struct ddk_dma_pool
 {

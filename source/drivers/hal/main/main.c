@@ -45,19 +45,19 @@ void __init __noreturn hal_main()
 	kp_init();
 	kt_init();
 	ks_init();
-	hal_malloc_init();
 
+	hal_malloc_init();
 	hal_time_init();
+	hal_console_init();
 	
 	printk("Starting up modules...");
 	ke_module_entry();
+	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
+
 	printk("Hal startup ok.\n");
+		
 	kernel_test();
 	while (1) dumy_idle_ops(0);
-	
-	
-	hal_video_init_screen();
-	
 
 	/* IRQ,平台的初始化，如平台的中断，各种配置信息 */	
 	hal_irq_init();

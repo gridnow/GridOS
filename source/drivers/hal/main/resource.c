@@ -9,7 +9,7 @@
 #include <types.h>
 #include <errno.h>
 #include <ddk/resource.h>
-#include <ddk/log.h>
+#include <ddk/debug.h>
 #include <ddk/slab.h>
 
 #include <kernel/ke_lock.h>
