@@ -10,18 +10,10 @@
 #define KM_H
 
 #include <list.h>
+#include <kernel/ke_memory.h>
 
 #include <lock.h>
 #include "bitmap.h"
-
-typedef unsigned long pte_t;
-struct km
-{
-};
-
-struct km_walk_ctx
-{
-};
 
 /* Cluster of page */
 #define KM_CLUSTER_SIZE				(32 * 1024 * 1024)
@@ -133,6 +125,9 @@ void *km_page_alloc_kerneled(int page_count);
 */
 void km_page_dealloc_kerneled(void *kernel_page, unsigned long size);
 
+//page.c
+struct km;
+bool km_page_map_range(struct km *mem_dst, unsigned long start_va, unsigned long size, unsigned long physical_pfn, page_prot_t prot);
 
 /* Useful macro */
 #define KM_PAGE_ADDRESS_TO_PFN(PAGE_ADDRESS) ((unsigned long)(PAGE_ADDRESS) >> PAGE_SHIFT)

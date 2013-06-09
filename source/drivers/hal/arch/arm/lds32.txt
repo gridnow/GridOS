@@ -27,14 +27,15 @@ SECTIONS
 	}
 
 	__init_end = .;
-	. = ALIGN(0x1000);
+	. = ALIGN(8192);
 	__data_loc = .;
 
 	.data : AT(__data_loc) {
 		_data = .;		/* address in memory */
 		_sdata = .;
 
-
+		
+		_edata = .;
 	}
 
 	.bss : AT(ADDR(.bss) ) {

@@ -38,24 +38,13 @@ typedef struct {
 /*
 * UART
 */
-#define ELFIN_UART_BASE		0x7F005000
+#define ELFIN_UART_PHY_BASE	0x7F005000
+static unsigned long ELFIN_UART_BASE = 0;
 
 #define ELFIN_UART0_OFFSET	0x0000
 #define ELFIN_UART1_OFFSET	0x0400
 #define ELFIN_UART2_OFFSET	0x0800
 #define ELFIN_UART3_OFFSET	0x0c00
-
-#ifdef CONFIG_SERIAL1
-#define ELFIN_UART_CONSOLE_BASE (ELFIN_UART_BASE + ELFIN_UART0_OFFSET)
-#elif defined(CONFIG_SERIAL2)
-#define ELFIN_UART_CONSOLE_BASE (ELFIN_UART_BASE + ELFIN_UART1_OFFSET)
-#elif defined(CONFIG_SERIAL3)
-#define ELFIN_UART_CONSOLE_BASE (ELFIN_UART_BASE + ELFIN_UART2_OFFSET)
-#elif defined(CONFIG_SERIAL4)
-#define ELFIN_UART_CONSOLE_BASE (ELFIN_UART_BASE + ELFIN_UART3_OFFSET)
-#else
-#define ELFIN_UART_CONSOLE_BASE (ELFIN_UART_BASE + ELFIN_UART0_OFFSET)
-#endif
 
 #define ULCON_OFFSET		0x00
 #define UCON_OFFSET		0x04
@@ -80,10 +69,11 @@ typedef struct {
 
 static inline S3C64XX_UART * S3C64XX_GetBase_UART(S3C64XX_UARTS_NR nr)
 {
+	if (ELFIN_UART_BASE == 0)
+		return 0;
 	//	return (S3C64XX_UART *)(ELFIN_UART_BASE + (nr * 0x4000));
 	return (S3C64XX_UART *)(ELFIN_UART_BASE + (nr*0x400));
 }
-
 
 #ifdef CONFIG_SERIAL1
 #define UART_NR	S3C64XX_UART0
@@ -101,26 +91,6 @@ static inline S3C64XX_UART * S3C64XX_GetBase_UART(S3C64XX_UARTS_NR nr)
 #error "Bad: you didn't configure serial ..."
 #endif
 
-void serial_setbrg(void)
-{
-	//DECLARE_GLOBAL_DATA_PTR;
-
-	int i;
-	for (i = 0; i < 100; i++);
-}
-
-/*
-* Initialise the serial port with the given baudrate. The settings
-* are always 8 data bits, no parity, 1 stop bit, no start bits.
-*
-*/
-int serial_init(void)
-{
-	serial_setbrg();
-
-	return (0);
-}
-
 /*
 * Read a single byte from the serial port. Returns 1 on success, 0
 * otherwise. When the function is succesfull, the character read is
@@ -129,45 +99,13 @@ int serial_init(void)
 int serial_getc(void)
 {
 	S3C64XX_UART *const uart = S3C64XX_GetBase_UART(UART_NR);
-
+	if (!uart) return 0;
+	
 	/* wait for character to arrive */
 	while (!(uart->UTRSTAT & 0x1));
 
 	return uart->URXH & 0xff;
 }
-
-#ifdef CONFIG_HWFLOW
-static int hwflow = 0;		/* turned off by default */
-int hwflow_onoff(int on)
-{
-	switch (on) {
-	case 0:
-	default:
-		break;		/* return current */
-	case 1:
-		hwflow = 1;	/* turn on */
-		break;
-	case -1:
-		hwflow = 0;	/* turn off */
-		break;
-	}
-	return hwflow;
-}
-#endif
-
-#ifdef CONFIG_MODEM_SUPPORT
-static int be_quiet = 0;
-void disable_putc(void)
-{
-	be_quiet = 1;
-}
-
-void enable_putc(void)
-{
-	be_quiet = 0;
-}
-#endif
-
 
 /*
 * Output a single byte to the serial port.
@@ -176,6 +114,8 @@ void serial_putc(const char c)
 {
 	S3C64XX_UART *const uart = S3C64XX_GetBase_UART(UART_NR);
 
+	if (!uart) return;
+	
 #ifdef CONFIG_MODEM_SUPPORT
 	if (be_quiet)
 		return;
@@ -202,7 +142,8 @@ void serial_putc(const char c)
 int serial_tstc(void)
 {
 	S3C64XX_UART *const uart = S3C64XX_GetBase_UART(UART_NR);
-
+	if (!uart) return 0;
+	
 	return uart->UTRSTAT & 0x1;
 }
 
@@ -211,6 +152,11 @@ void serial_puts(const char *s)
 	while (*s) {
 		serial_putc(*s++);
 	}
+}
+
+void serial_set_base(unsigned long base)
+{
+	ELFIN_UART_BASE = base;
 }
 
 static int write_string(char *buffer, int size)

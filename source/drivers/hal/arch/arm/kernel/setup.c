@@ -19,6 +19,13 @@
 #include <asm/proc-fns.h>
 #include <asm/ptrace.h>
 #include <asm/cachetype.h>
+#include <asm/cacheflush.h>
+#include <asm/tlbflush.h>
+#include <asm/mmu.h>
+#include <asm/traps.h>
+
+#include <mach/map.h>
+#include <mach/arch.h>
 
 #include <arch/arch.h>
 
@@ -317,20 +324,64 @@ static void __init setup_processor(void)
 	cpu_init();
 }
 
+static void __init devicemaps_init(struct machine_desc *mdesc)
+{
+	struct map_desc map;
+	unsigned long addr;
+	void *vectors;
+	
+	vectors = km_page_alloc_kerneled(1);
+	
+	early_trap_init(vectors);
+#if 0
+	/*
+	 * Create a mapping for the machine vectors at the high-vectors
+	 * location (0xffff0000).  If we aren't using high-vectors, also
+	 * create a mapping at the low-vectors virtual address.
+	 */
+	map.pfn = __phys_to_pfn(HAL_GET_BASIC_PHYADDRESS(vectors));
+	map.virtual = 0xffff0000;
+	map.length = PAGE_SIZE;
+	map.type = MT_HIGH_VECTORS;
+	create_mapping(&map);
+	
+	if (!vectors_high()) {
+		map.virtual = 0;
+		map.type = MT_LOW_VECTORS;
+		create_mapping(&map);
+	}
+#endif
+	/*
+	 * Ask the machine support to map in the statically mapped devices.
+	 */
+	if (mdesc->map_io)
+		mdesc->map_io();
+	
+	/*
+	 * Finally flush the caches and tlb to ensure that we're in a
+	 * consistent state wrt the writebuffer.  This also ensures that
+	 * any write-allocated cache lines in the vector page are written
+	 * back.  After this point, we can start to touch devices again.
+	 */
+	local_flush_tlb_all();
+	flush_cache_all();
+}
 
 void __init __noreturn __arm_main0(char **cmdline)
 {
-	serial_puts("ARM Main0...");
-	paging_init();
+	early_paging_init();
 	while(1);
 }
 
 void __init __noreturn __arm_main1()
-{
-	u32 tmp;
+{	
+	/* Make sure printk can be used*/
+	mmu_map_debug_device();
 	
-	printk("ARM Main1...OK, MMU is working.\n");
 	setup_processor();
+	
+	/* Init the page-related low level information */
+	paging_init();
 	
 	/* OK, let's go through the HAL phase */
 	hal_main();
@@ -344,9 +395,18 @@ void hal_arch_init(int step)
 	switch (step)
 	{
 		case HAL_ARCH_INIT_PHASE_EARLY:
-			printk("\n%s->%s->%d.",__FILE__,__FUNCTION__,__LINE__);
+			{
+				/*
+					Init machine.
+					Default to s3c6410, TODO: should get by machine id.
+				*/
+				extern struct machine_desc *get_s3c6410_machine_desc();
+				struct machine_desc *machine = get_s3c6410_machine_desc();
+				devicemaps_init(machine);
+			}
 			break;
 		case HAL_ARCH_INIT_PHASE_MIDDLE:
+			printk("\n%s->%s->%d.",__FILE__,__FUNCTION__,__LINE__);
 			break;
 		case HAL_ARCH_INIT_PHASE_LATE:
 			break;

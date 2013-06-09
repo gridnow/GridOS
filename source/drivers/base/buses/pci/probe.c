@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-#include <ddk/log.h>
+#include <ddk/debug.h>
 #include <ddk/pci/pci_regs.h>
 #include <ddk/pci/global_ids.h>
 #include <ddk/slab.h>

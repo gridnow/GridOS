@@ -11,10 +11,12 @@
 #include <screen.h>
 #include <console.h>
 
+extern struct hal_console_ops video_console_ops;
 #if defined (__i386__) || defined (__arm__)
 extern struct hal_console_ops serial_console_ops;
 #endif
 static struct hal_console_ops *console_ops_array[]={
+	&video_console_ops,
 #if defined (__i386__) || defined (__arm__)
 	&serial_console_ops,
 #endif

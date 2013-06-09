@@ -22,6 +22,9 @@ static void object_init(real_object_t *obj)
 	struct ko_process *p = (struct ko_process *)obj;
 	INIT_LIST_HEAD(&p->vm_list);
 	ke_spin_init(&p->vm_list_lock);
+	
+	/* Although init_process will call it, but it dose not matter for a page disappeared */
+	km_walk_init(&p->mem_ctx);
 }
 
 static struct cl_object_ops process_object_ops = {
@@ -105,7 +108,7 @@ bool kp_init()
 	init_process = kp_create(KP_CPL0, "OS");
 	if (!init_process) 
 		goto err;
-
+	km_walk_init_for_kernel(&init_process->mem_ctx);
 	
 	return true;
 err:

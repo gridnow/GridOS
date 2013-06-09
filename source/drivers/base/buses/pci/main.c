@@ -1,6 +1,6 @@
 
 #include <ddk/string.h>
-#include <ddk/log.h>
+#include <ddk/debug.h>
 
 #include "pci.h"
 

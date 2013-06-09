@@ -1,5 +1,6 @@
 #include <ddk/types.h>
 #include <ddk/irq.h>
+#include <ddk/debug.h>
 #include <ddk/resource.h>
 #include <ddk/topology.h>
 #include <ddk/pci/pci_regs.h>

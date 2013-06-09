@@ -119,4 +119,3 @@ void kt_arch_switch(struct ko_thread * prev, struct ko_thread * next)
 { 
 	x86_thread_switch_to(prev, next);
 }
-

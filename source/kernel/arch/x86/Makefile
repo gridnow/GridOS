@@ -4,7 +4,7 @@ include ../../kernel.mk
 ADD_INCLUDE +=$(HAL_INCLUDE) -include hal_config.h
 
 #要编译的文件列表
-OBJS = thread.o
+OBJS = thread.o tss.o page.o
 PARTS =
 
 all:  subs_parts $(OBJS)

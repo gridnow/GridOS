@@ -2,7 +2,7 @@
 
 #include <ddk/pci/pci.h>
 #include <ddk/pci/pci_regs.h>
-#include <ddk/log.h>
+#include <ddk/debug.h>
 
 static bool pci_apply_fixup_final_quirks;
 

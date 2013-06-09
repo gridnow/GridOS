@@ -1,8 +1,8 @@
 #ifndef DDK_COMPATIBLE_IO_H
 #define DDK_COMPATIBLE_IO_H
 
-#include <ddk/log.h>
 #include <ddk/compiler.h>
+#include <ddk/types.h>
 
 /* IO */
 #include <ddk/io.h>

@@ -16,8 +16,9 @@ __weak ke_module_entry()
 
 static void build_ram_list()
 {
-	unsigned long node = 0;
+	
 #ifdef __arm__
+	unsigned long node = 0;
 	unsigned long reserved = 0x100000;
 	unsigned long start = 0x50000000 + reserved;
 	unsigned long size = 128*1024*1024 - reserved;
@@ -28,37 +29,35 @@ static void build_ram_list()
 	
 	//TODO: call the arch to add memory
 	km_insert_ram(start, size, node);
-
- 	kc_init();
-	kp_init();
-	kt_init();
-	ks_init();
-
-	hal_time_init();
-	
-	hal_malloc_init();
-	
-	local_irq_enable();
-	
-	
-
-	printk("Starting up modules...");
-	ke_module_entry();
-	printk("Hal startup ok.\n");
-	kernel_test();
-	while (1) dumy_idle_ops(0);
 }
 
 void __init __noreturn hal_main()
 {
 	/* 开辟鸿蒙,谁为情种？最初的一切*/
-	hal_arch_init(HAL_ARCH_INIT_PHASE_EARLY);
-
 	km_cluster_init();
 	build_ram_list();
 
-	hal_video_init_screen();
+	/* Go back to ARCH, we have inited the basic paging allocator */
+	hal_arch_init(HAL_ARCH_INIT_PHASE_EARLY);
+
+	/* KERNEL */
+	kc_init();
+	kp_init();
+	kt_init();
+	ks_init();
+
+	hal_malloc_init();
+	hal_time_init();
+	hal_console_init();
 	
+	printk("Starting up modules...");
+	ke_module_entry();
+	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
+
+	printk("Hal startup ok.\n");
+		
+	kernel_test();
+	while (1) dumy_idle_ops(0);
 
 	/* IRQ,平台的初始化，如平台的中断，各种配置信息 */	
 	hal_irq_init();

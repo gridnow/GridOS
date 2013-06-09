@@ -9,10 +9,17 @@
 
 #include <stddef.h>
 
+#include <string.h>
+
 #include <asm/cputype.h>
 #include <asm/cp15.h>
 #include <asm/system_info.h>
 #include <asm/domain.h>
+#include <asm/mmu.h>
+
+/* BSP Machine information */
+#include <mach/arch.h>
+#include <mach/map.h>
 
 #include <arch/page.h>
 #include <arch/pgtable-hwdef.h>
@@ -177,7 +184,6 @@ const struct mem_type *get_mem_type(unsigned int type)
 {
 	return type < ARRAY_SIZE(mem_types) ? &mem_types[type] : NULL;
 }
-
 
 /*
  * Adjust the PMD section entries according to the CPU in use.
@@ -405,12 +411,6 @@ static void __init build_mem_type_table(void)
 	}
 }
 
-struct map_desc {
-	unsigned long virtual;
-	unsigned long pfn;
-	unsigned long length;
-	unsigned int type;
-};
 #include <asm/tlbflush.h>
 /*
  * Convert a physical address to a Page Frame Number and back
@@ -457,14 +457,42 @@ int h2c(char *p,unsigned long hex)
 	return j;
 }
 
+static void __init alloc_init_pte(pgd_t *pgd, unsigned long addr,
+								  unsigned long end, unsigned long pfn,
+								  const struct mem_type *type)
+{
+//	pte_t *pte = early_pte_alloc(pmd, addr, type->prot_l1);
+//	do {
+//		set_pte_ext(pte, pfn_pte(pfn, __pgprot(type->prot_pte)), 0);
+//		pfn++;
+//	} while (pte++, addr += PAGE_SIZE, addr != end);
+}
+
+static void __init alloc_init_section(pgd_t *pgd, unsigned long addr,
+									  unsigned long end, phys_addr_t phys,
+									  const struct mem_type *type)
+{
+	/*
+	 * Try a section mapping - end, addr and phys must all be aligned
+	 * to a section boundary.
+	 */
+	if (type->prot_sect && ((addr | end | phys) & ~SECTION_MASK) == 0)
+	{
+		*pgd = (phys | type->prot_sect);
+		flush_pmd_entry(pgd);
+	}
+	else
+	{
+		//alloc_init_pte(pgd, addr, end, __phys_to_pfn(phys), type);
+	}
+}
+
 /*
 	一致性映射：
-	1，把物理地址开始到一定长度映射到逻辑开始到长度。
-	2，把调试设备地址得物理地址与逻辑地址做一致性映射。
- 
-	note：
-		我们只做section级别的映射
- */
+		1，把物理地址开始到一定长度映射到逻辑开始到长度。
+	调试设备映射：
+		1，把调试设备（串口）地址得物理地址与逻辑地址做一致性映射。
+*/
 static bool __init create_mapping(struct map_desc *md)
 {
 	unsigned long phys, addr,  end;
@@ -481,42 +509,57 @@ static bool __init create_mapping(struct map_desc *md)
 	end = addr + length;
 	do {
 		unsigned long next = pgd_addr_end(addr, end);
-	
-		*pgd = phys | type->prot_sect;
-		flush_pmd_entry(pgd);
+		
+		alloc_init_section(pgd, addr, next, phys, type);
 		
 		phys += next - addr;
 		addr = next;
 	} while (pgd++, addr != end);
 }
 
-void __init paging_init(struct machine_desc *mdesc)
+/* Goto paging mode */
+void __init early_paging_init()
 {
 	struct map_desc md;
 	
 	build_mem_type_table();
-#if 1 
+	memset(kernel_pgd, 0, 16384);
+ 
 	/*
-	 Map the kernel Area(CONFIG_PAGE_OFFSET ->CONFIG_PAGE_OFFSET+0x20000000)
-	 to Physical memory;
-	 */
+		直接映射
+	*/
 	md.virtual	= PAGE_OFFSET;
 	md.pfn		= __phys_to_pfn(PHYS_OFFSET);
 	md.length	= CONFIG_HAL_KERNEL_MEM_LEN;/*最好是0x10000000 ，0x50000000 和0x60000000在一些机器上是同一个物理地址，避免回滚*/;
 	md.type		= MT_MEMORY;
 	create_mapping(&md);
 	
-#if 1 //COM 口
+	/*
+	 Open the mmu and jump to arm_main1
+	 */
+	arch_enable_mmu(PHYS_OFFSET + ((unsigned long)kernel_pgd & 0xfffffff));
+}
+
+void __init arm_bsp_create_map(struct map_desc *desc, int nr)
+{
+	
+}
+
+void __init paging_init()
+{
+	/* Init mem_type_table again, because information is cleaned after goto pagin by __mmap_switched */
+	build_mem_type_table();
+}
+
+void __init mmu_map_debug_device()
+{
+	struct map_desc md;
+	
+	/* COM 口 */
 	md.virtual	= 0x7f000000;
 	md.pfn		= __phys_to_pfn(0x7f000000);
 	md.length	= SECTION_SIZE;
 	md.type		= MT_DEVICE;
 	create_mapping(&md);
-#endif
-#endif
-	/*
-	 Open the mmu and jump to arm_main1
-	 */
-	serial_puts("opening MMU...");
-	arch_enable_mmu(PHYS_OFFSET + ((unsigned long)kernel_pgd & 0xfffffff));
+	serial_set_base(0x7F005000);
 }

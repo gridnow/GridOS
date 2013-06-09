@@ -101,12 +101,35 @@ void ks_close(struct ko_section *ks)
 void __init ks_init()
 {
 	cl_object_type_register(&section_type);
+	
+	/* Trim the memory mapping, i386 is full mapping */
+	km_arch_trim(); 
+}
+
+void *km_map_physical(unsigned long physical, size_t size, unsigned int flags)
+{
+	struct ko_section *ks;
+	
+	ks = ks_create(kp_get_system(), KS_TYPE_DEVICE, 0, size);
+	if (!ks)
+		goto err;
+//	printk("km_map_physical got virtual start = %p, size = %d, mapping physical...", ks->node.start, ks->node.size);
+	
+	if (km_page_map_range(&kp_get_system()->mem_ctx, ks->node.start,
+					ks->node.size, physical >> PAGE_SHIFT, KM_MAP_DEVICE) == false)
+		goto err1;
+	
+	return (void*)ks->node.start;
+	
+err1:
+	ks_close(ks);
+err:
+	return NULL;
 }
 
 //------------test-----------------
-#include <kernel/ke_memory.h>
 
 void kernel_test()
 {
-	km_map_physical(0, 100, 0);
+
 }

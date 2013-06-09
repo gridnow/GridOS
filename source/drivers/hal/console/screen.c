@@ -5,6 +5,8 @@
 *   Wuxin
 *   HAL Video
 */
+#include <ddk/compatible_io.h>
+
 #include <screen.h>
 
 struct video_screen_info main_screen;
@@ -40,10 +42,19 @@ void video_get_screen_resolution(int *w, int *h, int *bpp)
 }
 
 /**
-	@brief init the screen and draw logo 
+	@brief Register a simple framebuffer 
 */
-void hal_video_init_screen()
+void hal_fb_register_simple(unsigned long fb, int w, int h, int bpp)
 {
-	hal_arch_video_init_screen(&main_screen);
-}	
+	void *base;
+	
+	main_screen.height = h;
+	main_screen.width = w;
+	main_screen.bpp = bpp;
+	main_screen.fb_physical = fb;
+	
+	/* Map it */
+	base = ioremap(fb, h * w * bpp / 8);
+	main_screen.fb_base = base;
+} 
 

@@ -3,7 +3,7 @@
 */
 
 #include <ddk/types.h>
-#include <ddk/log.h>
+#include <ddk/debug.h>
 #include <ddk/io.h>
 #include <ddk/irq.h>
 #include <ddk/resource.h>
