@@ -3,4 +3,6 @@
 
 #include <asm/param.h>
 
+#define HZ		CONFIG_HZ	/* Internal kernel timer frequency */
+
 #endif

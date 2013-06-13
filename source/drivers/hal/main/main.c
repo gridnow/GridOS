@@ -55,6 +55,7 @@ void __init __noreturn hal_main()
 	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
 
 	printk("Hal startup ok.\n");
+	local_irq_enable();
 		
 	kernel_test();
 	while (1) dumy_idle_ops(0);

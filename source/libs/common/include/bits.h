@@ -9,7 +9,9 @@
 #define COMMON_LIB_BITS_H
 #include <types.h>
 
-unsigned long cl_find_next_zero_bit(const unsigned long *addr, unsigned long size,
+extern unsigned long find_next_zero_bit(const unsigned long *addr, unsigned long size,
 				 unsigned long offset);
+
+extern unsigned long find_last_bit(const unsigned long *addr, unsigned long size);
 #endif
 

@@ -6,6 +6,7 @@
 #include <asm/timex.h>
 #include <asm/x86_init.h>
 #include <asm/tsc.h>
+#include <asm/hpet.h>
 
 /*
  * Default timer interrupt handler for PIT/HPET
@@ -32,8 +33,6 @@ void __init setup_default_timer_irq(void)
 	setup_irq(0, &irq0);
 }
 
-#define hpet_enable() 0
-
 /* Default timer init function */
 void __init hpet_time_init(void)
 {
@@ -45,9 +44,7 @@ void __init hpet_time_init(void)
 static __init void x86_late_time_init(void)
 {
 	x86_init.timers.timer_init();
-	//tsc_init();
-	//TODO: soupport TSC
-	printk("%s->%s->%d : TODO to support TSC\n.",__FILE__,__FUNCTION__,__LINE__);
+	tsc_init();
 }
 
 /*

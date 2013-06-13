@@ -57,13 +57,6 @@
 
 #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
 
-/* 一些内嵌代码导出*/
-#ifdef NEED_EXPORT
-#define STATIC
-#else
-#define STATIC static
-#endif
-
 /* 最上层的编译器定义*/
 #include_next <compiler.h>
 #endif

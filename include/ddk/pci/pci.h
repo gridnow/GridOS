@@ -10,7 +10,6 @@
 #define _PCI_H_
 #include <list.h>
 
-#include <kernel/ke_lock.h>
 #include <kernel/ke_atomic.h>
 
 #include <ddk/types.h>

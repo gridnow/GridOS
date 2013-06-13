@@ -54,9 +54,7 @@ bool km_walk_to(struct km_walk_ctx *ctx, unsigned long va)
 	do
 	{
 		int sub_id;
-		void *subtable;
 		
-		/* Table from current level is empty? */
 		if (unlikely(table == NULL))
 		{
 			if (NULL == ctx->miss_action ||
@@ -64,20 +62,15 @@ bool km_walk_to(struct km_walk_ctx *ctx, unsigned long va)
 				goto end;
 		}
 		
-		/* Get the sub table's ID and record it(or to be created) */
 		sub_id = km_get_vid(i, ctx->current_virtual_address);
 		ctx->hirarch_id[i]		= sub_id;
 		ctx->table_base[i]		= table;
 		ctx->level_id			= i;
-		printk("id %d, sub_id = %d, table = %p\n", i, sub_id, table);
 		
-		/* Level 0 has no subtable */
 		if (--i == 0)
 			break;
 		
-		/* Get sub table from current table */
-		subtable = km_get_sub_table(table, sub_id);
-		table = subtable;
+		table = km_get_sub_table(table, sub_id);
 	} while (1);
 	r = true;
 	
@@ -95,7 +88,6 @@ void *km_walk_alloc_table(struct km_walk_ctx *ctx)
 	if (!p) goto end;
 	memset(p, 0, PAGE_SIZE);
 	
- 	//printk("Allocated the table %x for virtual %x.\n", p, ctx->virtual_address);
 end:
 	return p;
 }

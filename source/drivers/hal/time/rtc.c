@@ -1,7 +1,6 @@
 
 #ifdef CONFIG_RTC
 
-#include <lock.h>
 #include <rtc.h>
 #include <irq.h>
 #include <errno.h>

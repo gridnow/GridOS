@@ -11,7 +11,7 @@
 
 #include <arch/thread.h>
 #include <list.h>
-#include <lock.h>
+#include <kernel/ke_lock.h>
 
 struct ko_process;
 struct ko_thread

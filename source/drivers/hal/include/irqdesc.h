@@ -2,7 +2,7 @@
 #define HAL_IRQ_DESC_H
 
 #include <cache.h>
-#include <lock.h>
+#include <spinlock.h>
 #include <ddk/compatible.h>
 
 struct irq_desc {

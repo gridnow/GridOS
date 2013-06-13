@@ -12,7 +12,7 @@
 #include <list.h>
 #include <kernel/ke_memory.h>
 
-#include <lock.h>
+#include <spinlock.h>
 #include "bitmap.h"
 
 /* Cluster of page */

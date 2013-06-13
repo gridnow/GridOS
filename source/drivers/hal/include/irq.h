@@ -4,6 +4,27 @@
 #include <types.h>
 #include <ddk/irq.h>
 
+/* 
+	DPC Interrupt 
+*/
+enum
+{
+	HI_DPC_IRQ  = 0,
+	TIMER_SOFTIRQ,
+	
+	NR_DPC_IRQS = BITS_PER_LONG
+};
+struct dpc_irq_action
+{
+	void (*action)(struct dpc_irq_action *);
+};
+//dpc.c
+extern void raise_dpc_irq(unsigned int nr);
+extern void open_dpc_irq(int nr, void (*action)(struct dpc_irq_action *));
+
+/*
+	IRQ Chip
+*/
 struct irq_chip;
 struct irq_desc;
 
@@ -44,44 +65,6 @@ struct irq_chip {
 	unsigned long	flags;
 };
 
-/*
- * IRQ line status.
- *
- * Bits 0-7 are the same as the IRQF_* bits in linux/interrupt.h
- *
- * IRQ_TYPE_NONE		- default, unspecified type
- * IRQ_TYPE_EDGE_RISING		- rising edge triggered
- * IRQ_TYPE_EDGE_FALLING	- falling edge triggered
- * IRQ_TYPE_EDGE_BOTH		- rising and falling edge triggered
- * IRQ_TYPE_LEVEL_HIGH		- high level triggered
- * IRQ_TYPE_LEVEL_LOW		- low level triggered
- * IRQ_TYPE_LEVEL_MASK		- Mask to filter out the level bits
- * IRQ_TYPE_SENSE_MASK		- Mask for all the above bits
- * IRQ_TYPE_DEFAULT		- For use by some PICs to ask irq_set_type
- *				  to setup the HW to a sane default (used
- *                                by irqdomain map() callbacks to synchronize
- *                                the HW state and SW flags for a newly
- *                                allocated descriptor).
- *
- * IRQ_TYPE_PROBE		- Special flag for probing in progress
- *
- * Bits which can be modified via irq_set/clear/modify_status_flags()
- * IRQ_LEVEL			- Interrupt is level type. Will be also
- *				  updated in the code when the above trigger
- *				  bits are modified via irq_set_irq_type()
- * IRQ_PER_CPU			- Mark an interrupt PER_CPU. Will protect
- *				  it from affinity setting
- * IRQ_NOPROBE			- Interrupt cannot be probed by autoprobing
- * IRQ_NOREQUEST		- Interrupt cannot be requested via
- *				  request_irq()
- * IRQ_NOTHREAD			- Interrupt cannot be threaded
- * IRQ_NOAUTOEN			- Interrupt is not automatically enabled in
- *				  request/setup_irq()
- * IRQ_NO_BALANCING		- Interrupt cannot be balanced (affinity set)
- * IRQ_MOVE_PCNTXT		- Interrupt can be migrated from process context
- * IRQ_NESTED_TRHEAD		- Interrupt nests into another thread
- * IRQ_PER_CPU_DEVID		- Dev_id is a per-cpu variable
- */
 enum {
 	IRQ_TYPE_NONE		= 0x00000000,
 	IRQ_TYPE_EDGE_RISING	= 0x00000001,
@@ -106,6 +89,7 @@ enum {
 	IRQ_NOTHREAD		= (1 << 16),
 	IRQ_PER_CPU_DEVID	= (1 << 17),
 };
+
 #ifndef ARCH_IRQ_INIT_FLAGS
 # define ARCH_IRQ_INIT_FLAGS	0
 #endif

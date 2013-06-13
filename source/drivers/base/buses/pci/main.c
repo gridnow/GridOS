@@ -1,11 +1,19 @@
+/**
+ *   See the readme.txt at the root directory of this project for the idea and originality of this operating system.
+ *   See the license.txt at the root directory of this project for the copyright information about this file and project.
+ *
+ *   Wuxin
+ *   PCI Manager
+ */
 
 #include <ddk/string.h>
 #include <ddk/debug.h>
+#include <ddk/compatible.h>
 
 #include "pci.h"
 
 #include <ddk/pci/pci.h>
-#include <kernel/ke_lock.h>
+
 
 static bool match_driver(void * dev, void * driver)
 {

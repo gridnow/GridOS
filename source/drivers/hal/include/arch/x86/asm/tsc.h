@@ -31,5 +31,6 @@ static inline cycles_t get_cycles(void)
 /* private functions */
 void __init tsc_init(void);
 int check_tsc_unstable(void);
+unsigned long native_calibrate_tsc(void);
 #endif
 

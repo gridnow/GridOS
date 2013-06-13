@@ -74,6 +74,7 @@
 #define CONFIG_HZ							250
 #define CONFIG_GENERIC_CLOCKEVENTS_BUILD	1								/* Clockchips.h 需要 */
 #define CONFIG_CLKEVT_I8253					1								/* 8253 可以作为时钟事件 */
+//#define CONFIG_CLKSRC_I8253					1								/* 8253 可以作为时钟源 */
 #define CONFIG_GENERIC_HARDIRQS             1
 
 /* Basic HAL memory conversion */

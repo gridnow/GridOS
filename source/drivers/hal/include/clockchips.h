@@ -53,5 +53,7 @@ extern void clockevents_config_and_register(struct clock_event_device *dev,
 extern void clockevents_set_mode(struct clock_event_device *dev,
 				 enum clock_event_mode mode);
 
+//tick-common.c
+void tick_handle_periodic(struct clock_event_device *dev);
 #endif
 

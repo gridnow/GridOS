@@ -58,14 +58,14 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
   <td height="26" width="307">物理内存页管理</td>
           </table></TD>
           <TD>管理系统中所有的物理内存的分配和回收，并支持NUMA内存节点亲近特性。</TD>
-          <TD>开发中</TD>
+          <TD><div align="left">2013-6-9：测试了物理页分配器，有待压力测试。</div></TD>
         </TR>
         <TR align="center">
           <TD><table cellspacing="0" cellpadding="0">
     <td height="26" width="307">逻辑上N级V2P（虚拟转物理地址）转换表</td>
           </table></TD>
           <TD>操作虚拟地址到物理地址转换表。为上层提供平台无关性的地址转换功能。</TD>
-          <TD>开发中</TD>
+          <TD><p align="left">2013-6-9：编写测试了Page Walk算法，支持了x86-32 两表的操作。理论上算法可以支持任意级别的Page Walk，但是Table Entry的操作应该是平台相关的（cache/tlb flash等问题），目前的版本没有考虑硬件的这些hazzards。</p></TD>
         </TR>
         <TR align="center">
           <TD>线程切换框架</TD>
@@ -100,8 +100,7 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
             <p>2，特定CPU的中断处理表和处理函数。</p>
             <p>3，抽象的中断处理流程和中断处理函数的管理（为驱动程序提供相应接口）。</p>
             <p>4，特定CPU的异常与内核的异常处理框架对接。</p></TD>
-          <TD><p>2013-3-25：增加了中断管理框架，部分中断处理相关的逻辑来自Linux。</p>
-            </TD>
+          <TD><p align="left">2013-3-25：增加了中断管理框架，部分中断处理相关的逻辑来自Linux。</p>            </TD>
         </TR>
         <TR align="center">
           <TD>自旋锁</TD>
@@ -121,8 +120,8 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
         <TR align="center">
           <TD>PCI总线驱动</TD>
           <TD>在设备管理器提供的管理框架中，支持平台无关的PCI总线的设备扫描、使能、资源操作接口。</TD>
-          <TD><p>2013-3-31：移植了PCI总线驱动，但是没有测试，许多依赖接口并未完成。</p>
-            <p>2013-4-8：上层的PCI设备扫描码部署完毕，并与设备管理器对接完成。支持的硬件平台可以有很多种，目前是x86，总线扫描成功，并把扫描到的PCI设备放到设备管理器中去管理。</p></TD>
+          <TD><p align="left">2013-3-31：移植了PCI总线驱动，但是没有测试，许多依赖接口并未完成。</p>
+            <p align="left">2013-4-8：上层的PCI设备扫描码部署完毕，并与设备管理器对接完成。支持的硬件平台可以有很多种，目前是x86，总线扫描成功，并把扫描到的PCI设备放到设备管理器中去管理。</p></TD>
           </TR>
         <TR align="center">
           <TD>&nbsp;</TD>
@@ -132,7 +131,10 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
         <TR align="center">
           <TD>简单控制台封装</TD>
           <TD>实现系统调试。</TD>
-          <TD>&nbsp;</TD>
+          <TD><div align="left">
+            <p>2013-3-6：printk代码编写完成，在x86平台上可以向串口输出内容。</p>
+            <p>2013-6-9：通过封装简单的console模块，实现了屏幕文字的显示。屏幕framebuffer信息则通过硬件相关层向console模块报告硬件信息，并且通过iomap来影射可访问的显存地址。目前仅仅支持x86平台。Mips、Arm还没有实现。</p>
+          </div></TD>
         </TR>
         <TR align="center">
           <TD rowspan="3">公共库</TD>
@@ -143,21 +145,22 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
         <TR align="center">
           <TD>对象管理器</TD>
           <TD>&nbsp;</TD>
-          <TD><p>2013-3-16：完成了对象管理器的关键数据结构定义。</p>
-            <p>2013-3-18：为了测试对象管理器，编写了线程对象的创立方法。</p>
-            <p>&nbsp;</p></TD>
+          <TD><p align="left">2013-3-16：完成了对象管理器的关键数据结构定义。</p>
+            <p align="left">2013-3-18：为了测试对象管理器，编写了线程对象的创立方法。</p>
+            <p align="left">&nbsp;</p></TD>
         </TR>
         <TR align="center">
           <TD>字符串操作</TD>
           <TD>&nbsp;</TD>
-          <TD><p>2013-3-6：printk代码编写完成，在x86平台上可以向串口输出内容。</p>            </TD>
+          <TD><p align="left">2013-3-6：vsnprintf</p>            </TD>
         </TR>
         <TR align="center">
           <TD>驱动程序</TD>
           <TD>以太网</TD>
           <TD>8139cp</TD>
-          <TD><p>2013-4-20：8139cp到了映射PCI 地址空间的位置，这部分需要内核的内存管理器的支持。我们现在的重点在驱动上，内核的这部分还没做。</p>
-            <p>&nbsp;</p></TD>
+          <TD><p align="left">2013-4-20：8139cp到了映射PCI 地址空间的位置，这部分需要内核的内存管理器的支持。我们现在的重点在驱动上，内核的这部分还没做。</p>
+            <p align="left">2013-6-9：已经成功影射网卡的PCI地址，试验已经能读出网卡的MAC地址，影射成功！</p>
+            <p align="left">&nbsp;</p></TD>
         </TR>
       </TBODY>
     </TABLE>

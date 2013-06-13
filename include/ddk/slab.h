@@ -11,13 +11,15 @@
 
 #include <ddk/string.h>
 
+/* Compatible flags */
 #define GFP_KERNEL (1 << 0)
 #define GFP_ZERO (1 << 1)
+#define __GFP_ZERO GFP_ZERO
 #define gfp_t u32
 
 /* Memory allocation type */
-void * hal_malloc(int size);
-
+void *hal_malloc(int size);
+void *kmalloc_node(int size, unsigned long unused, int cpu_node);
 void hal_free(void * hal_address);
 
 /*
@@ -50,8 +52,6 @@ static inline void *kmalloc(size_t size, unsigned int flags)
 }
 
 #define kfree hal_free
-
-
 
 #endif
 

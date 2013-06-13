@@ -1,6 +1,10 @@
 #ifndef HAL_TICK_H
 #define HAL_TICK_H
 
+#include <limits.h>
+
+#include <param.h>
+
 #define __jiffy_data  __attribute__((section(".data")))
 
 extern u64 __jiffy_data jiffies_64;
@@ -17,5 +21,8 @@ extern unsigned long volatile __jiffy_data jiffies;
 	 typecheck(unsigned long, b) && \
 	 ((long)(a) - (long)(b) >= 0))
 #define time_before_eq(a,b)	time_after_eq(b,a)
+
+#define MAX_JIFFY_OFFSET ((LONG_MAX >> 1)-1)
+#define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
 
 #endif

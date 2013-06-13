@@ -1,7 +1,7 @@
 #ifndef _ASM_X86_I8259_H
 #define _ASM_X86_I8259_H
 
-#include <lock.h>
+#include <spinlock.h>
 #include <ddk/compatible.h>
 #include <asm/io.h>
 #include <asm/delay.h>

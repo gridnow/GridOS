@@ -1,5 +1,4 @@
 #undef DEBUG
-#include <kernel/ke_lock.h>
 #include <compiler.h>
 
 #ifdef DEBUG

@@ -40,6 +40,7 @@
 
 #define in_interrupt()	(0)
 
+//dpc.c
 extern void irq_enter(void);
 extern void irq_exit(void);
 

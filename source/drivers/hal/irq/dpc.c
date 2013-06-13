@@ -12,18 +12,7 @@
 #include <preempt.h>
 #include <irqflags.h>
 #include <smp.h>
-enum
-{
-	HI_DPC_IRQ  = 0,
-	
-	
-	NR_DPC_IRQS = BITS_PER_LONG
-};
-
-struct dpc_irq_action
-{
-	void	(*action)(struct dpc_irq_action *);
-};
+#include <irq.h>
 
 static struct dpc_irq_action dpc_irq_vec[NR_DPC_IRQS] __cacheline_aligned_in_smp;
 
@@ -59,7 +48,7 @@ static inline void __local_bh_disable(unsigned long ip, unsigned int cnt)
 	barrier();
 }
 
-static void wakeup_dpc_irqd()
+static void wakeup_dpc_thread()
 {
 
 }
@@ -95,6 +84,8 @@ restart:
 			if (unlikely(prev_count != hal_preempt_count())) {
 				hal_preempt_count() = prev_count;
 			}
+			
+			//TODO: RCU
 		}
 		h++;
 		pending >>= 1;
@@ -105,12 +96,12 @@ restart:
 	if (pending && --max_restart)
 		goto restart;
 	if (pending)
-		wakeup_dpc_irqd();
+		wakeup_dpc_thread();
 
 	__local_bh_enable(SOFTIRQ_OFFSET);
 }
 
-static void dpc_irq_thread()
+static void dpc_thread()
 {
 	while(1)
 	{
@@ -118,6 +109,8 @@ static void dpc_irq_thread()
 		if (local_dpc_irq_pending())
 			__do_dpc_irq();
 		local_irq_enable();
+		
+		//TODO: Sleep
 	}	
 }
 
@@ -138,7 +131,7 @@ void irq_exit(void)
 
 	/* 如果有中断要处理，唤醒处理线程 */
  	if (local_dpc_irq_pending())
-		wakeup_dpc_irqd();
+		wakeup_dpc_thread();
 	
 	hal_preempt_enable_no_resched();
 }
@@ -153,7 +146,7 @@ inline void raise_dpc_irq_irqoff(unsigned int nr)
 	__raise_dpc_irq_irqoff(nr);
 
 	if (!in_interrupt())
-		wakeup_dpc_irqd();
+		wakeup_dpc_thread();
 }
 
 void raise_dpc_irq(unsigned int nr)
@@ -172,5 +165,9 @@ void open_dpc_irq(int nr, void (*action)(struct dpc_irq_action *))
 
 void __init dpc_irq_init(void)
 {
+	//open_softirq(TIMER_SOFTIRQ, test_softirq);
+	
+	/* Create the thread for boot CPU */
+	//dpc_threads[0] = ke_thread_create(softirq_thread, 0, true);
 
 }

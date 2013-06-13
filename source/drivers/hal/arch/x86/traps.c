@@ -144,11 +144,11 @@ void __init arch_trap_init()
 	set_intr_gate(15, &spurious_interrupt_bug);
 	set_intr_gate(16, &coprocessor_error);
 	set_intr_gate(17, &alignment_check);
-#if 0
+
 #ifdef CONFIG_X86_MCE
 	set_intr_gate_ist(18, &machine_check, MCE_STACK);
 #endif
-#endif
+
 	set_intr_gate(19, &simd_coprocessor_error);
 	/* Reserve all the builtin and the syscall vector: */
 	for (i = 0; i < FIRST_EXTERNAL_VECTOR; i++)
