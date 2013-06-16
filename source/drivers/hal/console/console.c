@@ -180,7 +180,7 @@ static int draw_a_line(unsigned int* pos_x, unsigned int* pos_y, unsigned int st
 	
 
 	/* Disable the cursor while we are drawing */
-	//console_cursor_toggle(false);
+	console_cursor_toggle(false);
 
 	while (p_string != end)  
 	{
@@ -241,8 +241,8 @@ static int draw_a_line(unsigned int* pos_x, unsigned int* pos_y, unsigned int st
 	*pos_y = cur_y;
 
 	/* Set the cursor position before enable cursor */
-	//console_cursor_move(cur_x, cur_y);
-	//console_cursor_toggle(true);
+	console_cursor_move(cur_x, cur_y);
+	console_cursor_toggle(true);
 
 	count = get_buf_length(start, p_string);
 	/* 遇到\n，需要跨过缓存中保存的index */
@@ -416,7 +416,7 @@ static int write_string(char *buffer, int size)
 	}
 
 	/* 涉及两个全局资源，无法实现并发 只能加全局大锁 */
-//	ke_spin_lock(&dsp_ctx.lock);
+	spin_lock(&dsp_ctx.lock);
 
 	/* 第一步，将数据复制到缓存中,更新缓存的状态 */			
 	/*
@@ -479,7 +479,7 @@ static int write_string(char *buffer, int size)
 		}
 	}
 
-//	ke_spin_unlock(&dsp_ctx.lock);
+	spin_unlock(&dsp_ctx.lock);
 ret:
 	return;
 }
@@ -594,11 +594,12 @@ void hal_console_init(void)
 	reset_up_idx();
 
 	/* Init the global lock */
-	//KE_SPINLOCK_INIT(&dsp_ctx.lock);	
+	spin_lock_init(&dsp_ctx.lock);
 
 	/* 取分辨率 */
 	get_screen_resolution(&dsp_ctx.max_x, &dsp_ctx.max_y, NULL); 
 
+	console_cursor_setup();
 	console_cursor_set_height(DOTFNT_CHAR_LINE_HEIGHT);
 
 	return;

@@ -12,7 +12,7 @@
 /*
 	负责把THREAD_ENTRY和PARA传入FATE_ENTRY,并且设置EFLAGS,一个LongJMP to fate entry(应为可能是在用户级，也有可能在内核级
 */
-static void __attribute__((noreturn)) first_time_entry()  
+static void __noreturn first_time_entry()
 {
 	struct ko_thread *who;	
 	unsigned long _sp;
@@ -24,7 +24,6 @@ static void __attribute__((noreturn)) first_time_entry()
 		_ds = __KERNEL_DS;
 		_cs = __KERNEL_CS;
 		_sp = who->arch_thread.ctx.sp0;
-		printk("Ring 0 stack is %x.\n", _sp);
 	}
 	else
 	{
@@ -66,7 +65,7 @@ static void __attribute__((noreturn)) first_time_entry()
 			 /* input parameters: */						
 		     : [reg_ss]  "r" (_ds),
 			   [reg_sp]  "r" (_sp), 
-			   [EFLAGS]  "i" (ARCH_THREAD_ARCH_X86_32_DEFAULT_EFLAGS & (~X86_EFLAGS_IF)), 
+			   [EFLAGS]  "i" (ARCH_THREAD_ARCH_X86_32_DEFAULT_EFLAGS), 
 			   [reg_cs]  "r" (_cs),
 		       [reg_ip]  "r" (who->arch_thread.ctx.cr2),
 		       

@@ -3,7 +3,7 @@
  *   See the license.txt at the root directory of this project for the copyright information about this file and project.
  *
  *   Wuxin
- *   è‡ªæ—‹é”
+ *   ×ÔĞıËø
  */
 
 #include <kernel/ke_lock.h>
@@ -36,7 +36,7 @@ DLLEXPORT bool ke_spin_lock_try(struct ke_spinlock * lock)
 }
 
 /**
- @brief è‡ªæ—‹é”è§£é”ï¼Œå¹¶å›å¤IRQçŠ¶æ€
+ @brief ×ÔĞıËø½âËø£¬²¢»Ø¸´IRQ×´Ì¬
  */
 DLLEXPORT void ke_spin_unlock_irqrestore(struct ke_spinlock * lock, unsigned long flags)
 {
@@ -44,7 +44,7 @@ DLLEXPORT void ke_spin_unlock_irqrestore(struct ke_spinlock * lock, unsigned lon
 }
 
 /**
- @brief è‡ªæ—‹é”åŠ é”ï¼Œå…³é—­IRQï¼Œå¹¶è¿”å›å…³é—­IRQå‰çš„çŠ¶æ€
+ @brief ×ÔĞıËø¼ÓËø£¬¹Ø±ÕIRQ£¬²¢·µ»Ø¹Ø±ÕIRQÇ°µÄ×´Ì¬
  */
 DLLEXPORT unsigned long ke_spin_lock_irqsave(struct ke_spinlock * lock)
 {

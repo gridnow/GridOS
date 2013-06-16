@@ -59,8 +59,42 @@ DLLEXPORT void * dr_devres_find(struct device *dev, dr_release_t release,
 #define devres_find dr_devres_find
 
 /************************************************************************
+ Soft Timer
+*************************************************************************/
+#define TIMER_NOT_PINNED	0
+#define TIMER_PINNED		1
+
+#define TIMER_DEFERRABLE		0x1LU
+#define TIMER_IRQSAFE			0x2LU
+
+#define TIMER_FLAG_MASK			0x3LU
+
+struct tvec_base;
+struct timer_list {
+	/*
+	 * All fields that change during normal runtime grouped to the
+	 * same cacheline
+	 */
+	struct list_head entry;
+	unsigned long expires;
+	struct tvec_base *base;
+	
+	void (*function)(unsigned long);
+	unsigned long data;
+	
+	int slack;
+};
+
+DLLEXPORT int hal_timer_mod(struct timer_list *timer, unsigned long expires);
+DLLEXPORT void hal_timer_init(struct timer_list *timer, unsigned int flags, const char *name);
+DLLEXPORT void hal_timer_add(struct timer_list *timer);
+DLLEXPORT int hal_timer_del(struct timer_list *timer);
+DLLEXPORT unsigned long hal_get_tick();
+DLLEXPORT unsigned int hal_get_tick_rate();
+
+/************************************************************************
  NET Device
- *************************************************************************/
+*************************************************************************/
 #define alloc_etherdev(sizeof_priv) alloc_etherdev_mq(sizeof_priv, 1)
 #define alloc_etherdev_mq(sizeof_priv, count) alloc_etherdev_mqs(sizeof_priv, count, count)
 

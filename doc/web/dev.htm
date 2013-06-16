@@ -2,7 +2,7 @@
 <HTML lang=en xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><HEAD><TITLE>云操作系统 操作系统 操作系统开发 自主操作系统 国产操作系统 云OS YUNOS</TITLE>
 <META http-equiv=Content-Type content="text/html; charset=utf-8">
 <META content="我的操作系统" name=Description>
-<META content="国产操作系统,国产自主操作系统,操作系统,自主操作系统开发,操作系统开发,云操作系统" name=Keywords>
+<META content="国产操作系统,国产自主操作系统,操作系统,自主操作系统开发,操作系统开发,云操作系统,网格操作系统,云OS YUNOS" name=Keywords>
 <META content=yes name=allow-search>
 <LINK 
 href="css/fa.css" type=text/css rel=stylesheet><LINK 
@@ -31,7 +31,7 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
     <tbody>
       <tr>
         <td><a href="index.htm">系统介绍</a></td>
-        <td><a href="dev.htm">系统模块</a></td>
+        <td><a href="dev.htm">系统开发</a></td>
         <td><a href="http://www.yunos.org/bbs"><span class="STYLE4">技术WIKI</span></a></td>
       </tr>
     </tbody>
@@ -172,6 +172,16 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
     <p>&nbsp;&nbsp;&nbsp;&nbsp;5，支持简单控制台。</p>
     <p class="news-title">&nbsp;</p>
     <DIV id=div><DIV class=news-item></DIV>
+		
+	<h2 class="news-title">三，编译调试方法</h2>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;1，下载<a href="TOOLS/mgw_x86.7z">x86编译器(运行在windows平台，其他平台的大家可以自己做交叉编译器)</a>，解压到C盘根目录，运行其中的C:\mgw_x86\msys\1.0\msys.bat即可启动编译控制台。</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;2，编译基本系统。进入到如下目录，输入make即可：source\libs，source\drivers\hal，source\drivers\base，source\drivers\net，source\kernel。这里要注意，kernel 和 hal 都可以生成最终的可执行内核文件，如果开发中修改了hal则在hal目录下编译即可，如果修改了kernel在kernel目录下make 就能生成内核文件。</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;3，下载<a href="TOOLS/q64.7z">虚拟机(运行在windows平台的qemu)</a>并解压到D盘根目录，下载<a href="TOOLS/image.7z">虚拟机镜像更新工具(windows平台)</a>并解压到C盘根目录。</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;4，如果重新修改了基本系统的代码，在make后通过输入make to_image，并在弹出的对话框里选择Yes 或 Yes to all 即可更新虚拟机的进行文件</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;5，通过虚拟机运行。运行d:\q64\run.0.15.bat即启动虚拟机测试我们的操作系统。</p>
+	<p class="news-title">&nbsp;</p>
+	<DIV id=div><DIV class=news-item></DIV>
+		
 </DIV>
 </DIV>
   <HR>

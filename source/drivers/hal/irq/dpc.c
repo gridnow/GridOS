@@ -14,6 +14,8 @@
 #include <smp.h>
 #include <irq.h>
 
+#include <ddk/debug.h>
+
 static struct dpc_irq_action dpc_irq_vec[NR_DPC_IRQS] __cacheline_aligned_in_smp;
 
 /* Totally we have MAX DPC threads to run on all CPUs */
@@ -50,19 +52,19 @@ static inline void __local_bh_disable(unsigned long ip, unsigned int cnt)
 
 static void wakeup_dpc_thread()
 {
-
+	//TODO("DPC Thread wakeup");
 }
 
 #define MAX_SOFTIRQ_RESTART 10
+/* Called at irq disabled */
 asmlinkage void __do_dpc_irq(void)
 {
 	struct dpc_irq_action *h;
-	unsigned long pending;
+	u32 pending;
 	int max_restart = MAX_SOFTIRQ_RESTART;
 	int cpu;
 
-	/* Get mask */
-	local_irq_disable();
+	/* Get mask */	
 	pending = local_dpc_irq_pending();
 	__local_bh_disable((unsigned long)__builtin_return_address(0),
 				SOFTIRQ_OFFSET);
@@ -101,6 +103,28 @@ restart:
 	__local_bh_enable(SOFTIRQ_OFFSET);
 }
 
+#ifndef __ARCH_HAS_DO_SOFTIRQ
+
+asmlinkage void do_dpc_irq(void)
+{
+	u32 pending;
+	unsigned long flags;
+
+	if (in_interrupt())
+		return;
+
+	local_irq_save(flags);
+
+	pending = local_dpc_irq_pending();
+
+	if (pending)
+		__do_dpc_irq();
+
+	local_irq_restore(flags);
+}
+
+#endif
+
 static void dpc_thread()
 {
 	while(1)
@@ -112,6 +136,16 @@ static void dpc_thread()
 		
 		//TODO: Sleep
 	}	
+}
+
+static inline void invoke_softirq(void)
+{	
+#ifdef __ARCH_IRQ_EXIT_IRQS_DISABLED
+	__do_softirq();
+#else
+	do_dpc_irq();
+#endif
+
 }
 
 /*
@@ -130,8 +164,8 @@ void irq_exit(void)
 	hal_preempt_count_sub(IRQ_EXIT_OFFSET);
 
 	/* 如果有中断要处理，唤醒处理线程 */
- 	if (local_dpc_irq_pending())
-		wakeup_dpc_thread();
+ 	if (!in_interrupt() && local_dpc_irq_pending())
+		invoke_softirq();
 	
 	hal_preempt_enable_no_resched();
 }
@@ -163,11 +197,8 @@ void open_dpc_irq(int nr, void (*action)(struct dpc_irq_action *))
 	dpc_irq_vec[nr].action = action;
 }
 
-void __init dpc_irq_init(void)
-{
-	//open_softirq(TIMER_SOFTIRQ, test_softirq);
-	
+void __init hal_dpc_init(void)
+{	
 	/* Create the thread for boot CPU */
 	//dpc_threads[0] = ke_thread_create(softirq_thread, 0, true);
-
 }

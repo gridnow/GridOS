@@ -9,7 +9,7 @@
 #ifndef HAL_CONSOLE_H
 #define HAL_CONSOLE_H
 
-//#include <ddk/compatible.h>
+#include <ddk/compatible.h>
 
 /* 循环缓存,暂存当前屏幕输出数据 */
 #define CONSOLE_BUFFER_SIZE 4 * 1024
@@ -28,9 +28,6 @@ struct hal_console_buffer
 
 	/* 缓存中目前没有显示输入\n的行首下标 */
 	unsigned int tail_line;
-
-	/* 锁 */
-	//spinlock_t lock;
 };
 
 /* 显示，描述当前正在显示的“窗口” */
@@ -45,8 +42,6 @@ struct hal_console_window
 	unsigned int pos_x;
 	unsigned int pos_y;	
 
-	/* 锁 */
-	//spinlock_t lock;
 	/* 0:窗口处于缓存的底部，1:窗口处于回滚状态 */
 	unsigned int downward;
 	/* 记录当前状态下，屏幕上滚时，新的首行在缓存中的位置，step[0]为单行滚动，step[1]为PGDN */
@@ -59,7 +54,7 @@ struct hal_console_context
 	struct hal_console_window window;
 	struct hal_console_buffer buffer;	
 	unsigned int color;
-//	spinlock_t lock;
+	spinlock_t lock;
 };
 
 

@@ -39,7 +39,11 @@ struct kt_thread_creating_context
 };
 
 #define KT_CREATE_STACK_AS_PARA			(1 << 1)
+#define KT_CREATE_RUN					(1 << 2)
+
 #define KT_STATE_RUNNING				1
+#define KT_STATE_WAITING				2
+#define KT_STATE_KILLING				3
 #define KT_STATE_MASK					(0xffff)
 #define KT_STATE_ADD_UNINTERRUPT		16												//附加属性：不可中断地做某件事情
 #define KT_STATE_ADD_FORCE_BY_SYSTEM	17												//附加属性：强制休眠的，常规唤醒（用户层的唤醒）是不能的
@@ -47,7 +51,15 @@ struct kt_thread_creating_context
 #define KT_STATE_ADD_USING_FPU			19												//附加属性：线程本次试用了FPU.
 
 //thread.c
+struct ko_thread *kt_create_kernel(void *entry, unsigned long para);
+void kt_delete_current();
+
+//sleep.c
 void kt_wakeup(struct ko_thread *who);
+void kt_sleep(struct ko_thread *who, unsigned long stat);
+
+//sched.c
+void kt_schedule();
 
 //arch
 void kt_arch_switch(struct ko_thread *prev, struct ko_thread *next);

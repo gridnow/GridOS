@@ -26,36 +26,10 @@
 
 #define CONFIG_BASE_SMALL 0
 
-/***************************************************/
-#define TIMER_NOT_PINNED	0
-#define TIMER_PINNED		1
-
-#define TIMER_DEFERRABLE		0x1LU
-#define TIMER_IRQSAFE			0x2LU
-
-#define TIMER_FLAG_MASK			0x3LU
-
-struct tvec_base;
-struct timer_list {
-	/*
-	 * All fields that change during normal runtime grouped to the
-	 * same cacheline
-	 */
-	struct list_head entry;
-	unsigned long expires;
-	struct tvec_base *base;
-	
-	void (*function)(unsigned long);
-	unsigned long data;
-	
-	int slack;
-};
-
 static inline int timer_pending(const struct timer_list * timer)
 {
 	return timer->entry.next != NULL;
 }
-/***************************************************/
 
 #define TVN_BITS (CONFIG_BASE_SMALL ? 4 : 6)
 #define TVR_BITS (CONFIG_BASE_SMALL ? 6 : 8)
@@ -178,6 +152,16 @@ static int __cpuinit init_timers_cpu(int cpu)
 	base->next_timer = base->timer_jiffies;
 	base->active_timers = 0;
 	return 0;
+}
+
+static void do_init_timer(struct timer_list *timer, unsigned int flags,
+						  const char *name)
+{
+	struct tvec_base *base = __raw_get_cpu_var(tvec_bases);
+
+	timer->entry.next = NULL;
+	timer->base = (void *)((unsigned long)base | flags);
+	timer->slack = -1;
 }
 
 static inline void detach_timer(struct timer_list *timer, bool clear_pending)
@@ -481,7 +465,7 @@ void run_local_timers(void)
 	raise_dpc_irq(TIMER_SOFTIRQ);
 }
 
-void __init hal_timer_init(void)
+void __init hal_timer_system_init(void)
 {
 	/* 目前没有走多CPU的初始化机制，直接手动给第一个CPU分配tvec_base */
 	init_timers_cpu(0);
@@ -495,6 +479,11 @@ void __init hal_timer_init(void)
 /*********************************************************************
  Export interface
 *********************************************************************/
+void hal_timer_init(struct timer_list *timer, unsigned int flags, const char *name)
+{
+	do_init_timer(timer, flags, name);
+}
+
 int hal_timer_mod(struct timer_list *timer, unsigned long expires)
 {
 	expires = apply_slack(timer, expires);

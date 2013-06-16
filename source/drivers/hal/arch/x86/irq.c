@@ -20,5 +20,8 @@ asmregparm unsigned int do_IRQ(struct pt_regs *regs)
  		ack_APIC_irq();
  	}
  	irq_exit();
+	
+	/* Give scheduler a chance to run */
+	if (irq == 0) kt_sched_tick();
  	return 1;
 }

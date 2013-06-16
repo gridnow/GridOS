@@ -47,6 +47,7 @@ void __init __noreturn hal_main()
 	ks_init();
 
 	hal_malloc_init();
+	hal_dpc_init();
 	hal_time_init();
 	hal_console_init();
 	
@@ -60,30 +61,14 @@ void __init __noreturn hal_main()
 	kernel_test();
 	while (1) dumy_idle_ops(0);
 
-	/* IRQ,平台的初始化，如平台的中断，各种配置信息 */	
-	hal_irq_init();
+	
 	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
 
-	/* DPC */
-	hal_dpc_init();
-	hal_timer_init();
-	hal_hardware_init();
-	hal_console_init();
-
+	
 	/* 平台后期初始化,比如最终启动其他处理器，并开中断*/
 	hal_arch_init(HAL_ARCH_INIT_PHASE_LATE);
 
-	/* Manager */
-	kma_setup();
-	kmm_init();
-	kmp_init();
-	ko_init();
-	kp_init();
-	ks_init();	
-
-	while(1)
-	{
-	}
+	
 }
 
 void hal_do_panic(char *why)

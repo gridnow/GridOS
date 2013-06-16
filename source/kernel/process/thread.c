@@ -13,19 +13,19 @@
 #include "object.h"
 #include "process.h"
 #include "cpu.h"
-#include "sched.h"
-#include "kernel.h"
+#include <thread.h>
 
 #include <string.h>
 
 static struct ko_thread *init_thread;
 
 #define ka_call_dynamic_module_entry(f, p) f(p)
-static asmregparm void kernel_thread_fate_entry(unsigned long (*thread_entry)(unsigned long),unsigned long para)
+static asmregparm __noreturn void kernel_thread_fate_entry(unsigned long (*thread_entry)(unsigned long),unsigned long para)
 {
 	if (thread_entry)
 		ka_call_dynamic_module_entry(thread_entry, para);
-	//TODO delete the kernel thread
+	
+	kt_delete_current();
 }
 
 static bool object_close(real_object_t *obj)
@@ -64,6 +64,7 @@ static bool alloc_space(struct cl_object_type *type, void **base, size_t *size, 
 	if (!object_memory) goto err;
 	*base = object_memory;
 	*size = count * PAGE_SIZE;
+	printk("Thread pool at %x\n", object_memory);
 	return true;
 
 err:
@@ -105,31 +106,26 @@ struct ko_thread * kt_create(struct ko_process * where, void * wrapper, void * f
 {
 	struct kt_thread_creating_context ctx = {0};
 	struct ko_thread * p;
-
-	/* Create the thread from micro layer */
+	
+	ctx.fate_entry		= (unsigned long)wrapper;
 	ctx.thread_entry 	= (unsigned long)func;
 	ctx.para		 	= param;	
 	if (where->cpl == KP_USER)
-	{		
-		ctx.fate_entry = (unsigned long)wrapper;
+	{
 		ctx.stack_pos	 = 0;
-		//TODO create stack
+		TODO("Create kernel stack fro user thread");
 	}
 	else
 	{
-		if (!wrapper) wrapper = kernel_thread_fate_entry;
-		ctx.fate_entry	= (unsigned long)wrapper;
-		ctx.stack0		= 0;
-		ctx.stack0_size	= 4096;
-
-		//TODO create stack
+		ctx.stack0_size	= KT_ARCH_THREAD_CP0_STACK_SIZE;
+		ctx.stack0		= (unsigned long)km_page_alloc_kerneled(ctx.stack0_size / PAGE_SIZE);
 	}
 
 	/* Has cmdline param? */
 	if (flags & KT_CREATE_STACK_AS_PARA)
 	{
 		/* Write the cmdline to kernel stack(底部) for user to fetch */
-		if (strlen((char*)param) >= KT_ARCH_THREAD_CP0_STACK_SIZE)
+		if (strlen((char*)param) >= ctx.stack0_size)
 			goto err1;
 		strcpy((char*)ctx.stack0, (char*)param);
 
@@ -142,6 +138,9 @@ struct ko_thread * kt_create(struct ko_process * where, void * wrapper, void * f
 	kt_arch_init_thread(p, &ctx);
 	p->process = where;
 	
+	if (flags & KT_CREATE_RUN)
+		kt_wakeup(p);
+	
 	return p;
 
 err1:
@@ -150,46 +149,24 @@ err0:
 	return NULL;
 }
 
-void kt_wakeup(struct ko_thread *who)
+void __noreturn kt_delete_current()
 {
-	unsigned long flags;
+	//TODO
+	while (1) kt_schedule();
+}
 
-	flags = ke_spin_lock_irqsave(&who->ops_lock);										//No ops on who, and no IRQ
-	if (!test_bit(KT_STATE_RUNNING, &who->state))
-	{
-		struct kc_cpu * cpu;
+struct ko_thread *kt_create_kernel(void *entry, unsigned long para)
+{
+	return kt_create(kp_get_system(), kernel_thread_fate_entry, entry, para, KT_CREATE_RUN);
+}
 
-		/* Normal wakeup cannot ops "FORCE by system " */
-		if (test_bit(KT_STATE_ADD_FORCE_BY_SYSTEM, &who->state))
-			goto end;
-		//sanity check
-#if 1
-		/* Dead thread? */
-		if (test_bit(KT_STATE_ADD_DIEING, &who->state))
-		{
-			ke_panic("内核唤醒一个死亡的线程.");
-		}
-
-		/* In other queue? Error! */
-		if (!list_empty(&who->queue_list))
-		{
-			ke_panic("内核唤醒一个已经在某个队列中的线程."); 			
-		}
-#endif
-		/* Move thread to its running queue */
-		cpu = kc_get_raw();
-		list_add_tail(&who->queue_list, cpu->run_queue + who->priority_level);			
-		__set_bit(who->priority_level, &cpu->run_mask);
-		cpu->run_count[who->priority_level]++;
-		cpu->running_count++;
-
-		/* Set as running status */
-		__set_bit(KT_STATE_RUNNING, &who->state);
-	}
-	else
-		who->wakeup_count ++;
-end:
-	ke_spin_unlock_irqrestore(&who->ops_lock, flags);
+/**
+	@brief The recaller of the threads already dead.
+ 
+	Should bind to specific CPU or the CPU operation while we are deleting thread/process will be error!!!
+ */
+void kt_run_killer()
+{
 }
 
 bool kt_init()

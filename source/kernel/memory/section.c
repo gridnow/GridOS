@@ -113,7 +113,7 @@ void *km_map_physical(unsigned long physical, size_t size, unsigned int flags)
 	ks = ks_create(kp_get_system(), KS_TYPE_DEVICE, 0, size);
 	if (!ks)
 		goto err;
-//	printk("km_map_physical got virtual start = %p, size = %d, mapping physical...", ks->node.start, ks->node.size);
+	//printk("km_map_physical got virtual(%x) start = %p, size = %d, mapping physical...", ks, ks->node.start, ks->node.size);
 	
 	if (km_page_map_range(&kp_get_system()->mem_ctx, ks->node.start,
 					ks->node.size, physical >> PAGE_SHIFT, KM_MAP_DEVICE) == false)
@@ -128,8 +128,25 @@ err:
 }
 
 //------------test-----------------
+static void test_thread(unsigned long para)
+{
+	int i = 0;
+	while(1)
+	{
+		i++;
+		if (!(i %100000000))
+			printk("%d ", para);
+	}
+}
 
 void kernel_test()
 {
+	int i;
+	
+	for (i = 0; i < 10; i++)
+		kt_create_kernel(test_thread, i);
+	
+	/* Start the kernel thread recaller */
+	
 
 }

@@ -6,7 +6,7 @@
 
 #include <walk.h>
 
-#include <kernel/ke_lock.h>
+#include <spinlock.h>
 
 /* Process privilege level */
 #define KP_CPL0						0

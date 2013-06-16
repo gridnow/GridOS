@@ -11,4 +11,5 @@
 
 #define per_cpu(v, cpu) v
 #define __this_cpu_read(pcp) pcp
+#define __raw_get_cpu_var(var) var
 #endif /* PCPU_H */

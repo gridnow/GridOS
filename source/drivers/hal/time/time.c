@@ -78,7 +78,7 @@ unsigned long hal_ms_to_tick(int ms)
 void hal_time_init()
 {
 	/* 软件定时器 */
-	hal_timer_init();
+	hal_timer_system_init();
 	
 	/* 硬件设备 */
 	rtc_init();

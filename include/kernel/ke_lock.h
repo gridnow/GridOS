@@ -17,7 +17,7 @@
 #include <types.h>
 struct ke_spinlock
 {
-	unsigned long dummy;
+	unsigned long lock;
 };
 
 /**
