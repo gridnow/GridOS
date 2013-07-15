@@ -154,7 +154,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\source\kernel\event.c"
+					>
+				</File>
+				<File
 					RelativePath="..\..\source\kernel\lock.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\source\kernel\Makefile"
+					>
+				</File>
+				<File
+					RelativePath="..\..\source\kernel\mutex.c"
 					>
 				</File>
 				<Filter
@@ -193,10 +205,6 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\source\kernel\include\kernel.h"
-						>
-					</File>
-					<File
 						RelativePath="..\..\source\kernel\include\memory.h"
 						>
 					</File>
@@ -217,6 +225,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\source\kernel\include\sync.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\source\kernel\include\thread.h"
 						>
 					</File>
@@ -228,16 +240,44 @@
 						RelativePath="..\..\source\kernel\include\walk.h"
 						>
 					</File>
+					<Filter
+						Name="arch"
+						>
+						<Filter
+							Name="x86"
+							>
+							<File
+								RelativePath="..\..\source\kernel\include\arch\x86\arch\page.h"
+								>
+							</File>
+							<File
+								RelativePath="..\..\source\kernel\include\arch\x86\arch\thread.h"
+								>
+							</File>
+						</Filter>
+					</Filter>
 				</Filter>
 				<Filter
 					Name="process"
 					>
+					<File
+						RelativePath="..\..\source\kernel\process\Makefile"
+						>
+					</File>
 					<File
 						RelativePath="..\..\source\kernel\process\process.c"
 						>
 					</File>
 					<File
 						RelativePath="..\..\source\kernel\process\sched.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\kernel\process\sleep.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\kernel\process\sync.c"
 						>
 					</File>
 					<File
@@ -303,6 +343,22 @@
 								>
 								<File
 									RelativePath="..\..\source\drivers\hal\main\net\ethernet\eth.c"
+									>
+								</File>
+							</Filter>
+							<Filter
+								Name="core"
+								>
+								<File
+									RelativePath="..\..\source\drivers\hal\main\net\core\dev.c"
+									>
+								</File>
+								<File
+									RelativePath="..\..\source\drivers\hal\main\net\core\internal.h"
+									>
+								</File>
+								<File
+									RelativePath="..\..\source\drivers\hal\main\net\core\rt.c"
 									>
 								</File>
 							</Filter>
@@ -393,6 +449,10 @@
 						</File>
 						<File
 							RelativePath="..\..\source\drivers\hal\include\delay.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\drivers\hal\include\dma-mapping.h"
 							>
 						</File>
 						<File
@@ -495,6 +555,442 @@
 							RelativePath="..\..\source\drivers\hal\include\types.h"
 							>
 						</File>
+						<Filter
+							Name="asm"
+							>
+							<Filter
+								Name="x86"
+								>
+								<Filter
+									Name="asm"
+									>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\abicall.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\alternative-asm.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\alternative.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\apic.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\apicdef.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\asm.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\atomic.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\barrier.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\bitops.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\cache.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\cmpxchg.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\cmpxchg_32.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\cpu.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\cpufeature.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\cpufeature_def.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\debugreg.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\delay.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\desc.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\desc_defs.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\div64.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\dma-mapping.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\dwarf2.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\fixmap.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\frame.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\hpet.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\hw_irq.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\hypervisor.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\i387.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\i8259.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\io.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\iommu.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\irq.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\irq_vectors.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\irqflags.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\ldt.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\linkage.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\mc146818rtc.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\mce.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\mpspec.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\msr-index.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\msr.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\param.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\pci-direct.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\pci_x86.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\processor-flags.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\processor.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\processor_probe.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\ptrace.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\required-features.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\rwlock.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\segment.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\serial.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\smp.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\spinlock.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\spinlock_types.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\system.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\thread.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\timer.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\timex.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\traps.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\tsc.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\x86_init.h"
+										>
+									</File>
+								</Filter>
+							</Filter>
+							<Filter
+								Name="arm"
+								>
+								<Filter
+									Name="arm"
+									>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\abicall.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\asm-offsets.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\assembler.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\atomic.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\barrier.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\bitops.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\cache.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\cacheflush.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\cachetype.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\cmpxchg.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\compiler.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\cp15.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\cputype.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\div64.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\domain.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\glue-cache.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\glue-proc.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\glue.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\hwcap.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\io.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\irqflags.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\linkage.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\mc146818rtc.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\mmu.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\opcodes-virt.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\opcodes.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\outercache.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\param.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\proc-fns.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\processor.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\procinfo.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\ptrace.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\shmparam.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\spinlock.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\spinlock_types.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\system_info.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\thread.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\timex.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\tlbflush.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\traps.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\unified.h"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\arm\asm\unwind.h"
+										>
+									</File>
+								</Filter>
+							</Filter>
+						</Filter>
 					</Filter>
 					<Filter
 						Name="irq"
@@ -673,6 +1169,18 @@
 								</FileConfiguration>
 							</File>
 							<File
+								RelativePath="..\..\source\drivers\hal\arch\x86\Makefile"
+								>
+							</File>
+							<File
+								RelativePath="..\..\source\drivers\hal\arch\x86\pci-dma.c"
+								>
+							</File>
+							<File
+								RelativePath="..\..\source\drivers\hal\arch\x86\pci-nommu.c"
+								>
+							</File>
+							<File
 								RelativePath="..\..\source\drivers\hal\arch\x86\pci_early.c"
 								>
 							</File>
@@ -740,10 +1248,6 @@
 								RelativePath="..\..\source\drivers\hal\arch\x86\x86_init.c"
 								>
 							</File>
-							<Filter
-								Name="NewFilter1"
-								>
-							</Filter>
 						</Filter>
 					</Filter>
 				</Filter>
@@ -942,6 +1446,46 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\include\compiler.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\ctype.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\errno.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\limits.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\list.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\stdarg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\stddef.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\stdio.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\string.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\types.h"
+				>
+			</File>
 			<Filter
 				Name="kernel"
 				>
@@ -950,11 +1494,23 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\include\kernel\ke_event.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\include\kernel\ke_lock.h"
 					>
 				</File>
 				<File
 					RelativePath="..\..\include\kernel\ke_memory.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\include\kernel\ke_mutex.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\include\kernel\kernel.h"
 					>
 				</File>
 			</Filter>
@@ -979,6 +1535,10 @@
 				</File>
 				<File
 					RelativePath="..\..\include\ddk\compatible_irq.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\include\ddk\compatible_net.h"
 					>
 				</File>
 				<File
@@ -1037,6 +1597,10 @@
 					Name="net"
 					>
 					<File
+						RelativePath="..\..\include\ddk\net\define.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\include\ddk\net\etherdevice.h"
 						>
 					</File>
@@ -1060,7 +1624,55 @@
 						RelativePath="..\..\include\ddk\net\netdevice.h"
 						>
 					</File>
+					<File
+						RelativePath="..\..\include\ddk\net\rt.h"
+						>
+					</File>
+					<Filter
+						Name="ip"
+						>
+						<File
+							RelativePath="..\..\include\ddk\net\ip\in.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ddk\net\ip\ip.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ddk\net\ip\socket.h"
+							>
+						</File>
+					</Filter>
 				</Filter>
+				<Filter
+					Name="pci"
+					>
+					<File
+						RelativePath="..\..\include\ddk\pci\class.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\include\ddk\pci\global_ids.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\include\ddk\pci\pci.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\include\ddk\pci\pci_regs.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="arch"
+				>
+				<File
+					RelativePath="..\..\include\arch\errno-generic.h"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -1068,6 +1680,22 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath="..\..\cc.mk"
+				>
+			</File>
+			<File
+				RelativePath="..\..\config.mk"
+				>
+			</File>
+			<File
+				RelativePath="..\..\license.txt"
+				>
+			</File>
+			<File
+				RelativePath="..\..\readme.txt"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

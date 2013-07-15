@@ -57,7 +57,7 @@ static void timer_fuc(unsigned long unused)
 
 static void setup_timer()
 {
-	hal_timer_init(&cursor_timer, NULL, 0);
+	hal_timer_init(&cursor_timer, 0, NULL);
 
 	cursor_timer.function = timer_fuc;
 	cursor_timer.expires = hal_get_tick() + 1 * hal_get_tick_rate();		

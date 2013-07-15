@@ -951,8 +951,7 @@ int pci_try_set_mwi(struct pci_dev *dev)
  *
  * Disables PCI Memory-Write-Invalidate transaction on the device
  */
-DLLEXPORT void 
-pci_clear_mwi(struct pci_dev *dev)
+void pci_clear_mwi(struct pci_dev *dev)
 {
 	u16 cmd;
 	

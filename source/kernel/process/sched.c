@@ -9,7 +9,6 @@
 #include "thread.h"
 #include "process.h"
 #include "cpu.h"
-#include "kernel.h"
 
 #include <bitops.h>
 #include <hardirq.h>

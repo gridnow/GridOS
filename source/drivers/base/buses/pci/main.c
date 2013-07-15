@@ -9,6 +9,7 @@
 #include <ddk/string.h>
 #include <ddk/debug.h>
 #include <ddk/compatible.h>
+#include <ddk/dma.h>
 
 #include "pci.h"
 
@@ -79,11 +80,9 @@ DLLEXPORT void pci_register_final_quirk(struct pci_fixup * q)
 	spin_unlock(&quirk_lock);
 }
 
-int pci_set_dma_mask(struct pci_dev *dev, u64 mask)
+DLLEXPORT int pci_set_dma_mask(struct pci_dev *dev, u64 mask)
 {
-	dev->dma_mask = mask;
-
-	return 0;
+	return ddk_dma_set_mask(&dev->dev, mask);	
 }
 
 int pci_set_consistent_dma_mask(struct pci_dev *dev, u64 mask)

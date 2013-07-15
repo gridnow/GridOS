@@ -7,31 +7,77 @@
 */
 
 #include <thread.h>
+#include <sync.h>
 #include "process.h"
 #include "cpu.h"
-#include "kernel.h"
 
-void kt_sleep(struct ko_thread *who, unsigned long stat)
+bool kt_sleep(unsigned long stat)
 {
+	unsigned long flags;
+	bool suspend = true;
+	struct ko_thread *who = kt_current();
+	
+	spin_lock_irqsave(&who->ops_lock, flags);
+	if ((who->state & KT_STATE_MASK) == KT_STATE_RUNNING)
+	{
+		struct kc_cpu * cpu;
+		
+		/*
+			But have wakeup count?
+			This may happen when the thread want to sleep, before another wakeup is comming.
+		*/
+		if (!(stat & KT_STATE_ADD_FORCE_BY_SYSTEM))
+		{
+			if (who->wakeup_count != 0)
+			{
+				who->wakeup_count = 0;
+				suspend = false;
+				goto end;
+			}
+		}
+		else
+			who->state |= KT_STATE_ADD_FORCE_BY_SYSTEM;
+		
+		/* Really suspend */
+		cpu = kc_get_raw();
+		list_del_init(&who->queue_list);
+		cpu->run_count[who->priority_level]--;
+		cpu->running_count--;
+		if (cpu->run_count[who->priority_level] == 0)
+			__clear_bit(who->priority_level, &cpu->run_mask);
+		
+		suspend = true;
 
+	}
+	who->state &= ~KT_STATE_MASK;
+	who->state |= stat & KT_STATE_MASK;
+	
+end:
+	spin_unlock_irqrestore(&who->ops_lock, flags);
+	
+	/* Now the cpu is still at hand, just switch if needed */
+	//TODO: 但是可能刚刚判断对了要切换，定时器就来切换了，那么此时切换了2才次，多切换了一次。
+	if (!(stat & KT_STATE_ADD_NO_SWITCHING) && suspend)
+		kt_schedule();
+	return suspend;
 }
 
 void kt_wakeup(struct ko_thread *who)
 {
 	unsigned long flags;
 	
-	flags = ke_spin_lock_irqsave(&who->ops_lock);										//No ops on who, and no IRQ
-	if (!test_bit(KT_STATE_RUNNING, &who->state))
+	spin_lock_irqsave(&who->ops_lock, flags);
+	if ((who->state & KT_STATE_MASK) != KT_STATE_RUNNING)
 	{
 		struct kc_cpu * cpu;
 		
 		/* Normal wakeup cannot ops "FORCE by system " */
-		if (test_bit(KT_STATE_ADD_FORCE_BY_SYSTEM, &who->state))
+		if (KT_STATE_ADD_FORCE_BY_SYSTEM & who->state)
 			goto end;
 		//sanity check
 #if 1
 		/* Dead thread? */
-		if (test_bit(KT_STATE_ADD_DIEING, &who->state))
+		if (KT_STATE_ADD_DIEING & who->state)
 		{
 			ke_panic("内核唤醒一个死亡的线程.");
 		}
@@ -50,10 +96,23 @@ void kt_wakeup(struct ko_thread *who)
 		cpu->running_count++;
 		
 		/* Set as running status */
-		__set_bit(KT_STATE_RUNNING, &who->state);
+		who->state &= ~KT_STATE_MASK;
+		who->state |= KT_STATE_RUNNING;
 	}
 	else
 		who->wakeup_count ++;
+
 end:
-	ke_spin_unlock_irqrestore(&who->ops_lock, flags);
+	spin_unlock_irqrestore(&who->ops_lock, flags);
+}
+
+
+/***********************************************************/
+/* Export */
+/***********************************************************/
+signed long ke_sleep_timeout(signed long timeout)
+{
+	while (timeout)
+		timeout = kt_timeout(NULL, timeout);
+	return timeout;
 }

@@ -47,8 +47,8 @@ struct object_tree_node
 
 struct cl_object_type
 {
-	const char	*name;
-	size_t		size;
+	const xstring	name;
+	size_t			size;
 
 	/* 对象缓冲区操作，用与为对象分配器创立对象内存 */
 	bool (*add_space)(struct cl_object_type *type, void **base, size_t *size, enum cl_object_memory_type);

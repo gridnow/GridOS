@@ -51,10 +51,11 @@ void __init __noreturn hal_main()
 	hal_time_init();
 	hal_console_init();
 	
+	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
+	
 	printk("Starting up modules...");
 	ke_module_entry();
-	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
-
+	
 	printk("Hal startup ok.\n");
 	local_irq_enable();
 		

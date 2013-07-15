@@ -128,14 +128,27 @@ err:
 }
 
 //------------test-----------------
+#include <kernel/ke_event.h>
+struct ke_event ev;
 static void test_thread(unsigned long para)
 {
-	int i = 0;
+	int i = 0, j;
+	
+	if (para == 0)
+	{
+		ke_event_init(&ev, false, true);
+	}
+	return;
+
 	while(1)
 	{
 		i++;
-		if (!(i %100000000))
-			printk("%d ", para);
+
+		printk("\nWaiting(%d)...", para);
+		j = ke_event_wait(&ev, 1000);
+		printk("wait(%d) result = %d...", para, j);
+		ke_event_set(&ev);
+		
 	}
 }
 

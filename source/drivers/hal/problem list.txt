@@ -1,3 +1,15 @@
 1,x86
 	alternative.h中定义了alternative_io，用ALTERNATIVE宏根据CPU的能力来在运行时替换指令，现在只用到了老指令，新指令暂时忽略。
 	io_delay 目前用的是0x80端口，在某些平台上可能会挂起，以后再动态屏蔽这些挂起的机器。
+
+
+
+2,byteorde：
+	
+	主要涉及到ddk\byteorder.h swab.h, 在swab中又汇编可以优化的选项，还没做。
+
+
+
+3,commonlibs:
+	
+	其中的crc32.c中要CONFIG_CRC32_SLICEBY8 和CONFIG_64BIT的定义，强制包含了hal_config.h，并定义在里头。但是gen_crc32table.c 应该自己运行来生成crc32table.h。结果是在__cacheline_aligned上遇到了问题，这个宏只在hal中有，hal以外还不能直接使用。

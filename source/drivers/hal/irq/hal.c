@@ -1,5 +1,7 @@
 #include <errno.h>
 
+#include <ddk/irq.h>
+
 #include <irq.h>
 #include <irqdesc.h>
 #include <hardirq.h>
@@ -25,7 +27,7 @@ int hal_irq_setup(unsigned int irq, struct irqaction *act)
 int hal_irq_request(unsigned int irq, irq_handler_t handler, unsigned long flags,
 					const char *name, void *dev)
 {
-	return request_irq(irq, handler, flags, name, dev);
+	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }
 
 void hal_irq_free(unsigned int irq, void *dev_id)
