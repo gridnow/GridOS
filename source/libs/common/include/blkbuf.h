@@ -13,6 +13,14 @@ struct cl_bkb;
 typedef void (*cl_bkb_free_handler)(void *para, void *base, size_t size);
 
 /**
+	@brief 初始化bkb对象
+ 
+	@param[in] bkb 要初始化的bkb对象有效指针
+	@param[in] name bkb对象的名称
+	@param[in] node_size 要从bkb对象中分配的对象长度
+*/
+void cl_bkb_init(struct cl_bkb *bkb, xstring name, int node_size);
+/**
 	@brief Alloc a node in a block buffer
 	
 	@param[in] bkb the address of the block buffer descriptor
@@ -36,7 +44,7 @@ void cl_bkb_extend(struct cl_bkb *bkb, void *base, size_t size, cl_bkb_free_hand
 
 struct cl_bkb
 {	
-	xstring name;	
+	xstring name;
 	int		node_size;
 	void	*prefer;
 };

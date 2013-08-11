@@ -19,7 +19,9 @@ typedef unsigned int page_prot_t;
 /**
 	@brief Map IO memory space
  */
-DLLEXPORT void *km_map_physical(unsigned long physical, size_t size, unsigned int flags);
+DLLEXPORT void *km_map_physical(unsigned long physical, size_t size, unsigned long flags);
+#define KM_MAP_PHYSICAL_FLAG_WITH_VIRTUAL	(1 << 0)				/* 物理地址绑定到特定虚拟地址 */
+#define KM_MAP_PHYSICAL_FLAG_NORMAL_CACHE	(1 << 1)				/* 物理地址映射时，使用常规的cache模式（而不是非缓存）*/
 
 /**
 	@brief Allocate a kernel page

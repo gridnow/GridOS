@@ -7,10 +7,10 @@
 */
 #ifndef _DDK_NET_ETHER_DEVICE_H_
 #define _DDK_NET_ETHER_DEVICE_H_
-
+#include <ddk/compiler.h>
 #include <ddk/net/netdevice.h>
 
-extern struct net_device *alloc_etherdev_mqs(int sizeof_priv, unsigned int txqs,
+DLLEXPORT struct ddk_net_device *alloc_etherdev_mqs(int sizeof_priv, unsigned int txqs,
 											 unsigned int rxqs);
 
 

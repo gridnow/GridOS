@@ -9,6 +9,7 @@
 #ifndef _DDK_IRQ_H_
 #define _DDK_IRQ_H_
 
+#include <ddk/compiler.h>
 /**
 	@brief 关闭cpu的中断使能位
 
@@ -38,6 +39,15 @@ typedef irqreturn_t (*irq_handler_t)(int, void *);
 
 /*  请求中断时的flag */
 #define IRQF_SHARED		0x00000080
+
+DLLEXPORT int hal_irq_request(unsigned int irq, irq_handler_t handler, unsigned long flags,
+					const char *name, void *dev);
+
+/**
+	@brief The driver system tap hardware irq event
+*/
+DLLEXPORT void hal_setup_external_irq_handler(void *entry);
+
 #endif
 
 /** @} */

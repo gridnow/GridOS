@@ -8,6 +8,14 @@
 static void (*ret)() ;
 extern void *hal_x86_get_init_pgtable();
 
+asmregparm void do_page_fault(void *ptregs)
+{
+	fak_arch_x86_dump_register(ptregs);
+	while (1) {
+		
+	}
+}
+
 __init void km_arch_trim()
 {
 	unsigned long i;

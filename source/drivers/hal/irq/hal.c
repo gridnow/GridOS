@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <ddk/irq.h>
 
 #include <irq.h>
 #include <irqdesc.h>
@@ -6,36 +7,27 @@
 #include <debug.h>
 #include "internals.h"
 
-
-void hal_irq_disable(unsigned int irq)
+/* External driver subsystem may need it */
+static int null_handler(void *ptregs, int irq)
 {
-	disable_irq(irq);
+	return 0;
 }
-
-void hal_irq_enable(unsigned int irq)
-{
-	enable_irq(irq);
-}
-
-int hal_irq_setup(unsigned int irq, struct irqaction *act)
-{
-	setup_irq(irq, act);
-}
+int (*external_irq_handler)(void *pt_regs, int irq) = null_handler;
 
 int hal_irq_request(unsigned int irq, irq_handler_t handler, unsigned long flags,
 					const char *name, void *dev)
 {
-	return request_irq(irq, handler, flags, name, dev);
-}
-
-void hal_irq_free(unsigned int irq, void *dev_id)
-{
-	free_irq(irq, dev_id);
+	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }
 
 bool hal_irq_can_request(unsigned int irq, unsigned long irqflags)
 {
 	return can_request_irq(irq, irqflags);
+}
+
+void hal_setup_external_irq_handler(void *entry)
+{
+	external_irq_handler = entry;
 }
 
 void hal_irq_early_init()

@@ -11,14 +11,17 @@
 
 #include <arch/thread.h>
 #include <list.h>
-#include <kernel/ke_lock.h>
+#include <spinlock.h>
 
 struct ko_process;
 struct ko_thread
 {
 	struct kt_arch_thread arch_thread;
 	struct ko_process *process;
-	struct ke_spinlock ops_lock;
+	spinlock_t ops_lock;
+	
+	/* If this is a drvier thread, it should have ti */
+	void *desc_of_driver;
 
 	struct list_head queue_list;
 	unsigned long state;
@@ -30,35 +33,72 @@ struct ko_thread
 struct kt_thread_creating_context
 {
 	unsigned long stack_pos;
-	unsigned long stack0, stack0_size;
-	unsigned long fate_entry;
-	unsigned long thread_entry;
-	int priority;
+	void* stack0;
+	unsigned long stack0_size;
+	void* fate_entry;
+	void* thread_entry;
+	int priority, cpl;
 	unsigned long para;
-	int cpl;
+	unsigned long flags;
 };
 
 #define KT_CREATE_STACK_AS_PARA			(1 << 1)
 #define KT_CREATE_RUN					(1 << 2)
 
 #define KT_STATE_RUNNING				1
-#define KT_STATE_WAITING				2
+#define KT_STATE_WAITING_SYNC			2
 #define KT_STATE_KILLING				3
+#define KT_STATE_WAIT_IN_DRIVER			4
 #define KT_STATE_MASK					(0xffff)
-#define KT_STATE_ADD_UNINTERRUPT		16												//附加属性：不可中断地做某件事情
-#define KT_STATE_ADD_FORCE_BY_SYSTEM	17												//附加属性：强制休眠的，常规唤醒（用户层的唤醒）是不能的
-#define KT_STATE_ADD_DIEING				18												//附加属性：要死了...
-#define KT_STATE_ADD_USING_FPU			19												//附加属性：线程本次试用了FPU.
+#define KT_STATE_ADD_UNINTERRUPT		(1 << 16)												//附加属性：不可中断地做某件事情
+#define KT_STATE_ADD_FORCE_BY_SYSTEM	(1 << 17)												//附加属性：强制休眠的，常规唤醒（用户层的唤醒）是不能的
+#define KT_STATE_ADD_DIEING				(1 << 18)												//附加属性：要死了...
+#define KT_STATE_ADD_USING_FPU			(1 << 19)												//附加属性：线程本次使用了FPU.
+#define KT_STATE_ADD_NO_SWITCHING		(1 << 20)												//附加属性：线程操作后不切换线程.
+
+#define KT_STATUS_BASE(THREAD)			((THREAD)->state & KT_STATE_MASK)
+#define KT_CURRENT_KILLING()			((kt_current()->state & KT_STATE_MASK) == KT_STATE_KILLING)
+static inline struct ko_thread *kt_current()
+{
+	return kt_arch_get_current();
+}
 
 //thread.c
+
+/**
+	@brief Raw interface for create thread in kernel
+*/
+struct ko_thread *kt_create(struct ko_process * where, struct kt_thread_creating_context *ctx);
+
+/**
+	@brief Create kernel thread
+*/
 struct ko_thread *kt_create_kernel(void *entry, unsigned long para);
+
+/**
+	@brief Create thread for driver subsystem
+*/
+struct ko_thread *kt_create_driver_thread(void *ring0_stack, int stack_size, void *entry, unsigned long para);
+
 void kt_delete_current();
 
 //sleep.c
 void kt_wakeup(struct ko_thread *who);
-void kt_sleep(struct ko_thread *who, unsigned long stat);
+bool kt_sleep(unsigned long stat);
+
+/**
+	@brief Make a driver thread into running queue
+ 
+	@note
+		The thread must really be a driver thread.
+*/
+void kt_wakeup_driver(struct ko_thread *who);
 
 //sched.c
+
+/**
+	@brief 切换线程
+*/
 void kt_schedule();
 
 //arch

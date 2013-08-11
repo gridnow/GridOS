@@ -168,7 +168,12 @@ bool km_vm_create(struct ko_process *where, struct km_vm_node *node)
 
 	spin_lock(&where->vm_list_lock);
 	start = alloc_virtual_space(&where->vm_list, range_start, range_len, node->start, size);
-	if (start == NULL) goto end;
+	if (start == NULL) 
+	{
+		printk("km_vm_create error: base %x, range_start %x, range_len %x, len %x.\n",
+			node->start, range_start, range_len, node->size);
+		goto end;
+	}
 	node->start = start;
 	node->size = size;
 	

@@ -130,7 +130,6 @@ enum {
 #define IRQF_EARLY_RESUME	0x00020000
 #define IRQF_TIMER		(__IRQF_TIMER | IRQF_NO_SUSPEND | IRQF_NO_THREAD)
 
-
 /* IRQ action */
 struct irqaction {
 	irq_handler_t		handler;
@@ -230,20 +229,18 @@ extern int setup_irq(unsigned int irq, struct irqaction *new);
 extern int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	irq_handler_t thread_fn,
 	unsigned long flags, const char *name, void *dev);
-static inline int request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
-	const char *name, void *dev)
-{
-	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
-}
+
 extern void disable_irq_nosync(unsigned int irq);
  
 //chip.c
 extern void	irq_set_chip_and_handler_name(unsigned int irq, struct irq_chip *chip,
 	irq_flow_handler_t handle, const char *name);
+extern void handle_level_irq(unsigned int irq, struct irq_desc *desc);
 
 //handle.c
 extern irqreturn_t no_action(int cpl, void *dev_id);
-extern void handle_level_irq(unsigned int irq, struct irq_desc *desc);
 
+//hal.c private data, used by arch to link irq event to driver subsystem
+extern int (*external_irq_handler)(void *pt_regs, int irq);
 
 #endif

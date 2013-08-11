@@ -47,8 +47,14 @@
 #define NMI_OFFSET	(1UL << NMI_SHIFT)
 
 //TODO
+#define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
+#define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
+#define irq_count()	(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK \
+										| NMI_MASK))
 
-#define in_interrupt()	(0)
+#define in_irq()		(hardirq_count())
+#define in_softirq()		(softirq_count())
+#define in_interrupt()		(irq_count())
 
 //dpc.c
 extern void irq_enter(void);

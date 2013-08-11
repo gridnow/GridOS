@@ -415,6 +415,13 @@ struct km_cluster *km_cluster_alloc(struct ke_mem_cluster_info * ret_info, int n
 	unsigned long flags;
 	struct list_head * tmp;
 
+	/* Auto to select the node by currently running cpu? */
+	if (node == -1)
+	{
+		//TODO: Auto select node if we are proposed to
+		node = 0;
+	}
+	
 	/* Select the cluster head by node,and other cpu may adding memory to the cluster list */
 	//TODO:to optimize the arithmatic
 	flags = ke_spin_lock_irqsave(&km_global.lock);
@@ -471,6 +478,11 @@ struct km_cluster *km_cluster_alloc(struct ke_mem_cluster_info * ret_info, int n
 	ret_info->km_cluster = cluster;
 end:
 	return cluster;
+}
+
+void km_cluster_dealloc_base(unsigned long physical_base, bool force)
+{
+	//TODO
 }
 
 /**

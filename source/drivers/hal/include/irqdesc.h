@@ -3,7 +3,6 @@
 
 #include <cache.h>
 #include <spinlock.h>
-#include <ddk/compatible.h>
 
 struct irq_desc {
 	struct irq_data		irq_data;

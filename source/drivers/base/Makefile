@@ -1,6 +1,6 @@
 include $(MY_BUILD_BASE)/config.mk
 
-OBJS					= main.o z_initcall_tail.o _initcall_head.o
+OBJS					= main.o
 
 PARTS = buses
 		

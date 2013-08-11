@@ -6,8 +6,8 @@
 *   进程管理
 */
 
-#include "process.h"
-#include "memory.h"
+#include <process.h>
+#include <memory.h>
 
 #include "object.h"
 static struct ko_process *init_process;
@@ -115,3 +115,34 @@ err:
 	return false;
 }
 
+#include <sys/elf.h>
+#include <ddk/ddk_for_linux.h>
+/**
+	@brief Map driver framework to kernel
+*/
+void kp_startup_driver_process(void *physical_data, size_t size)
+{
+	unsigned long entry_address;
+	unsigned long base;
+	Elf32_Ehdr *hdr = (Elf32_Ehdr*)physical_data;
+
+	if (hdr->e_ident[EI_CLASS] == ELFCLASS32)
+	{
+		entry_address = hdr->e_entry;
+	}
+	else if (hdr->e_ident[EI_CLASS] == ELFCLASS64)
+	{
+		Elf64_Ehdr *hdr64 = (Elf64_Ehdr*)physical_data;
+		entry_address = hdr64->e_entry;
+	}
+
+	/* 64kb offset is not base */
+	base = entry_address & (~0xffff);
+	// TODO: size of the map should contain bss, and notify system that bss should not be allocated for normal use */
+	
+	/* Map physical to base */
+	km_map_physical(HAL_GET_BASIC_PHYADDRESS(physical_data), size,
+					base | KM_MAP_PHYSICAL_FLAG_WITH_VIRTUAL | KM_MAP_PHYSICAL_FLAG_NORMAL_CACHE);
+
+	((void(*)())entry_address)(&ddk);
+}

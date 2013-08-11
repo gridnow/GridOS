@@ -77,9 +77,16 @@ static void __noreturn first_time_entry()
 	while(1);
 }
 
-asmregparm void arch_thread_switch(struct ko_thread *prev_p, struct ko_thread *next_p)
+asmregparm struct ko_thread *arch_thread_switch(struct ko_thread *prev_p, struct ko_thread *next_p)
 {
 	stts();
+#if 0
+	printk(".Real arch arch_thread_switch prev = %x, next = %x, next_sp = %x, pre sp = %x.\n",
+		   prev_p, next_p,
+		   next_p->arch_thread.ctx.sp,
+		   prev_p->arch_thread.ctx.sp);
+#endif
+	return prev_p;
 }
 
 /**
@@ -114,7 +121,25 @@ void kt_arch_init_thread(struct ko_thread * thread, struct kt_thread_creating_co
 	thread->arch_thread.ctx.ptrace_dr7		= (unsigned long)ctx->thread_entry;
 }
 
-void kt_arch_switch(struct ko_thread * prev, struct ko_thread * next)
-{ 
-	x86_thread_switch_to(prev, next);
+static void dump_memory(unsigned long base, int size)
+{
+	int i = 0;
+	unsigned char *p = (char*)base;
+	
+	while (size > 0)
+	{
+		printk("%08x:", p);
+		for (i = 0; i < 16 && size > 0; i++, size--)
+			printk("%02x ", *p++);
+		printk("\n");
+	}
+}
+
+void kt_arch_switch(struct ko_thread *prev, struct ko_thread *next)
+{
+	struct ko_thread * last;
+
+	x86_thread_switch_to(prev, next, last);
+	
+	//printk("kt_arch_switch sp %x... %x \n", &last, __builtin_return_address(0));
 }

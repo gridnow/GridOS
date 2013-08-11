@@ -14,6 +14,21 @@ __weak ke_module_entry()
 	
 }
 
+static void *driver_pakcage = NULL;
+static int driver_size = 0;
+static int driver_package_id, last_package_id;
+static void *start_driver_ctx(void *data, int size, char *name, int id)
+{
+	/* We got the driver package? And we got again, error */
+	if (!strcmp(name, "linux.drv"))
+	{
+		driver_pakcage = data;
+		driver_size = size;
+		driver_package_id = id;
+	}
+	last_package_id = id;
+}
+
 static void build_ram_list()
 {
 	
@@ -51,12 +66,29 @@ void __init __noreturn hal_main()
 	hal_time_init();
 	hal_console_init();
 	
+	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
+	
 	printk("Starting up modules...");
 	ke_module_entry();
-	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
-
-	printk("Hal startup ok.\n");
+	
 	local_irq_enable();
+	
+	/* Driver pakcage loading, and it must be the last file */
+	hal_boot_module_loop(start_driver_ctx);
+	if (last_package_id == driver_package_id && driver_pakcage)
+	{
+		extern void kp_startup_driver_process(void *data, size_t size);
+		kp_startup_driver_process(driver_pakcage, driver_size);
+	}
+	else
+	{
+		if (driver_size)
+			printk("Driver package is not the last one, BSS in it may overlay the useful file data after it...");
+		else
+			printk("No driver package was loaded...");
+	}
+	printk("Hal startup ok.\n");
+	
 		
 	kernel_test();
 	while (1) dumy_idle_ops(0);

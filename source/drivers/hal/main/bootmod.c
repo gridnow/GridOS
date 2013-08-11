@@ -116,15 +116,18 @@ void hal_boot_module_loop(void * (*loop)(void *data, int size, char *name, int i
 	if (!head)
 		return;
 	
-	//printk("loop loaded module at %p...\n", head); 
+	printk("loop loaded module at %p, mode_count %d...\n", head, head->module_count); 
 	
 	for (i = 0; i < head->module_count; i++)
 	{	
-		ka_call_dynamic_module_entry(loop,
-			(void*)(head->entry[i].file_offset + (unsigned long)head),
-			head->entry[i].file_size,
-			(char*)(head->entry[i].name_offset + (unsigned long)head),
-			i);
+		if (loop)
+		{
+			ka_call_dynamic_module_entry(loop,
+				(void*)(head->entry[i].file_offset + (unsigned long)head),
+				head->entry[i].file_size,
+				(char*)(head->entry[i].name_offset + (unsigned long)head),
+				i);
+		}
 	}
 }
 

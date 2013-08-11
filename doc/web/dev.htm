@@ -39,7 +39,7 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
 </DIV>
 <DIV id=content>
 <p>&nbsp;</p>
-<h2><span class="news-title">一，本阶段模块/任务细分(更多的内容将随着项目进展而添加,欢迎到BBS讨论）</span></h2>
+<h2><span class="news-title">一，本阶段模块/任务细分(更多的内容将随着项目进展而添加)</span></h2>
 <DIV id=news>
   <DIV class=news-item>
     <TABLE width=808 
@@ -155,12 +155,27 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
           <TD><p align="left">2013-3-6：vsnprintf</p>            </TD>
         </TR>
         <TR align="center">
-          <TD>驱动程序</TD>
+          <TD rowspan="2">驱动程序</TD>
           <TD>以太网</TD>
-          <TD>8139cp</TD>
+          <TD>移植Linux驱动</TD>
           <TD><p align="left">2013-4-20：8139cp到了映射PCI 地址空间的位置，这部分需要内核的内存管理器的支持。我们现在的重点在驱动上，内核的这部分还没做。</p>
-            <p align="left">2013-6-9：已经成功影射网卡的PCI地址，试验已经能读出网卡的MAC地址，影射成功！</p>
             <p align="left">&nbsp;</p></TD>
+        </TR>
+        <TR align="center">
+          <TD>键盘鼠标</TD>
+          <TD><p>移植Linux驱动</p>
+            <p align="left">1，ps2 键盘鼠标</p>
+            <p align="left">2，usb键盘鼠标</p></TD>
+          <TD><div align="left">
+            <p>2013-7-31:ps2 i8042 控制器启动成功，端口数据获取成功。</p>
+            </div></TD>
+        </TR>
+        <TR align="center">
+          <TD>&nbsp;</TD>
+          <TD>ATA 控制器</TD>
+          <TD><p>移植Linux驱动</p>
+            <p align="left">1,Intel AHCI</p></TD>
+          <TD><div align="left">2013-8-1:开始实施移植AHCI，向驱动子系统增加HAL的PCI信息。</div></TD>
         </TR>
       </TBODY>
     </TABLE>

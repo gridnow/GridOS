@@ -76,9 +76,26 @@ void km_cluster_init();
 bool km_insert_ram(unsigned long start, unsigned long size, int node);
 
 /**
-	@brief
+	@brief 分配一个完整的簇
+ 
+	一般分配一个完整的簇是为了每个CPU能并发分配簇里头的内存页面，不过也可以用作为驱动分配一个大的连续的物理内存
+ 
+	@param[in,out] ret_info 回写簇的信息，NULL则表示不回写
+	@param[in] node 表示要在哪个节点上分配簇，NUMA/CPU核心与内存的距离，一个优化参数，－1表示随意
+	@param[in] totally_using 表示该簇一开始里头的页面是全部被使用的，一般为驱动设置为true，驱动组件自己在里面进行内存分配
+ 
+	@return
+		NULL失败，成功则为cluster对象
 */
 struct km_cluster *km_cluster_alloc(struct ke_mem_cluster_info *ret_info, int node, bool totally_using);
+
+/**
+	@brief 释放一个簇
+ 
+	@param[in] physical_base 通过该物理地址查询簇对应的簇
+	@param[in] force 是否强制释放该簇，不论簇里面的内存是否被占用，调用者保证这点，否则系统可能出错，一般在做处理处理时设置为true
+*/
+void km_cluster_dealloc_base(unsigned long physical_base, bool force);
 
 /**
 	@brief Get the node by a page address

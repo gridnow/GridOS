@@ -12,6 +12,8 @@
 /* Standard interface flags (netdevice->flags). */
 #define	IFF_UP		0x1		/* interface is up		*/
 #define	IFF_BROADCAST	0x2		/* broadcast address valid	*/
+#define	IFF_PROMISC	0x100		/* receive all packets		*/
+#define	IFF_ALLMULTI	0x200		/* receive all multicast packets*/
 
 #define IFF_MULTICAST	0x1000		/* Supports multicast		*/
 

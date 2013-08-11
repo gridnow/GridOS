@@ -8,6 +8,7 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
+#define __attribute_const__		__attribute__((__const__))
 #define  noinline			__attribute__ ((noinline))
 #define likely(x)			__builtin_expect(!!(x), 1)
 #define unlikely(x)			__builtin_expect(!!(x), 0)

@@ -37,7 +37,7 @@ static void object_init(real_object_t *obj)
 {
 	struct ko_thread *thread = (struct ko_thread *)obj;
 	INIT_LIST_HEAD(&thread->queue_list);
-	ke_spin_init(&thread->ops_lock);
+	spin_lock_init(&thread->ops_lock);
 }
 
 static struct cl_object_ops thread_object_ops = {
@@ -64,7 +64,7 @@ static bool alloc_space(struct cl_object_type *type, void **base, size_t *size, 
 	if (!object_memory) goto err;
 	*base = object_memory;
 	*size = count * PAGE_SIZE;
-	printk("Thread pool at %x\n", object_memory);
+	
 	return true;
 
 err:
@@ -102,48 +102,61 @@ end:
 /**
 	@brief Create a thread
 */
-struct ko_thread * kt_create(struct ko_process * where, void * wrapper, void * func, unsigned long param, unsigned long flags)
-{
-	struct kt_thread_creating_context ctx = {0};
+struct ko_thread * kt_create(struct ko_process * where, struct kt_thread_creating_context *ctx)
+{	
 	struct ko_thread * p;
+	//void * wrapper, void * func, unsigned long param, unsigned long flags
 	
-	ctx.fate_entry		= (unsigned long)wrapper;
-	ctx.thread_entry 	= (unsigned long)func;
-	ctx.para		 	= param;	
-	if (where->cpl == KP_USER)
+	/* Handle stack */
+	ctx->cpl = where->cpl;
+	if (ctx->cpl == KP_USER)
 	{
-		ctx.stack_pos	 = 0;
+		ctx->stack_pos	 = 0;
 		TODO("Create kernel stack fro user thread");
 	}
 	else
 	{
-		ctx.stack0_size	= KT_ARCH_THREAD_CP0_STACK_SIZE;
-		ctx.stack0		= (unsigned long)km_page_alloc_kerneled(ctx.stack0_size / PAGE_SIZE);
+		/* If caller give a specific stack(driver system will), we do not need to create */
+		if (!ctx->stack0_size)
+		{
+			ctx->stack0_size	= KT_ARCH_THREAD_CP0_STACK_SIZE;
+			ctx->stack0			= km_page_alloc_kerneled(ctx->stack0_size / PAGE_SIZE);
+		}
 	}
 
-	/* Has cmdline param? */
-	if (flags & KT_CREATE_STACK_AS_PARA)
+	/* Has command line param? Caller will make sure the ctx->param is a valid kernel buffer */
+	if (ctx->flags & KT_CREATE_STACK_AS_PARA)
 	{
 		/* Write the cmdline to kernel stack(µ×²¿) for user to fetch */
-		if (strlen((char*)param) >= ctx.stack0_size)
+		if (strlen((char*)ctx->para) >= ctx->stack0_size)
 			goto err1;
-		strcpy((char*)ctx.stack0, (char*)param);
+		strcpy((char*)ctx->stack0, (char*)ctx->para);
 
 		/* Write the real thread param for this address, so we know where to fetch */
-		ctx.para = ctx.stack0;
+		ctx->para = (unsigned long)ctx->stack0;
 	}
 	
+	/* Fate entry */
+	if (!ctx->fate_entry)
+	{
+		if (ctx->cpl == KP_USER)
+			goto err1;
+		ctx->fate_entry	= (void*)kernel_thread_fate_entry;
+	}
+
+	/* Thread Object */
 	p = cl_object_create(&thread_type);
 	if (!p)	goto err1;
-	kt_arch_init_thread(p, &ctx);
+	kt_arch_init_thread(p, ctx);
 	p->process = where;
 	
-	if (flags & KT_CREATE_RUN)
+	if (ctx->flags & KT_CREATE_RUN)
 		kt_wakeup(p);
 	
 	return p;
 
 err1:
+	//TODO: To recall all resources
 	
 err0:
 	return NULL;
@@ -157,7 +170,24 @@ void __noreturn kt_delete_current()
 
 struct ko_thread *kt_create_kernel(void *entry, unsigned long para)
 {
-	return kt_create(kp_get_system(), kernel_thread_fate_entry, entry, para, KT_CREATE_RUN);
+	struct kt_thread_creating_context ctx = {0};
+	
+	ctx.para			= para;
+	ctx.thread_entry	= entry;
+	ctx.flags			= KT_CREATE_RUN;
+	return kt_create(kp_get_system(), &ctx);
+}
+
+struct ko_thread *kt_create_driver_thread(void *ring0_stack, int stack_size, void *entry, unsigned long para)
+{
+	struct kt_thread_creating_context ctx = {0};
+
+	ctx.para			= para;
+	ctx.thread_entry	= entry;
+	ctx.stack0			= ring0_stack;
+	ctx.stack0_size		= stack_size;
+	ctx.para			= para;
+	return kt_create(kp_get_system(), &ctx);
 }
 
 /**

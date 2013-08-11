@@ -55,10 +55,12 @@ struct km_walk_ctx
 	};
 };
 
-bool  km_walk_to(struct km_walk_ctx *ctx, unsigned long va);
+bool km_walk_to(struct km_walk_ctx *ctx, unsigned long va);
 void *km_walk_miss(struct km_walk_ctx *ctx);
 void *km_walk_alloc_table(struct km_walk_ctx *ctx);
 void *km_create_sub_table(struct km_walk_ctx *ctx, void *table, int sub_id);
+void km_walk_init_for_kernel(struct km *mem);
+void km_walk_init(struct km *mem);
 
 /*
 	General version of walk-related functions.

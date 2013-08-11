@@ -6,8 +6,6 @@
 
 DLLEXPORT bool ke_module_entry(int type)
 {
-	//start_kbd();
-
 	/* PCI init */
 #ifdef __i386__ 
 //	usb_register_quirk();
@@ -17,7 +15,4 @@ DLLEXPORT bool ke_module_entry(int type)
 	pci_apply_final_quirks();/* Setup the pci_cache_line_size */
 #endif
 
-	/* 启动内嵌驱动模块 */
-	printk("Starting embedded drivers...\n");
-	start_embeded_driver();	
 }

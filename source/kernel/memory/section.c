@@ -72,14 +72,11 @@ struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsig
 {
 	struct ko_section *p;
 	
-	if (size == 0)
-		goto err;
-	
+	if (size == 0) goto err;	
 	p = cl_object_create(&section_type);
-	if (!p)
-		goto err;
-	
-	p->type 	= type;
+	if (!p)	goto err;	
+
+	p->type 		= type;
 	p->node.size 	= size;
 	p->node.start 	= base;
 	if (km_vm_create(where, &p->node) == false)
@@ -106,17 +103,27 @@ void __init ks_init()
 	km_arch_trim(); 
 }
 
-void *km_map_physical(unsigned long physical, size_t size, unsigned int flags)
+/******************************************************
+Interface
+******************************************************/
+void *km_map_physical(unsigned long physical, size_t size, unsigned long flags)
 {
 	struct ko_section *ks;
+	unsigned long base = 0;
+	unsigned long map_flags = KM_MAP_DEVICE;
 	
-	ks = ks_create(kp_get_system(), KS_TYPE_DEVICE, 0, size);
+	if (flags & KM_MAP_PHYSICAL_FLAG_WITH_VIRTUAL)
+		base = flags & PAGE_MASK;
+	
+	ks = ks_create(kp_get_system(), KS_TYPE_DEVICE, base, size);
 	if (!ks)
 		goto err;
-	//printk("km_map_physical got virtual(%x) start = %p, size = %d, mapping physical...", ks, ks->node.start, ks->node.size);
+	
+	if (flags & KM_MAP_PHYSICAL_FLAG_NORMAL_CACHE)
+		map_flags = KM_PROT_READ | KM_PROT_WRITE;
 	
 	if (km_page_map_range(&kp_get_system()->mem_ctx, ks->node.start,
-					ks->node.size, physical >> PAGE_SHIFT, KM_MAP_DEVICE) == false)
+					ks->node.size, physical >> PAGE_SHIFT, map_flags) == false)
 		goto err1;
 	
 	return (void*)ks->node.start;
@@ -127,15 +134,30 @@ err:
 	return NULL;
 }
 
+
 //------------test-----------------
+#include <kernel/ke_event.h>
+#include <thread.h>
+struct ke_event ev;
 static void test_thread(unsigned long para)
 {
-	int i = 0;
+	int i = 0, j;
+	
+	if (para == 0)
+	{
+		ke_event_init(&ev, false, true);
+	}
+	return;
+
 	while(1)
 	{
 		i++;
-		if (!(i %100000000))
-			printk("%d ", para);
+
+		printk("\nWaiting(%d)...", para);
+		j = ke_event_wait(&ev, 1000);
+		printk("wait(%d) result = %d...", para, j);
+		ke_event_set(&ev);
+		
 	}
 }
 
@@ -143,10 +165,12 @@ void kernel_test()
 {
 	int i;
 	
-	for (i = 0; i < 10; i++)
-		kt_create_kernel(test_thread, i);
+	//for (i = 0; i < 10; i++)
+	//	kt_create_kernel(test_thread, i);
 	
 	/* Start the kernel thread recaller */
+	printk("kernel_test switch thread loop\n");
+	while (1)
+		kt_schedule();
 	
-
 }

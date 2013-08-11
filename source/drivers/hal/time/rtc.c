@@ -9,7 +9,7 @@
 #include <bcd.h>
 
 #include <ddk/compatible.h>
-#include <ddk/irq.h>
+#include <ddk/compatible_irq.h>
 
 #include <mc146818rtc.h>
 
