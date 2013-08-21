@@ -59,7 +59,7 @@ void ke_event_reset(struct ke_event *event);
 	阻塞等待一个事件发生。
 
 	@param[in] event 事件的有效指针
-	@param[in] timeout 超时单位为1/1000秒，如果为Y_SYNC_WAIT_INFINITE，则表示永不超时
+	@param[in] timeout 超时单位为1/1000秒，如果为KE_SYNC_WAIT_INFINITE，则表示永不超时
 
 	@return
 		等待结果
@@ -74,7 +74,7 @@ kt_sync_wait_result ke_event_wait(struct ke_event * event, unsigned int timeout)
 	@param[in] count 事件数量
 	@param[in] events 事件的有效指针数组
 	@param[in] wait_all 是否要等待所有事件都被触发后才退出
-	@param[in] timeout 超时单位为1/1000秒，如果为Y_SYNC_WAIT_INFINITE，则表示永不超时
+	@param[in] timeout 超时单位为1/1000秒，如果为KE_SYNC_WAIT_INFINITE，则表示永不超时
 	@param[in,out] id 第一个被触发的事件的id
 
 	@return

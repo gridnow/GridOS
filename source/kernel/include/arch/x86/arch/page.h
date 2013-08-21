@@ -8,6 +8,8 @@
 #ifndef ARCH_PAGE_H
 #define ARCH_PAGE_H
 
+#include <kernel/kernel.h>
+
 /**
 	@brief Error code of page fault
  */

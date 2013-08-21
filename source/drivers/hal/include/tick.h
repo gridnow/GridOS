@@ -25,4 +25,9 @@ extern unsigned long volatile __jiffy_data jiffies;
 #define MAX_JIFFY_OFFSET ((LONG_MAX >> 1)-1)
 #define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
 
+/*
+ * Convert various time units to each other:
+ */
+extern unsigned long msecs_to_jiffies(const unsigned int m);
+
 #endif

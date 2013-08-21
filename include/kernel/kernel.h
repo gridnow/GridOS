@@ -9,8 +9,14 @@
 #ifndef KE_H
 #define KE_H
 
+typedef unsigned int page_prot_t;
+#define KM_PROT_READ	(1 << 0)
+#define KM_PROT_WRITE	(1 << 1)
+#define KM_MAP_DEVICE	(1 << 16)
+#define KM_MAP_ANON		(1 << 17)
+
 #define Y_SYNC_MAX_OBJS_COUNT 64
-#define Y_SYNC_WAIT_INFINITE (-1UL)
+#define KE_SYNC_WAIT_INFINITE (-1UL)
 
 /* Should met the size of kt_sync_base */
 #define KE_SYNC_BASE_OBJECT_RESERVE 4

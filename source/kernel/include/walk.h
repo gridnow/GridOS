@@ -10,7 +10,7 @@
 #define KM_WALK_H
 
 #include <debug.h>
-#include <kernel/ke_memory.h>
+#include <spinlock.h>
 
 #include <arch/page.h>
 
@@ -27,14 +27,14 @@
 #define KM_WALK_MAX_LEVEL	2
 #endif
 
-#define KM_WALK_INIT(MEM, WALK, PROT) do { \
+#define KM_WALK_INIT(MEM, WALK) do { \
 	(WALK)->miss_action = km_walk_miss; \
 	(WALK)->mem = (MEM);	\
-	(WALK)->prot = PROT;	\
 } while(0)
 
 struct km
 {
+	spinlock_t lock;
 	void *translation_table;
 };
 
@@ -43,7 +43,6 @@ struct km_walk_ctx
 #define level_id	hirarch_id[0]
 
 	struct km		*mem;
-	page_prot_t		prot;
 	int				hirarch_id[KM_WALK_MAX_LEVEL + 1];
 	unsigned long	*table_base[KM_WALK_MAX_LEVEL + 1];
 	unsigned long	current_virtual_address;
@@ -60,7 +59,7 @@ void *km_walk_miss(struct km_walk_ctx *ctx);
 void *km_walk_alloc_table(struct km_walk_ctx *ctx);
 void *km_create_sub_table(struct km_walk_ctx *ctx, void *table, int sub_id);
 void km_walk_init_for_kernel(struct km *mem);
-void km_walk_init(struct km *mem);
+bool km_walk_init(struct km *mem);
 
 /*
 	General version of walk-related functions.
@@ -98,9 +97,16 @@ static inline unsigned long km_get_vid(unsigned long level, unsigned long va)
 
 #ifndef ARCH_HAS_PTE_T
 typedef unsigned long pte_t;
-static inline void km_pte_write(void *entry, pte_t what)
+static inline void km_pte_write(struct km_walk_ctx * ctx, pte_t what)
 {
+	void *entry  = &(ctx->table_base[1][ctx->hirarch_id[1]]);
 	pte_t *p = entry;
+	
+	//	printk("kmm_pte_write: ctx->table_base[0] = %p, id %d, entry %p(%p), what %p.\n",
+	//	   		ctx->table_base[1],
+	//	   		ctx->hirarch_id[1],
+	//	   		entry, *(unsigned long*)entry,
+	//	   		what);
 	
 	/* Sanity check */
  	if (*p)
@@ -116,7 +122,7 @@ static inline void km_pte_write(void *entry, pte_t what)
 /**
 	@brief Adjust to next pte entry
  */
-static inline bool kmm_pte_next(struct km_walk_ctx * ctx)
+static inline bool km_pte_next(struct km_walk_ctx * ctx)
 {
 	ctx->current_virtual_address += PAGE_SIZE;
 	if (likely(ctx->hirarch_id[1] + 1 != ARCH_KM_LV1_COUNT))
@@ -129,18 +135,17 @@ static inline bool kmm_pte_next(struct km_walk_ctx * ctx)
 	
 	return true;
 }
-
-static inline bool km_pte_write_and_next(struct km_walk_ctx *ctx, unsigned long what)
+static inline pte_t km_pte_read(struct km_walk_ctx *ctx)
 {
 	int i;
-	void *entry  = &(ctx->table_base[1][ctx->hirarch_id[1]]);
-	
-//	printk("kmm_pte_write: ctx->table_base[0] = %p, id %d, entry %p(%p), what %p.\n",
-//	   		ctx->table_base[1],
-//	   		ctx->hirarch_id[1],
-//	   		entry, *(unsigned long*)entry,
-//	   		what);
-	km_pte_write(entry, what);
-	return kmm_pte_next(ctx);
+	pte_t *entry  = &(ctx->table_base[1][ctx->hirarch_id[1]]);
+	return *entry;
 }
+	
+static inline bool km_pte_write_and_next(struct km_walk_ctx *ctx, unsigned long what)
+{
+	km_pte_write(ctx, what);
+	return km_pte_next(ctx);
+}
+
 #endif

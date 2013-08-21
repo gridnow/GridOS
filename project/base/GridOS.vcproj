@@ -151,7 +151,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\source\kernel\complete.c"
+					>
+				</File>
+				<File
 					RelativePath="..\..\source\kernel\cpu.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\source\kernel\cs.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\source\kernel\ddk_for_drv.c"
 					>
 				</File>
 				<File
@@ -174,6 +186,18 @@
 					Name="memory"
 					>
 					<File
+						RelativePath="..\..\source\kernel\memory\ctx.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\kernel\memory\exp.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\kernel\memory\Makefile"
+						>
+					</File>
+					<File
 						RelativePath="..\..\source\kernel\memory\pa.c"
 						>
 					</File>
@@ -187,6 +211,10 @@
 					</File>
 					<File
 						RelativePath="..\..\source\kernel\memory\section.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\kernel\memory\valloc.c"
 						>
 					</File>
 					<File
@@ -207,6 +235,10 @@
 					</File>
 					<File
 						RelativePath="..\..\source\kernel\include\memory.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\kernel\include\page.h"
 						>
 					</File>
 					<File
@@ -1481,6 +1513,162 @@
 					</Filter>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="subsystem"
+				>
+				<Filter
+					Name="fs"
+					>
+					<File
+						RelativePath="..\..\source\subsystem\fs\block.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\subsystem\fs\main.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)4.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)4.xdc"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)4.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)4.xdc"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\source\subsystem\fs\Makefile"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\subsystem\fs\map.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\subsystem\fs\mltt.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\subsystem\fs\tree.c"
+						>
+					</File>
+					<Filter
+						Name="include"
+						>
+						<File
+							RelativePath="..\..\source\subsystem\fs\include\cache.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\subsystem\fs\include\fss.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\subsystem\fs\include\node.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\subsystem\fs\include\vfs.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="libs"
+				>
+				<Filter
+					Name="common"
+					>
+					<File
+						RelativePath="..\..\source\libs\common\bitrev.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\libs\common\blkbuf.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\libs\common\crc32.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\libs\common\crc32defs.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\libs\common\crc32table.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\libs\common\malloc.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)1.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)1.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+							/>
+						</FileConfiguration>
+					</File>
+					<Filter
+						Name="include"
+						>
+						<File
+							RelativePath="..\..\source\libs\common\include\bitmap.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\common\include\bitrev.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\common\include\bits.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\common\include\blkbuf.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\common\include\crc32.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\common\include\digits.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\common\include\memalloc.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\common\include\object.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Í·ÎÄ¼þ"
@@ -1535,6 +1723,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\include\kernel\ke_complete.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\include\kernel\ke_critical.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\include\kernel\ke_event.h"
 					>
 				</File>
@@ -1548,6 +1744,10 @@
 				</File>
 				<File
 					RelativePath="..\..\include\kernel\ke_mutex.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\include\kernel\ke_rwlock.h"
 					>
 				</File>
 				<File
@@ -1636,6 +1836,10 @@
 				</File>
 				<File
 					RelativePath="..\..\include\ddk\types.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\include\ddk\vfs.h"
 					>
 				</File>
 				<Filter

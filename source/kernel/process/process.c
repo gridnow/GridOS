@@ -23,7 +23,10 @@ static void object_init(real_object_t *obj)
 	INIT_LIST_HEAD(&p->vm_list);
 	ke_spin_init(&p->vm_list_lock);
 	
-	/* Although init_process will call it, but it dose not matter for a page disappeared */
+	/* 
+		Although init_process will call it, but it dose not matter for a page disappeared
+		created in walk as root table.
+	 */
 	km_walk_init(&p->mem_ctx);
 }
 
@@ -117,6 +120,8 @@ err:
 
 #include <sys/elf.h>
 #include <ddk/ddk_for_linux.h>
+#include <kernel/ke_memory.h>
+
 /**
 	@brief Map driver framework to kernel
 */
@@ -141,8 +146,20 @@ void kp_startup_driver_process(void *physical_data, size_t size)
 	// TODO: size of the map should contain bss, and notify system that bss should not be allocated for normal use */
 	
 	/* Map physical to base */
-	km_map_physical(HAL_GET_BASIC_PHYADDRESS(physical_data), size,
-					base | KM_MAP_PHYSICAL_FLAG_WITH_VIRTUAL | KM_MAP_PHYSICAL_FLAG_NORMAL_CACHE);
+	if (km_map_physical(HAL_GET_BASIC_PHYADDRESS(physical_data), size,
+					base | KM_MAP_PHYSICAL_FLAG_WITH_VIRTUAL | KM_MAP_PHYSICAL_FLAG_NORMAL_CACHE) == NULL)
+		goto err;
 
 	((void(*)())entry_address)(&ddk);
+	return;
+err:
+	printk("驱动包影射到内核空间失败，可能是地址冲突，要影射的地址范围为%d@%x.\n", size, base);
+}
+
+/**
+	@brief Map driver framework to kernel
+ */
+void kp_run_user()
+{
+	
 }

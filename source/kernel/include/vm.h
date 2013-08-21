@@ -9,8 +9,9 @@
 #define KE_VM_H
 
 #include <list.h>
-
+#include <types.h>
 struct ko_process;
+
 struct km_vm_node
 {
 	struct list_head node, subsection_link;
@@ -18,5 +19,6 @@ struct km_vm_node
 };
 
 bool km_vm_create(struct ko_process *where, struct km_vm_node *node);
+bool __init km_valloc_init();
 
 #endif

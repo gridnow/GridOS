@@ -4,7 +4,7 @@ include kernel.mk
 ADD_INCLUDE +=$(HAL_INCLUDE) -include hal_config.h
 
 #要编译的文件列表
-OBJS	= cpu.o lock.o atomic.o mutex.o event.o ddk_for_drv.o
+OBJS	= cpu.o lock.o cs.o complete.o atomic.o mutex.o event.o ddk_for_drv.o
 PARTS	= arch memory process
 
 all:  subs_parts $(OBJS)

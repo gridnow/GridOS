@@ -89,7 +89,7 @@ void __init __noreturn hal_main()
 	}
 	printk("Hal startup ok.\n");
 	
-		
+	
 	kernel_test();
 	while (1) dumy_idle_ops(0);
 

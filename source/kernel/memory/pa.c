@@ -252,11 +252,10 @@ void km_page_dealloc_kerneled(void *kernel_page, unsigned long size)
 /**
 	@brief  Õ∑≈∆’Õ®“≥
 */
-void km_page_dealloc(unsigned long phy_page, unsigned long size)
+void km_page_dealloc(unsigned long phy_page)
 {
 	unsigned long page = (unsigned long)phy_page;
-	unsigned int count = KM_PAGE_ROUND_COUNT(size);
-	deallocate_page(page, count);
+	deallocate_page(page, 1);
 }
 
 /**

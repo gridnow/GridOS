@@ -11,16 +11,6 @@
 #include <memory.h>
 #include <walk.h>
 
-void km_walk_lock(struct km *mem)
-{
-	//TODO
-}
-
-void km_walk_unlock(struct km *mem)
-{
-	//TODO
-}
-
 void *km_get_sub_table(unsigned long *table, int sub_id)
 {
 	unsigned long sub_table_phy;
@@ -36,7 +26,7 @@ void *km_get_sub_table(unsigned long *table, int sub_id)
 	@brief Walk to a given virtual address
  
 	@note
-		Prevent the table from been deleted
+		Memory ctx should be "got"
 */
 bool km_walk_to(struct km_walk_ctx *ctx, unsigned long va)
 {
@@ -46,8 +36,6 @@ bool km_walk_to(struct km_walk_ctx *ctx, unsigned long va)
 	
 	ctx->level_id					= i = KM_WALK_MAX_LEVEL;
 	ctx->current_virtual_address	= va;
-	
-	km_walk_lock(ctx->mem);
 	
 	table			= ctx->mem->translation_table;
 
@@ -74,8 +62,7 @@ bool km_walk_to(struct km_walk_ctx *ctx, unsigned long va)
 	} while (1);
 	r = true;
 	
-end:
-	km_walk_unlock(ctx->mem);
+end:	
 	return r;
 }
 
@@ -130,10 +117,15 @@ void *km_create_sub_table(struct km_walk_ctx *ctx, void *table, int sub_id)
 
 void km_walk_init_for_kernel(struct km *mem)
 {
+	spin_lock_init(&mem->lock);
 	km_arch_init_for_kernel(mem);
 }
 
-void km_walk_init(struct km *mem)
+bool km_walk_init(struct km *mem)
 {
-
+	struct km_walk_ctx ctx;
+	
+	spin_lock_init(&mem->lock);
+	
+	return true;
 }

@@ -10,10 +10,6 @@
 
 #include <ddk/compiler.h>
 
-#ifndef __weak
-#define __weak					__attribute__((weak))
-#endif
-
 #define __aligned(x)			__attribute__((aligned(x)))
 #define notrace					__attribute__((no_instrument_function))
 #define __always_inline			inline __attribute__((always_inline))

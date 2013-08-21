@@ -112,7 +112,7 @@ struct ko_thread * kt_create(struct ko_process * where, struct kt_thread_creatin
 	if (ctx->cpl == KP_USER)
 	{
 		ctx->stack_pos	 = 0;
-		TODO("Create kernel stack fro user thread");
+		TODO("Create kernel stack for user thread");
 	}
 	else
 	{

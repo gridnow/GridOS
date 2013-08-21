@@ -22,7 +22,7 @@ struct thread_wait
 	struct ko_thread * who;
 	struct list_head task_list;
 };
-
+#if 0 /* 等待条件的完成，暂时没有用到漂亮的宏 */
 #define KT_WAIT(__condition__)  \
 ({									\
 	unsigned long __ret__ = KE_WAIT_OK; \
@@ -43,6 +43,7 @@ struct thread_wait
 	} while(1); \
 	__ret__; \
 })
+#endif
 
 #define KE_SYNC_STATIC_WAIT_NODE_COUNT 4
 #define KE_SYNC_OBJ_LOCK(x) spin_lock(&((struct kt_sync_base*)(x))->lock)

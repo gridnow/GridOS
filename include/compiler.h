@@ -13,6 +13,7 @@
 #define likely(x)			__builtin_expect(!!(x), 1)
 #define unlikely(x)			__builtin_expect(!!(x), 0)
 #define __noreturn			__attribute__ ((noreturn))
+#define __weak				__attribute__((weak))
 #define DLLEXPORT			__attribute__ ((visibility ("default")))
 
 #endif

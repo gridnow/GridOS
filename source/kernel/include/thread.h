@@ -56,6 +56,7 @@ struct kt_thread_creating_context
 #define KT_STATE_ADD_USING_FPU			(1 << 19)												//附加属性：线程本次使用了FPU.
 #define KT_STATE_ADD_NO_SWITCHING		(1 << 20)												//附加属性：线程操作后不切换线程.
 
+#define KT_GET_KP(THREAD)				((THREAD)->process)
 #define KT_STATUS_BASE(THREAD)			((THREAD)->state & KT_STATE_MASK)
 #define KT_CURRENT_KILLING()			((kt_current()->state & KT_STATE_MASK) == KT_STATE_KILLING)
 static inline struct ko_thread *kt_current()

@@ -8,9 +8,13 @@
 
 /* 2个层次的接口一起用（导出和内部）*/
 
-#include <ddk/ddk_for_linux.h>
+/* For ddk/vfs.h which cannot include this file */
+#include <list.h>
+
 #include <ddk/debug.h>
 #include <ddk/irq.h>
+#include <ddk/vfs.h>
+#include <ddk/ddk_for_linux.h>
 
 /* HAL internal interface */
 #include <irq.h>
@@ -131,6 +135,18 @@ static void *mem_ioremap(unsigned long phy, unsigned long size, unsigned long fl
 	return km_map_physical(phy, size, flags);
 }
 
+/**
+	@brief Wait fss in dds
+*/
+static int fss_ops_wait()
+{
+	/* Just yield current thread, giving other a chance */
+	kt_schedule();
+
+	//TODO: test thread dieing...
+	return 0;
+}
+
 struct ddk_for_linux ddk = {
 	.printk					= printk,
 	.allocate_physical_bulk = allocate_physical_bulk,
@@ -149,4 +165,8 @@ struct ddk_for_linux ddk = {
 	.pci_root_operation		= pci_root_operation, 
 	.pci_bios_enable_device = pci_bios_enable_device,
 	.pci_bios_disable_device= pci_bios_disable_device,
+	
+	/* DSS's File Operation */
+	.fss_vfs_register		= fss_vfs_register,
+	.fss_ops_wait			= fss_ops_wait,
 };

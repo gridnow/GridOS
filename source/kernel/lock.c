@@ -7,6 +7,7 @@
  */
 
 #include <kernel/ke_lock.h>
+#include <kernel/ke_rwlock.h>
 
 #include "spinlock.h"
 
@@ -63,4 +64,52 @@ DLLEXPORT void ke_spin_unlock_irq(struct ke_spinlock * lock)
 {
 	ke_spin_unlock(lock);
 	local_irq_enable();
+}
+
+DLLEXPORT void ke_spin_lock_may_be_long(struct ke_spinlock * lock)
+{
+	//TODO
+}
+
+/************************************************************************/
+/* About rwlock                                                         */
+/************************************************************************/
+
+/**
+	@brief ³õÊ¼»¯¶ÁÐ´Ëø
+*/
+void ke_rwlock_init(struct ke_rwlock * rwlock)
+{
+	struct __rwlock_t
+	{
+		arch_rwlock_t raw_lock;
+	} * wrap = (struct __rwlock_t*)rwlock;
+	
+	*wrap = (struct __rwlock_t)	{.raw_lock = __ARCH_RW_LOCK_UNLOCKED};
+}
+
+/**
+	@brief ¶ÁÐ´Ëø
+*/
+void ke_rwlock_write_lock(struct ke_rwlock * rwlock)
+{
+	arch_write_lock((arch_rwlock_t*)rwlock);
+}
+
+void ke_rwlock_read_lock(struct ke_rwlock * rwlock)
+{
+	arch_read_lock((arch_rwlock_t*)rwlock);
+} 
+
+/**
+	@brief ¶ÁÐ´Ëø£¬½âÐ´Ëø
+*/
+void ke_rwlock_write_unlock(struct ke_rwlock * rwlock)
+{
+	arch_write_unlock((arch_rwlock_t*)rwlock);
+}
+
+void ke_rwlock_read_unlock(struct ke_rwlock * rwlock)
+{
+	arch_read_unlock((arch_rwlock_t*)rwlock);
 }

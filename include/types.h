@@ -62,9 +62,15 @@ typedef signed long long s64;									/**< ARM 平台上的有符号64位数据 */
 #else
 #error "平台的数据类型没有定义"
 #endif
-/* 变态的off_t */
+
+/* 变态的off_t*/
+#if BITS_PER_LONG == 32
 typedef s64			off_t;
+#else 
+typedef s64			off_t;
+#endif
 typedef s64			loff_t;
+typedef u64			uoffset;
 
 /* 位类型 */
 #define BITS_PER_BYTE              8

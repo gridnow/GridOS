@@ -10,10 +10,11 @@
 #define KM_H
 
 #include <list.h>
-#include <kernel/ke_memory.h>
 
 #include <spinlock.h>
 #include "bitmap.h"
+
+struct km;
 
 /* Cluster of page */
 #define KM_CLUSTER_SIZE				(32 * 1024 * 1024)
@@ -70,6 +71,9 @@ struct ke_mem_cluster_info
 
 void km_cluster_init();
 
+/* Should be provided by arch */
+void km_arch_init_for_kernel(struct km *mem);
+
 /**
 	@brief
 */
@@ -114,6 +118,9 @@ struct km_cluster_head *km_get_page_node(unsigned long page, struct km_cluster *
 */
 void km_put_current_cluster();
 
+/**************************************************************
+ pa.c
+**************************************************************/
 /**
 	@brief Get current cluster of current cpu
 
@@ -123,14 +130,14 @@ void km_put_current_cluster();
 struct km_cluster *km_get_current_cluster();
 
 /**
-	@brief
+	@brief Allocate a physical page normally for VM map
 */
 unsigned long km_page_alloc();
 
 /**
 	@brief
 */
-void km_page_dealloc(unsigned long phy_page, unsigned long size);
+void km_page_dealloc(unsigned long phy_page);
 
 /**
 	@brief
@@ -141,10 +148,6 @@ void *km_page_alloc_kerneled(int page_count);
 	@brief
 */
 void km_page_dealloc_kerneled(void *kernel_page, unsigned long size);
-
-//page.c
-struct km;
-bool km_page_map_range(struct km *mem_dst, unsigned long start_va, unsigned long size, unsigned long physical_pfn, page_prot_t prot);
 
 /* Useful macro */
 #define KM_PAGE_ADDRESS_TO_PFN(PAGE_ADDRESS) ((unsigned long)(PAGE_ADDRESS) >> PAGE_SHIFT)

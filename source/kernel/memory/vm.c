@@ -5,12 +5,14 @@
  *   Wuxin
  *   虚拟地址管理器
  */
+#include <kernel/ke_memory.h>
 
 #include <types.h>
-#include "vm.h"
-#include "process.h"
+#include <vm.h>
+#include <process.h>
+#include <section.h>
+#include <page.h>
 
-#include "hal_config.h"
 #include "debug.h"
 
 /**
@@ -34,7 +36,7 @@ static unsigned long alloc_virtual_space(struct list_head * usage_list,
 	list_for_each(section_list, usage_list)
 	{
 		pS = list_entry(section_list, struct km_vm_node, node);
-		
+		//printk("ps->Start = %x, start = %x \n", pS->start, start);
 		/* 指定地址的情况下，PS 与 PP 之间应该是新地址所在的地方，判断是否有足够的空隙 */
 		if (pS->start > start)												 				// pS 是新地址右边的节点
 		{
@@ -75,15 +77,14 @@ static unsigned long alloc_virtual_space(struct list_head * usage_list,
 		if (pP == NULL && pS == NULL)
 			goto check_limit;
 		
-		/* 可能找到最后了，比start大的PS没有找到，并可能超过限制 */
+		/* 可能找到最后了，比start大的PS没有找到，追加到最后。那么看看超过限制没 */
 		if (start >= pS->start + pS->size)
 			goto check_limit;
 		
 		/* 否则，那么都是失败的 */
 		goto err1;
-	}
-	
-check_limit:
+	}	
+check_limit:	
 	if (start + size <= range_len + range_start /* In limit */ && start >= range_start)
 		goto ok;
 	else
@@ -100,10 +101,11 @@ static bool insert_virtual_space(struct list_head * list, struct km_vm_node * wh
 {
 	struct list_head *t;
 	bool inserted = false;
-	
+	struct km_vm_node *p;
+
 	list_for_each(t, list)
 	{
-		struct km_vm_node * p = list_entry(t, struct km_vm_node, node);
+		p = list_entry(t, struct km_vm_node, node);		
 		if (p->start > who->start && p->start >= who->start + who->size)
 		{
 			if (likely(sub == false))
@@ -115,13 +117,17 @@ static bool insert_virtual_space(struct list_head * list, struct km_vm_node * wh
 		}
 	}
 	
-	if (unlikely(inserted == false && list_empty(list)))
+	if (unlikely(inserted == false))
 	{
-		if (likely(sub == false))
-			list_add_tail(&who->node, list);
-		else
-			list_add_tail(&who->subsection_link, list);
-		inserted = true;
+		/* 空表？也可能直接要求在链表的最后，因为上面的循环没有匹配成功 */
+		if (list_empty(list) || who->start >= p->start + p->size)
+		{
+			if (likely(sub == false))
+				list_add_tail(&who->node, list);
+			else
+				list_add_tail(&who->subsection_link, list);
+			inserted = true;
+		}
 	}
 	
 	return inserted;
@@ -166,12 +172,12 @@ bool km_vm_create(struct ko_process *where, struct km_vm_node *node)
 
 	km_get_vm_range(where->cpl, &range_start, &range_len);
 
-	spin_lock(&where->vm_list_lock);
+	KP_LOCK_PROCESS_SECTION_LIST(where);
 	start = alloc_virtual_space(&where->vm_list, range_start, range_len, node->start, size);
 	if (start == NULL) 
 	{
-		printk("km_vm_create error: base %x, range_start %x, range_len %x, len %x.\n",
-			node->start, range_start, range_len, node->size);
+		//printk("km_vm_create error: base %x, range_start %x, range_len %x, len %x.\n",
+		//	node->start, range_start, range_len, node->size);
 		goto end;
 	}
 	node->start = start;
@@ -179,10 +185,14 @@ bool km_vm_create(struct ko_process *where, struct km_vm_node *node)
 	
 	/* Actually insertion will not fail, or the alloc_virtual_space has BUG */
 	if (insert_virtual_space(&where->vm_list, node, false) == false)
+	{
+		//printf("Insert error.\n");
+		start = NULL;
 		goto end;
-	
+	}
+
 end:
-	spin_unlock(&where->vm_list_lock);
+	KP_UNLOCK_PROCESS_SECTION_LIST(where);
 	
 	if (start == NULL)
 		return false;
@@ -190,3 +200,53 @@ end:
 	return true;
 }
 
+/******************************************************
+ Interface
+ ******************************************************/
+void *km_map_physical(unsigned long physical, unsigned long size, unsigned long flags)
+{
+	struct ko_section *ks;
+	unsigned long base = 0;
+	page_prot_t map_flags = KM_MAP_DEVICE;
+	
+	if (flags & KM_MAP_PHYSICAL_FLAG_WITH_VIRTUAL)
+		base = flags & PAGE_MASK;
+	if (flags & KM_MAP_PHYSICAL_FLAG_NORMAL_CACHE)
+		map_flags = KM_PROT_READ | KM_PROT_WRITE;
+
+	ks = ks_create(kp_get_system(), KS_TYPE_DEVICE, base, size, map_flags);
+	if (!ks)
+		goto err;	
+	
+	if (km_page_map_range(&kp_get_system()->mem_ctx, ks->node.start,
+						  ks->node.size, physical >> PAGE_SHIFT, map_flags) == false)
+		goto err1;
+	
+	return (void*)ks->node.start;
+	
+err1:
+	ks_close(ks);
+err:
+	return NULL;
+}
+
+void *km_alloc_virtual(unsigned long size, page_prot_t prot)
+{
+	struct ko_section *ks;
+	unsigned long base = 0;
+	
+	ks = ks_create(kp_get_system(), KS_TYPE_PRIVATE, base, size, prot);
+	if (!ks)
+		goto err;
+	
+	return (void*)ks->node.start;
+	
+err:
+	return NULL;
+}
+
+void km_dealloc_virtual(void *kv)
+{
+	//TODO
+	TODO("");
+}

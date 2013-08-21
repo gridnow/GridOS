@@ -55,7 +55,7 @@ void ke_mutex_init(struct ke_mutex *mutex, bool initial_ownership)
 bool ke_mutex_lock(struct ke_mutex *mutex)
 {
 	/* Wait the object */
-	if (kt_wait_object(kt_current(), TO_SYNC(mutex), Y_SYNC_WAIT_INFINITE) != KE_WAIT_OK)
+	if (kt_wait_object(kt_current(), TO_SYNC(mutex), KE_SYNC_WAIT_INFINITE) != KE_WAIT_OK)
 		return false;
 	
 	return true;

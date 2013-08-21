@@ -68,7 +68,7 @@ static struct cl_object_type section_type = {
 	.free_space	= free_space,
 };
 
-struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsigned long base, size_t size)
+struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsigned long base, unsigned long size, page_prot_t prot)
 {
 	struct ko_section *p;
 	
@@ -79,6 +79,7 @@ struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsig
 	p->type 		= type;
 	p->node.size 	= size;
 	p->node.start 	= base;
+	p->prot			= prot;
 	if (km_vm_create(where, &p->node) == false)
 		goto err1;
 	
@@ -101,39 +102,9 @@ void __init ks_init()
 	
 	/* Trim the memory mapping, i386 is full mapping */
 	km_arch_trim(); 
+	ks_exception_init();
+	km_valloc_init();
 }
-
-/******************************************************
-Interface
-******************************************************/
-void *km_map_physical(unsigned long physical, size_t size, unsigned long flags)
-{
-	struct ko_section *ks;
-	unsigned long base = 0;
-	unsigned long map_flags = KM_MAP_DEVICE;
-	
-	if (flags & KM_MAP_PHYSICAL_FLAG_WITH_VIRTUAL)
-		base = flags & PAGE_MASK;
-	
-	ks = ks_create(kp_get_system(), KS_TYPE_DEVICE, base, size);
-	if (!ks)
-		goto err;
-	
-	if (flags & KM_MAP_PHYSICAL_FLAG_NORMAL_CACHE)
-		map_flags = KM_PROT_READ | KM_PROT_WRITE;
-	
-	if (km_page_map_range(&kp_get_system()->mem_ctx, ks->node.start,
-					ks->node.size, physical >> PAGE_SHIFT, map_flags) == false)
-		goto err1;
-	
-	return (void*)ks->node.start;
-	
-err1:
-	ks_close(ks);
-err:
-	return NULL;
-}
-
 
 //------------test-----------------
 #include <kernel/ke_event.h>
@@ -167,10 +138,8 @@ void kernel_test()
 	
 	//for (i = 0; i < 10; i++)
 	//	kt_create_kernel(test_thread, i);
-	
-	/* Start the kernel thread recaller */
-	printk("kernel_test switch thread loop\n");
+	fss_main();
+	/* Startup first disk file */
 	while (1)
 		kt_schedule();
-	
 }

@@ -51,6 +51,15 @@ struct ddk_for_linux
 	*/
 	void *(*yield_current_for)(void *pre_ko_thread, int pre_is_run, void *next_ko_thread);
 	
+	/************************************************************************/
+	/* FS                                                                   */
+	/************************************************************************/
+	void (*fss_vfs_register)(struct fss_vfs_driver *driver);
+
+	/**
+		@brief 来自DSS的文件系统做完一件事情的回调通知，目前都是发消息到DSS去做一个文件操作，效率差一点，没办法，谁叫我们没有精力去开发原生文件系统呢？
+	*/
+	int (*fss_ops_wait)(void);
 };
 extern struct ddk_for_linux ddk;
 

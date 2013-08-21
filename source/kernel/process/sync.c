@@ -134,7 +134,7 @@ check_satisfied:
 	}
 	for (i = 0; i < count; i++)
 		KE_SYNC_OBJ_UNLOCK(objects[i]);															/* Unlock object to give other people a chance to change the object */
-	if (translated_timeout == 0 && timeout == Y_SYNC_WAIT_INFINITE)								/* The timeout is original */
+	if (translated_timeout == 0 && timeout == KE_SYNC_WAIT_INFINITE)								/* The timeout is original */
 	{
 		kt_sleep(KT_STATE_WAITING_SYNC);														/* 无限，等待事件的发生 */
 	}
