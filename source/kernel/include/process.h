@@ -37,6 +37,21 @@ static inline void kp_put_mem(struct km *mem)
 
 //process.c
 struct ko_process *kp_get_system();
+
+/**
+	@brief 获取文件进程
+*/
+struct ko_process *kp_get_file_process();
+
+/**
+	@brief 创立一个空的进程对象
+*/
 struct ko_process *kp_create(int cpl, xstring name);
+
+/**
+	@brief 启动第一个用户态进程
+*/
+void ke_run_first_user_process(void *data, int size);
+
 
 #endif

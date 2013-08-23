@@ -136,7 +136,7 @@ struct ko_thread * kt_create(struct ko_process * where, struct kt_thread_creatin
 		ctx->para = (unsigned long)ctx->stack0;
 	}
 	
-	/* Fate entry */
+	/* Fate entry only can default if we are creating ring0 thread */
 	if (!ctx->fate_entry)
 	{
 		if (ctx->cpl == KP_USER)
@@ -165,6 +165,7 @@ err0:
 void __noreturn kt_delete_current()
 {
 	//TODO
+	TODO("");
 	while (1) kt_schedule();
 }
 
@@ -182,7 +183,6 @@ struct ko_thread *kt_create_driver_thread(void *ring0_stack, int stack_size, voi
 {
 	struct kt_thread_creating_context ctx = {0};
 
-	ctx.para			= para;
 	ctx.thread_entry	= entry;
 	ctx.stack0			= ring0_stack;
 	ctx.stack0_size		= stack_size;
