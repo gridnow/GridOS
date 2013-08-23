@@ -42,7 +42,6 @@ typedef enum
 	@return
 		ÊÇ0¡£
 */
-
 signed long ke_sleep_timeout(signed long timeout);
 
 #endif

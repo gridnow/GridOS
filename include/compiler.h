@@ -16,5 +16,7 @@
 #define __weak				__attribute__((weak))
 #define DLLEXPORT			__attribute__ ((visibility ("default")))
 
+/* 变态的类型 */
+#define __const const
 #endif
 

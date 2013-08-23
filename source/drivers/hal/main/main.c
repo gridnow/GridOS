@@ -77,8 +77,7 @@ void __init __noreturn hal_main()
 	hal_boot_module_loop(start_driver_ctx);
 	if (last_package_id == driver_package_id && driver_pakcage)
 	{
-		extern void kp_startup_driver_process(void *data, size_t size);
-		kp_startup_driver_process(driver_pakcage, driver_size);
+		ke_startup_driver_process(driver_pakcage, driver_size);
 	}
 	else
 	{
@@ -89,18 +88,8 @@ void __init __noreturn hal_main()
 	}
 	printk("Hal startup ok.\n");
 	
-	
 	kernel_test();
-	while (1) dumy_idle_ops(0);
-
-	
-	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
-
-	
-	/* 平台后期初始化,比如最终启动其他处理器，并开中断*/
-	hal_arch_init(HAL_ARCH_INIT_PHASE_LATE);
-
-	
+	while (1) dumy_idle_ops(0);	
 }
 
 void hal_do_panic(char *why)

@@ -4,7 +4,7 @@ include ../kernel.mk
 ADD_INCLUDE +=$(HAL_INCLUDE)
 
 #要编译的文件列表
-OBJS	= thread.o process.o sched.o sleep.o sync.o
+OBJS	= thread.o process.o exe.o sched.o sleep.o sync.o 
 PARTS	=
 
 all:  subs_parts $(OBJS)
