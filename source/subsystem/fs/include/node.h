@@ -10,6 +10,7 @@
 #include <kernel/ke_atomic.h>
 #include <kernel/ke_rwlock.h>
 #include <kernel/ke_critical.h>
+#include <ddk/vfs.h>
 
 #include "cache.h"
 struct fss_volumn;
