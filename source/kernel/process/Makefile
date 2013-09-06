@@ -2,6 +2,8 @@ include $(MY_BUILD_BASE)/config.mk
 include ../kernel.mk
 
 ADD_INCLUDE +=$(HAL_INCLUDE)
+LAST_INCLUDE +=-I$(MY_BUILD_BASE)/source/libs/
+
 
 #要编译的文件列表
 OBJS	= thread.o process.o exe.o sched.o sleep.o sync.o 

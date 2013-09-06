@@ -8,7 +8,8 @@
 #include <linkage.h>
 #include <bitops.h>
 
-#include "thread.h"
+#include <thread.h>
+#include <section.h>
 #include "memory.h"
 #include "object.h"
 #include "process.h"
@@ -25,6 +26,7 @@ static asmregparm __noreturn void kernel_thread_fate_entry(unsigned long (*threa
 	if (thread_entry)
 		ka_call_dynamic_module_entry(thread_entry, para);
 	
+	printk("Kernel level thread die ,entry %x.\n", thread_entry);
 	kt_delete_current();
 }
 
@@ -104,24 +106,26 @@ end:
 */
 struct ko_thread * kt_create(struct ko_process * where, struct kt_thread_creating_context *ctx)
 {	
-	struct ko_thread * p;
-	//void * wrapper, void * func, unsigned long param, unsigned long flags
+	struct ko_thread *p = NULL;
 	
 	/* Handle stack */
 	ctx->cpl = where->cpl;
 	if (ctx->cpl == KP_USER)
 	{
-		ctx->stack_pos	 = 0;
-		TODO("Create kernel stack for user thread");
+		struct ko_section *ks;
+		int stack_size = KT_THREAD_FIRST_STACK_SIZE;
+		
+		//TODO: 一般，不是第一个线程无需这么大的堆栈
+
+		ks = ks_create(where, KS_TYPE_STACK, 0, stack_size, KM_PROT_READ|KM_PROT_WRITE);
+		if (!ks)
+			goto err0;
+		ctx->stack_pos = ks->node.start + stack_size;
 	}
-	else
+	if (!ctx->stack0_size/* If caller give a specific stack(driver system will), we do not need to create */)
 	{
-		/* If caller give a specific stack(driver system will), we do not need to create */
-		if (!ctx->stack0_size)
-		{
-			ctx->stack0_size	= KT_ARCH_THREAD_CP0_STACK_SIZE;
-			ctx->stack0			= km_page_alloc_kerneled(ctx->stack0_size / PAGE_SIZE);
-		}
+		ctx->stack0_size	= KT_ARCH_THREAD_CP0_STACK_SIZE;
+		ctx->stack0			= km_page_alloc_kerneled(ctx->stack0_size / PAGE_SIZE);
 	}
 
 	/* Has command line param? Caller will make sure the ctx->param is a valid kernel buffer */
@@ -149,7 +153,6 @@ struct ko_thread * kt_create(struct ko_process * where, struct kt_thread_creatin
 	if (!p)	goto err1;
 	kt_arch_init_thread(p, ctx);
 	p->process = where;
-	
 	if (ctx->flags & KT_CREATE_RUN)
 		kt_wakeup(p);
 	

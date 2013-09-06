@@ -408,7 +408,7 @@ static int write_string(char *buffer, int size)
 {
 	unsigned count = 0;
 	unsigned int pos = 0;
-
+	unsigned long flags;
 	/* 数据长度超过缓存，直接舍弃 */
 	if (strlen(buffer) + 2 * sizeof(unsigned int) >= CONSOLE_BUFFER_SIZE)
 	{
@@ -416,7 +416,7 @@ static int write_string(char *buffer, int size)
 	}
 
 	/* 涉及两个全局资源，无法实现并发 只能加全局大锁 */
-	spin_lock(&dsp_ctx.lock);
+	spin_lock_irqsave(&dsp_ctx.lock, flags);
 
 	/* 第一步，将数据复制到缓存中,更新缓存的状态 */			
 	/*
@@ -479,7 +479,7 @@ static int write_string(char *buffer, int size)
 		}
 	}
 
-	spin_unlock(&dsp_ctx.lock);
+	spin_unlock_irqrestore(&dsp_ctx.lock, flags);
 ret:
 	return;
 }

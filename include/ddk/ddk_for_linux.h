@@ -53,6 +53,11 @@ struct ddk_for_linux
 		@brief Give up cpu for next thread
 	*/
 	void *(*yield_current_for)(void *pre_ko_thread, int pre_is_run, void *next_ko_thread);
+
+	/**
+		@brief DSS Idle
+	*/
+	void (*cpu_idle)(void);
 	
 	/************************************************************************/
 	/* FS                                                                   */
@@ -67,7 +72,7 @@ struct ddk_for_linux
 	/************************************************************************/
 	/* misc                                                                 */
 	/************************************************************************/
-	void (*run_first_user_process)(void *data, int size);
+	void (*run_first_user_process)(void *data, int size, char *cmdline);
 };
 extern struct ddk_for_linux ddk;
 

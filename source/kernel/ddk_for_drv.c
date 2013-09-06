@@ -25,6 +25,7 @@
 #include <thread.h>
 #include <memory.h>
 #include <process.h>
+#include <cpu.h>
 
 /**
 	@brief The driver need a physical space to run, we allocate and map it to its space
@@ -126,7 +127,12 @@ static void *yield_current_for(void *pre_ko_thread, int pre_is_run, void *next_k
 	*/
 	kt_wakeup_driver(next);
 	
-	kt_schedule();
+	kt_schedule_driver();
+}
+
+static void goto_idle()
+{
+	kt_schedule();	
 }
 
 static void *mem_ioremap(unsigned long phy, unsigned long size, unsigned long flags)
@@ -159,6 +165,7 @@ struct ddk_for_linux ddk = {
 	.create_thread			= create_thread,
 	.wakeup_thread			= wakeup_thread,
 	.yield_current_for		= yield_current_for,
+	.cpu_idle				= goto_idle,
 
 	/* PCI */
 	.pci_link_irq_number	= pci_link_irq_number,

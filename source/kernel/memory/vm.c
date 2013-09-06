@@ -144,6 +144,7 @@ void km_get_vm_range(int process_cpl, unsigned long *start, unsigned long *size)
 				*size = CONFIG_HAL_KERNEL_VM_LEN - PAGE_SIZE;
 			break;
 			
+		case KP_CPL0_FAKE:
 		case KP_USER:
 		{
 			unsigned long user_start = 0x200000;
@@ -198,6 +199,40 @@ end:
 		return false;
 	
 	return true;
+}
+
+/**
+	@brief Allocate space in a section
+*/
+unsigned long km_vm_create_sub(struct ko_process *where, struct km_vm_node *parent, struct km_vm_node *sub_node, unsigned long start, unsigned long size)
+{
+	unsigned long base;
+	unsigned long range_start, range_size;
+	unsigned long flags;
+
+	range_size = parent->size;
+	range_start = parent->start;
+
+	/* The list of sub-section on ks must be locked */
+	KP_LOCK_PROCESS_SECTION_LIST(where);
+
+	/* Check or Allocate the space */
+	//printk("Range for sub %d@%x, sub addr %d@%x.\n", range_size, range_start, size, start);
+	base = alloc_virtual_space(&parent->subsection_head, range_start, range_size, start, size);
+	if (!base) goto end;
+
+	/* Set the information to the object */
+	sub_node->size  = size;
+	sub_node->start = base;
+
+	/* Insert to the thread list */
+	insert_virtual_space(&parent->subsection_head, sub_node, true);
+	
+end: 
+	/* Unlock the process's section list */
+	KP_UNLOCK_PROCESS_SECTION_LIST(where);
+
+	return base;
 }
 
 /******************************************************

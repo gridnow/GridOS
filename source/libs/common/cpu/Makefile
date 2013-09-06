@@ -2,7 +2,7 @@ include $(MY_BUILD_BASE)/config.mk
 include ../../../drivers/hal/hal_include.mk
 
 #要编译的文件列表
-OBJS	= bitmap.o bit.o string.o
+OBJS	= bitmap.o atomic.o bit.o string.o
 PARTS	=
 ADD_INCLUDE = -I../include $(HAL_INCLUDE)
 

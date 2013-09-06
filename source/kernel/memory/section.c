@@ -22,7 +22,8 @@ static bool object_close(real_object_t *obj)
 
 static void object_init(real_object_t *obj)
 {
-
+	struct ko_section *p = (void*)obj;
+	INIT_LIST_HEAD(&p->node.subsection_head);
 }
 
 static struct cl_object_ops section_object_ops = {
@@ -96,6 +97,68 @@ void ks_close(struct ko_section *ks)
 	cl_object_close(ks);
 }
 
+/**
+	@brief Create a sub node on the current section
+*/
+struct ko_section * ks_sub_create(struct ko_process * who, struct ko_section * where, unsigned long sub_address, unsigned long sub_size)
+{
+	struct ko_section * sub;
+
+	/* Create the sub-section and type is set to normal */
+	sub = cl_object_create(&section_type);
+	if (!sub) goto err1;
+	sub->type = KS_TYPE_PRIVATE;
+	sub->prot = KM_PROT_READ;
+
+	/* Create the base */
+	sub_address = km_vm_create_sub(who, &where->node, &sub->node, sub_address, sub_size);
+	if (!sub_address) goto err2;
+
+	return sub;
+
+err2:
+	ks_close(sub);
+err1:
+	return NULL;
+}
+
+/**
+	@brief Locate sub
+
+	@note
+		This is an unlock version. parent 不动，subsection的链表也没有去修改，是吧？
+*/
+struct ko_section *ks_sub_locate(struct ko_section * where, unsigned long address)
+{
+	struct list_head * list;
+	struct km_vm_node *node = &where->node, *sub;
+
+	list_for_each(list, &node->subsection_head)
+	{
+		sub = list_entry(list, struct km_vm_node, subsection_link);		
+		if (address >= sub->start && address < sub->start + sub->size)
+			return KM_VM_NODE_TO_SECTION(sub);
+	}
+
+	return NULL;
+}
+
+/**
+	@brief Close the subsection of a section
+*/
+void ks_sub_close(struct ko_process * who, struct ko_section * which)
+{
+	struct list_head * list, * n;
+	struct km_vm_node *node = &which->node, *sub;
+
+	list_for_each_safe(list, n, &node->subsection_head)
+	{
+		sub = list_entry(list, struct km_vm_node, subsection_link);
+		list_del_init(&sub->node);
+		ks_close(KM_VM_NODE_TO_SECTION(sub));
+	}
+} 
+
 void __init ks_init()
 {
 	cl_object_type_register(&section_type);
@@ -112,35 +175,23 @@ void __init ks_init()
 struct ke_event ev;
 static void test_thread(unsigned long para)
 {
-	int i = 0, j;
-	
-	if (para == 0)
-	{
-		ke_event_init(&ev, false, true);
-	}
-	return;
-
-	while(1)
-	{
-		i++;
-
-		printk("\nWaiting(%d)...", para);
-		j = ke_event_wait(&ev, 1000);
-		printk("wait(%d) result = %d...", para, j);
-		ke_event_set(&ev);
-		
-	}
+	printk("test thread. %d...", para);
+	while (1)
+		kt_schedule();
 }
 
 void kernel_test()
 {
 	int i;
 	
-	//for (i = 0; i < 10; i++)
+	//for (i = 0; i < 34; i++)
 	//	kt_create_kernel(test_thread, i);
 	fss_main();
 
+	/* we have timer tick to switch preemptly */
+#if 0
 	/* Startup first disk file */
 	while (1)
 		kt_schedule();
+#endif
 }

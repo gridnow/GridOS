@@ -19,7 +19,7 @@ static void __noreturn first_time_entry()
 	unsigned long _ds,_cs;
 	who = kt_arch_get_current();
 	
-	if (who->process->cpl == KP_CPL0)
+	if (who->process->cpl != KP_USER)
 	{
 		_ds = __KERNEL_DS;
 		_cs = __KERNEL_CS;
@@ -27,7 +27,6 @@ static void __noreturn first_time_entry()
 	}
 	else
 	{
-		printk("\nring 3...who->arch_thread.ctx.cr2 :%h.\n",who->arch_thread.ctx.cr2);
 		_ds = __USER_DS;
 		_cs = __USER_CS;
 		_sp = who->arch_thread.ctx.debugreg6;
@@ -79,7 +78,15 @@ static void __noreturn first_time_entry()
 
 asmregparm struct ko_thread *arch_thread_switch(struct ko_thread *prev_p, struct ko_thread *next_p)
 {
+	struct tss_struct *tss = &init_tss;
+
+	/*
+	* Reload esp0.
+	*/
+	tss->x86_tss.sp0 = kt_arch_get_sp0(next_p);
+
 	stts();
+
 #if 0
 	printk(".Real arch arch_thread_switch prev = %x, next = %x, next_sp = %x, pre sp = %x.\n",
 		   prev_p, next_p,
