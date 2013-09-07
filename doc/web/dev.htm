@@ -150,15 +150,12 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
             <p align="left">&nbsp;</p></TD>
         </TR>
         <TR align="center">
-          <TD>Grid 编程库 </TD>
-          <TD><div align="left">Grid 库是系统上的最基础的库，类似ntdll等基础库。它给用户进程提供访posix兼容接口、操作系统功能访问、分布式计算支撑。 </div></TD>
-          <TD><p align="left">2013-3-6：vsnprintf字符串格式化函数。</p>
-            <p align="left">2013-8-1：开始做x86、mips平台的系统调用模块。</p>
-            <p align="left">2013-8-20：开始做posix 动态库支撑接口；posix malloc 接口。</p>
-            <p align="left">&nbsp;</p></TD>
+          <TD>字符串操作</TD>
+          <TD>&nbsp;</TD>
+          <TD><p align="left">2013-3-6：vsnprintf</p>            </TD>
         </TR>
         <TR align="center">
-          <TD rowspan="3">驱动程序</TD>
+          <TD rowspan="2">驱动程序</TD>
           <TD>以太网</TD>
           <TD>移植Linux驱动</TD>
           <TD><p align="left">2013-4-20：8139cp到了映射PCI 地址空间的位置，这部分需要内核的内存管理器的支持。我们现在的重点在驱动上，内核的这部分还没做。</p>
@@ -166,34 +163,19 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
         </TR>
         <TR align="center">
           <TD>键盘鼠标</TD>
-          <TD><p>1，ps2 键盘鼠标</p>
-            <p>2，usb键盘鼠标</p>
-            </TD>
+          <TD><p>移植Linux驱动</p>
+            <p align="left">1，ps2 键盘鼠标</p>
+            <p align="left">2，usb键盘鼠标</p></TD>
           <TD><div align="left">
             <p>2013-7-31:ps2 i8042 控制器启动成功，端口数据获取成功。</p>
             </div></TD>
         </TR>
         <TR align="center">
-          <TD>硬盘 控制器</TD>
-          <TD><p align="center">1,Intel AHCI</p></TD>
-          <TD><div align="left">
-            <p>2013-8-1:开始实施移植AHCI，向驱动子系统增加HAL的PCI信息。</p>
-            <p>2013-8-22:遵循Intel AHCI规范的硬盘控制器驱动运行成功，探测磁盘、DMA读写扇区成功。</p>
-          </div></TD>
-        </TR>
-        <TR align="center">
-          <TD rowspan="2">虚拟文件系统</TD>
-          <TD>目录树</TD>
-          <TD>管理卷上的文件目录结构。提供搜索、打开、删除文件等操作。目录树中的内容从具体文件系统管理的卷上导入。操作目录树实际上是在操作卷上的目录文件结构。</TD>
-          <TD><p align="left">2013-8-1：用简单的树数据结构管理目录以及目录下文件和子目录。</p>
-            <p align="left">2013-8-10：根据文件路径搜索目录树，打开指定路径的文件。目前用简单的树数据结构搜索算法，效率有待提高。</p>
-            <p>&nbsp;</p></TD>
-        </TR>
-        <TR align="center">
-          <TD>文件操作</TD>
-          <TD>读写文件、删除文件、影射文件。</TD>
-          <TD><p align="left">2013-8-20：完成虚拟文件系统层面的文件缓存读；</p>
-            <p align="left">&nbsp;</p></TD>
+          <TD>&nbsp;</TD>
+          <TD>ATA 控制器</TD>
+          <TD><p>移植Linux驱动</p>
+            <p align="left">1,Intel AHCI</p></TD>
+          <TD><div align="left">2013-8-1:开始实施移植AHCI，向驱动子系统增加HAL的PCI信息。</div></TD>
         </TR>
       </TBODY>
     </TABLE>
@@ -202,7 +184,7 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
     <p>&nbsp;&nbsp;&nbsp;&nbsp;2，支持虚拟文件系统。</p>
     <p>&nbsp;&nbsp;&nbsp;&nbsp;3，支持PCI总线、AHCI硬盘控制器、几款网卡设备（满足虚拟机的测试）。</p>
     <p>&nbsp;&nbsp;&nbsp;&nbsp;4，支持基本libc编程接口，可操作文件 。    </p>
-    <p>&nbsp;&nbsp;&nbsp;&nbsp;5，移植X WINDOW 图形系统和GTK图形库。</p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;5，支持简单控制台。</p>
     <p class="news-title">&nbsp;</p>
     <DIV id=div><DIV class=news-item></DIV>
 		

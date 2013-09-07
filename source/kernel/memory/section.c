@@ -139,7 +139,6 @@ void kernel_test()
 	//for (i = 0; i < 10; i++)
 	//	kt_create_kernel(test_thread, i);
 	fss_main();
-
 	/* Startup first disk file */
 	while (1)
 		kt_schedule();

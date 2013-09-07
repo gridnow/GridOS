@@ -169,7 +169,4 @@ struct ddk_for_linux ddk = {
 	/* DSS's File Operation */
 	.fss_vfs_register		= fss_vfs_register,
 	.fss_ops_wait			= fss_ops_wait,
-
-	/* MISC */
-	.run_first_user_process = ke_run_first_user_process,
 };

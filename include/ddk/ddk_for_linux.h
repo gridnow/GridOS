@@ -1,9 +1,6 @@
 #ifndef DDK_FOR_LINUX_H
 #define DDK_FOR_LINUX_H
 
-/* Types that have to be used by the interface */
-struct fss_vfs_driver;
-
 struct ddk_for_linux
 {
 	int (*printk)(const char *fmt, ...);
@@ -63,11 +60,6 @@ struct ddk_for_linux
 		@brief 来自DSS的文件系统做完一件事情的回调通知，目前都是发消息到DSS去做一个文件操作，效率差一点，没办法，谁叫我们没有精力去开发原生文件系统呢？
 	*/
 	int (*fss_ops_wait)(void);
-
-	/************************************************************************/
-	/* misc                                                                 */
-	/************************************************************************/
-	void (*run_first_user_process)(void *data, int size);
 };
 extern struct ddk_for_linux ddk;
 

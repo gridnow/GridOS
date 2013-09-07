@@ -8,10 +8,9 @@
 
 #include <process.h>
 #include <memory.h>
-#include <exe.h>
 
 #include "object.h"
-static struct ko_process *init_process, *kernel_file_process;
+static struct ko_process *init_process;
 
 static bool object_close(real_object_t *obj)
 {
@@ -83,14 +82,6 @@ struct ko_process *kp_get_system()
 }
 
 /**
-	@brief 获取文件进程
-*/
-struct ko_process *kp_get_file_process()
-{
-	return kernel_file_process;
-}
-
-/**
 	@brief 创立一个空的进程对象
 */
 struct ko_process *kp_create(int cpl, xstring name)
@@ -117,39 +108,24 @@ err:
 bool kp_init()
 {
 	cl_object_type_register(&process_type);
-
-	/* Core process */
-	init_process = kp_create(KP_CPL0, "操作系统核心进程");
+	init_process = kp_create(KP_CPL0, "OS");
 	if (!init_process) 
 		goto err;
 	km_walk_init_for_kernel(&init_process->mem_ctx);
-
-	/* Kernel file process */
-	kernel_file_process = kp_create(KP_CPL0, "操作系统文件进程");
 	
-	kp_exe_init();
 	return true;
 err:
 	return false;
 }
 
-/************************************************************************/
-/* Interface                                                            */
-/************************************************************************/
-
 #include <sys/elf.h>
 #include <ddk/ddk_for_linux.h>
 #include <kernel/ke_memory.h>
 
-#include <thread.h>
-#include <section.h>
-
-#include "misc.h"
-
 /**
 	@brief Map driver framework to kernel
 */
-void ke_startup_driver_process(void *physical_data, size_t size)
+void kp_startup_driver_process(void *physical_data, size_t size)
 {
 	unsigned long entry_address;
 	unsigned long base;
@@ -181,42 +157,9 @@ err:
 }
 
 /**
-	@brief run startup process
+	@brief Map driver framework to kernel
  */
-void ke_run_first_user_process(void *data, int size)
+void kp_run_user()
 {
-	void *entry_address;
-	struct ko_section	*ks;
-	struct ko_process	*kp;
-	struct ko_exe		*ke;
-
-	struct kt_thread_creating_context ctx = {0};
-
-	printk("启动用户第一个可执行文件%x, size %d.\n", data, size);
-
-	if (size == 0 || size == 1)
-		goto err;
-	/* Create file mapping */
-	ks = ks_create(kp_get_file_process(), KS_TYPE_FILE, 0, size, KM_PROT_READ);
-	if (!ks)
-		goto err;
 	
-	/* Analyze the file */
-	entry_address = 0;//TODO
-
-	/* Create process for it */ 
-	kp = kp_create(KP_USER, "初始化进程");
-	ke = kp_exe_create(ks);
-	kp_exe_bind(kp, ke);
-
-	/* And the first thread */
-	ctx.thread_entry	= entry_address;
-	ctx.fate_entry		= entry_address/* special first thread */;
-	ctx.flags			= KT_CREATE_RUN;
-	if (kt_create(kp, &ctx) == NULL)
-		goto err;
-
-	return;
-err:
-	printk("启动用户的第一个进程失败。\n");
 }

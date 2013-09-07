@@ -234,10 +234,6 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\source\kernel\include\exe.h"
-						>
-					</File>
-					<File
 						RelativePath="..\..\source\kernel\include\memory.h"
 						>
 					</File>
@@ -297,10 +293,6 @@
 				<Filter
 					Name="process"
 					>
-					<File
-						RelativePath="..\..\source\kernel\process\exe.c"
-						>
-					</File>
 					<File
 						RelativePath="..\..\source\kernel\process\Makefile"
 						>
@@ -1675,266 +1667,6 @@
 							>
 						</File>
 					</Filter>
-					<Filter
-						Name="obj"
-						>
-						<File
-							RelativePath="..\..\source\libs\common\object\name.c"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\common\object\object.c"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\common\object\type.c"
-							>
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="elf2"
-					>
-					<File
-						RelativePath="..\..\source\libs\elf2\dynamic.c"
-						>
-					</File>
-					<File
-						RelativePath="..\..\source\libs\elf2\elf.c"
-						>
-					</File>
-					<File
-						RelativePath="..\..\source\libs\elf2\elf.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\source\libs\elf2\header.c"
-						>
-					</File>
-					<File
-						RelativePath="..\..\source\libs\elf2\internal.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\source\libs\elf2\program.c"
-						>
-					</File>
-					<File
-						RelativePath="..\..\source\libs\elf2\relocation.c"
-						>
-					</File>
-					<File
-						RelativePath="..\..\source\libs\elf2\symbol.c"
-						>
-					</File>
-					<Filter
-						Name="include"
-						>
-						<File
-							RelativePath="..\..\source\libs\elf2\include\common.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\elf2\include\data.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\elf2\include\external.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\elf2\include\internal.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\elf2\include\mips.h"
-							>
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="grid"
-					>
-					<File
-						RelativePath="..\..\source\libs\grid\main.c"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\$(InputName)5.obj"
-								XMLDocumentationFileName="$(IntDir)\$(InputName)5.xdc"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\$(InputName)5.obj"
-								XMLDocumentationFileName="$(IntDir)\$(InputName)5.xdc"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\source\libs\grid\Makefile"
-						>
-					</File>
-					<Filter
-						Name="dlfun"
-						>
-						<File
-							RelativePath="..\..\source\libs\grid\dlfun\dladdr.c"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\dlfun\dlclose.c"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\dlfun\dlerr.c"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\dlfun\dlfcn.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\dlfun\dlopen.c"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\dlfun\dlsym.c"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\dlfun\Makefile"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="malloc"
-						>
-						<File
-							RelativePath="..\..\source\libs\grid\malloc\Makefile"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\malloc\malloc.c"
-							>
-							<FileConfiguration
-								Name="Debug|Win32"
-								>
-								<Tool
-									Name="VCCLCompilerTool"
-									ObjectFile="$(IntDir)\$(InputName)2.obj"
-									XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
-								/>
-							</FileConfiguration>
-							<FileConfiguration
-								Name="Release|Win32"
-								>
-								<Tool
-									Name="VCCLCompilerTool"
-									ObjectFile="$(IntDir)\$(InputName)2.obj"
-									XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
-								/>
-							</FileConfiguration>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\malloc\mmap.c"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="include"
-						>
-						<File
-							RelativePath="..\..\source\libs\grid\include\posix.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\include\std_console.h"
-							>
-						</File>
-						<Filter
-							Name="sys"
-							>
-							<File
-								RelativePath="..\..\source\libs\grid\include\sys\file_req.h"
-								>
-							</File>
-							<File
-								RelativePath="..\..\source\libs\grid\include\sys\ke_req.h"
-								>
-							</File>
-							<File
-								RelativePath="..\..\source\libs\grid\include\sys\syscall.h"
-								>
-							</File>
-							<File
-								RelativePath="..\..\source\libs\grid\include\sys\sysdep.h"
-								>
-							</File>
-						</Filter>
-					</Filter>
-					<Filter
-						Name="string"
-						>
-						<File
-							RelativePath="..\..\source\libs\grid\string\Makefile"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\string\memcmp.c"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\string\memcpy.c"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\string\strchr.c"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\string\strcmp.c"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\string\strcpy.c"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\string\strnlen.c"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="stdio"
-						>
-						<File
-							RelativePath="..\..\source\libs\grid\stdio\printf.c"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="sys"
-						>
-						<File
-							RelativePath="..\..\source\libs\grid\sys\Makefile"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\sys\stdio.c"
-							>
-						</File>
-						<File
-							RelativePath="..\..\source\libs\grid\sys\vmalloc.c"
-							>
-						</File>
-					</Filter>
 				</Filter>
 			</Filter>
 		</Filter>
@@ -1949,10 +1681,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\ctype.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\dlfcn.h"
 				>
 			</File>
 			<File
@@ -2020,10 +1748,6 @@
 				</File>
 				<File
 					RelativePath="..\..\include\kernel\ke_rwlock.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\include\kernel\ke_srv.h"
 					>
 				</File>
 				<File
