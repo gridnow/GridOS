@@ -194,7 +194,7 @@ void ke_startup_driver_process(void *physical_data, size_t size)
 	// TODO: size of the map should contain bss, and notify system that bss should not be allocated for normal use */
 	
 	/* Map physical to base */
-	if (km_map_physical(HAL_GET_BASIC_PHYADDRESS(physical_data), size,
+	if (km_map_physical(HAL_GET_BASIC_PHYADDRESS(physical_data), size + 0x60000/*BSS?*/,
 					base | KM_MAP_PHYSICAL_FLAG_WITH_VIRTUAL | KM_MAP_PHYSICAL_FLAG_NORMAL_CACHE) == NULL)
 		goto err;
 

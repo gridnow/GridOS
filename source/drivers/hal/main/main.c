@@ -67,7 +67,7 @@ void __init __noreturn hal_main()
 	
 	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
 	
-	printk("Starting up modules...");
+	printk("GridOS Æô¶¯ÖÐ...\n");
 	ke_module_entry();
 	
 	local_irq_enable();
