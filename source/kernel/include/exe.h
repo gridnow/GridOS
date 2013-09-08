@@ -16,8 +16,16 @@ struct ko_exe
 
 /**
 	@brief Create an EXE object
+ 
+	@note
+		Caller make sure ctx is at proper size
 */
-struct ko_exe *kp_exe_create(struct ko_section *backend, void *ctx, int size);
+struct ko_exe *kp_exe_create(struct ko_section *backend, void *ctx);
+
+/**
+	@brief 一般从文件创立exe对象
+*/
+struct ko_exe *kp_exe_create_from_file(xstring name, void *ctx);
 
 /**
 	@brief Bind an EXE object to process
@@ -36,6 +44,11 @@ bool kp_exe_share(struct ko_process *where, struct ko_section *ks_dst, unsigned 
 	&brief Get the context size for validation
 */
 int kp_exe_get_context_size();
+
+/**
+	@brief 拷贝可执行文件信息到用户空间，用户快速使用该可执行文件 
+*/
+bool kp_exe_copy_private(struct ko_exe *ke, void *dst_ctx, int dst_size);
 
 /**
 	@brief Create a temp one

@@ -74,19 +74,16 @@ static struct cl_object_type exe_type = {
 /**
 	@brief 创立一个空的进
 */
-struct ko_exe *kp_exe_create(struct ko_section *backend, void *ctx, int size)
+struct ko_exe *kp_exe_create(struct ko_section *backend, void *ctx)
 {
 	struct ko_exe *p;
-		
-	/* Invalid context size */
-	if (size > kp_exe_get_context_size())
-		goto err;
+
 	p = cl_object_create(&exe_type);
 	if (!p) goto err;
 	
 	cl_object_inc_ref(backend);
 	p->backend = backend;
-	memcpy(p + 1, ctx, size);
+	memcpy(KO_EXE_TO_PRIVATE(p), ctx, kp_exe_get_context_size());
 	
 	return p;
 	
@@ -98,8 +95,9 @@ err:
 
 struct ko_exe *kp_exe_create_temp()
 {
-	struct ko_section t;
-	return kp_exe_create(&t, 0, 0);
+	struct ko_section ts;
+	struct ko_exe te;
+	return kp_exe_create(&ts, KO_EXE_TO_PRIVATE(&te));
 }
 
 #include <ELF2/elf.h>
@@ -198,6 +196,36 @@ err:
 int kp_exe_get_context_size()
 {
 	return elf_get_private_size();
+}
+
+bool kp_exe_copy_private(struct ko_exe *ke, void *dst_ctx, int dst_size)
+{
+	if (dst_size < kp_exe_get_context_size())
+		return false;
+	memcpy(dst_ctx, KO_EXE_TO_PRIVATE(ke), kp_exe_get_context_size());
+	return true;
+}
+
+struct ko_exe *kp_exe_create_from_file(xstring name, void *ctx)
+{
+	struct ko_section *ks = NULL;
+	struct ko_exe *kee = NULL;
+	int size = 0;
+	
+	ks = ks_create(kp_get_file_process(), KS_TYPE_PRIVATE, 0, size, KM_PROT_READ|KM_PROT_WRITE);
+	if (!ks)
+		goto err;
+	kee = kp_exe_create(ks, ctx);
+	if (!kee)
+		goto err;
+	
+	return kee;
+	
+err:
+	if (ks)
+	{
+		//TODO:
+	}
 }
 
 void kp_exe_init()

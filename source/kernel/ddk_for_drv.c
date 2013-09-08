@@ -27,6 +27,11 @@
 #include <process.h>
 #include <cpu.h>
 
+static int ddk_printk(const char *fmt, ...)
+{
+	return 0;
+}
+
 /**
 	@brief The driver need a physical space to run, we allocate and map it to its space
 */
@@ -154,7 +159,7 @@ static int fss_ops_wait()
 }
 
 struct ddk_for_linux ddk = {
-	.printk					= printk,
+	.printk					= /* printk */ddk_printk,
 	.allocate_physical_bulk = allocate_physical_bulk,
 	
 	.setup_irq_handler		= setup_irq_handler,

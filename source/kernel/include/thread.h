@@ -60,6 +60,7 @@ struct kt_thread_creating_context
 #define KT_GET_KP(THREAD)				((THREAD)->process)
 #define KT_STATUS_BASE(THREAD)			((THREAD)->state & KT_STATE_MASK)
 #define KT_CURRENT_KILLING()			((kt_current()->state & KT_STATE_MASK) == KT_STATE_KILLING)
+#define KP_CURRENT()					(KT_GET_KP(kt_current()))
 static inline struct ko_thread *kt_current()
 {
 	return kt_arch_get_current();

@@ -12,6 +12,8 @@
 #include <section.h>
 #include <process.h>
 #include <sync.h>
+#include <exe.h>
+#include <handle.h>
 
 #include <asm/abicall.h>
 
@@ -53,6 +55,87 @@ static void process_startup(struct sysreq_process_startup * req)
 	}
 }
 
+/**
+ @brief dynamic linker ops
+ */
+static ke_handle process_ld(struct sysreq_process_ld * req)
+{
+	ke_handle handle;
+	xstring module_name;
+	
+	switch (req->function_type)
+	{
+		case SYSREQ_PROCESS_OPEN_EXE:
+		{
+			struct ko_exe *image;
+			
+			module_name = req->name;
+			
+			/* Validate the user buffer */
+			if (ke_validate_user_buffer(req->context, req->context_length, true) == false)
+				goto ld_0_err;
+			if (ke_validate_user_buffer(module_name, strlen(module_name), false) == false)
+				goto ld_0_err;
+			if (ke_validate_user_buffer(&req->map_base, sizeof(req->map_base), true) == false)
+				goto ld_0_err;
+			
+			/* Open the image by name */
+			image = 0;
+			if (!image) goto ld_0_err;
+			if (kp_exe_copy_private(image, req->context, req->context_length) == false)
+				goto ld_0_err1;
+			
+			/* Create handle for this image */
+			handle = ke_handle_create(image);
+			if (handle == KE_INVALID_HANDLE)
+				goto ld_0_err1;
+
+			return handle;
+			
+		ld_0_err1:
+			//TODO: close the object
+		ld_0_err:
+			return KE_INVALID_HANDLE;
+		}
+		
+		/* Get file base and size */
+		case SYSREQ_PROCESS_MAP_EXE_FILE:
+		{
+			void *base;
+		
+			module_name = req->name;
+		}
+		
+		/* 删除本地map的文件 */
+		case SYSREQ_PROCESS_UNMAP_EXE_FILE:
+		{
+			void *base = req->name;
+		}
+		
+		/* Add a new exe object, return bool */
+		case SYSREQ_PROCESS_ENJECT_EXE:
+		{
+			struct ko_exe *image;
+			void *ctx		= req->context;
+			int ctx_size	= req->context_length;
+			
+			if (ke_validate_user_buffer(ctx, ctx_size, false) == false)
+				goto ld_3_err;
+			if (ke_validate_user_buffer(module_name, strlen(module_name), false) == false)
+				goto ld_3_err;
+			if (ctx_size > kp_exe_get_context_size())
+				goto ld_3_err;
+			if (kp_exe_create_from_file(module_name, ctx) == NULL)
+				goto ld_3_err;
+			return true;
+			
+		ld_3_err:
+			return false;
+		}
+		default:
+			break;
+	}
+}
 
 /************************************************************************/
 /* MISC                                                                 */
@@ -133,8 +216,8 @@ void ke_srv_init()
 //	kernel_entry[SYS_REQ_KERNEL_THREAD_CREATE - SYS_REQ_KERNEL_BASE]	= (void*) thread_create;
 	///kernel_entry[SYS_REQ_KERNEL_THREAD_WAIT - SYS_REQ_KERNEL_BASE]		= (void*) thread_wait;
 	//kernel_entry[SYS_REQ_KERNEL_PROCESS_CREATE - SYS_REQ_KERNEL_BASE]	= (void*) process_create;
-	kernel_entry[SYS_REQ_KERNEL_PROCESS_STARTUP - SYS_REQ_KERNEL_BASE]	= (void*) process_startup;
-	//kernel_entry[SYS_REQ_KERNEL_PROCESS_LD - SYS_REQ_KERNEL_BASE]		= (void*) process_ld;
+	kernel_entry[SYS_REQ_KERNEL_PROCESS_STARTUP - SYS_REQ_KERNEL_BASE]		= (void*) process_startup;
+	kernel_entry[SYS_REQ_KERNEL_PROCESS_HANDLE_EXE - SYS_REQ_KERNEL_BASE]	= (void*) process_ld;
 	//kernel_entry[SYS_REQ_KERNEL_WAIT - SYS_REQ_KERNEL_BASE]				= (void*) process_wait;
 
 

@@ -203,15 +203,10 @@ err:
 	printk("驱动包影射到内核空间失败，可能是地址冲突，要影射的地址范围为%d@%x.\n", size, base);
 }
 
-bool kp_run_user(struct ko_section *ks, void *entry_address, void *exe_context, int context_size, char *cmdline)
+bool kp_run_user(struct ko_exe *ke, void *entry_address, char *cmdline)
 {
 	struct ko_process	*kp = NULL;
-	struct ko_exe		*ke = NULL;
 	struct kt_thread_creating_context ctx = {0};
-
-	ke = kp_exe_create(ks, exe_context, context_size);
-	if (!ke)
-		goto err;
 	
 	/* Create process for it */ 
 	kp = kp_create(KP_USER, "初始化进程");
@@ -254,7 +249,7 @@ void ke_run_first_user_process(void *data, int size, char *cmdline)
 {
 	struct ko_section *ks;
 	void *entry_address;
-	struct ko_exe *ke = kp_exe_create_temp();
+	struct ko_exe *kee, *ke_tmp = kp_exe_create_temp();
 
 	/* Kernel file process, because early we cannot copy lv2 table of driver */
 	kernel_file_process = kp_create(KP_CPL0_FAKE, "操作系统文件进程");
@@ -263,13 +258,16 @@ void ke_run_first_user_process(void *data, int size, char *cmdline)
 	
 	if (size == 0/*no file*/ || size == 1/*buffer error*/)
 		goto err;
-	if (elf_analyze(data, size, &entry_address, ke + 1) == false)
+	if (elf_analyze(data, size, &entry_address, KO_EXE_TO_PRIVATE(ke_tmp)) == false)
 		goto err;
 	
-	/* Create mapping source */
 	ks = ks_create(kp_get_file_process(), KS_TYPE_PRIVATE, 0, size, KM_PROT_READ|KM_PROT_WRITE);
 	if (!ks)
 		goto err;
+	kee = kp_exe_create(ks, KO_EXE_TO_PRIVATE(ke_tmp));
+	if (!kee)
+		goto err;
+	
 	/* But this is a special one, we have to fill the data on it */
 	do {
 		
@@ -292,7 +290,7 @@ void ke_run_first_user_process(void *data, int size, char *cmdline)
 	} while(0);
 	
 	/* OK, create the process */
-	if (kp_run_user(ks, entry_address, ke + 1, kp_exe_get_context_size(), cmdline) == false)
+	if (kp_run_user(kee, entry_address, cmdline) == false)
 		goto err;
 	
 	return;

@@ -66,9 +66,15 @@ struct sysreq_process_ld
 	xstring name;
 	size_t	context_length;
 	int	function_type;
-	void * context;
+	void *context;
 
-#define SYSREQ_PROCESS_LD_OPEN 0
+	/* Output */
+	unsigned long map_base;															// Mapped base of this module on user space
+
+#define SYSREQ_PROCESS_OPEN_EXE			0
+#define SYSREQ_PROCESS_MAP_EXE_FILE		1
+#define SYSREQ_PROCESS_UNMAP_EXE_FILE	2
+#define SYSREQ_PROCESS_ENJECT_EXE		3
 };
 
 /************************************************************************/

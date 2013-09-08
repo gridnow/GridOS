@@ -22,6 +22,10 @@ struct ko_process
 	struct km mem_ctx;
 	struct ke_spinlock vm_list_lock;
 	struct list_head vm_list;
+	
+	/* Handle table */
+	void *handle_table;
+	spinlock_t handle_lock;
 };
 
 /**

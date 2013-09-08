@@ -35,21 +35,21 @@ static inline unsigned long system_call(void *  req_package)
 
 #define internal_syscall1(arg1)		\
 ({ 									\
-	long _sys_result;						\
+	long _sys_result;				\
 									\
 	{								\
-	register long __v0 asm("$2") ;				\
-	register long __a0 asm("$4") = (long) arg1; 			\
-	__asm__ volatile ( 						\
-	".set\tnoreorder\n\t" 						\
-	"syscall\n\t" 							\
-	".set reorder" 							\
-	: "=r" (__v0)					\
-	: "r" (__a0)		 				\
-	: __SYSCALL_CLOBBERS); 						\
-	_sys_result = __v0;						\
-	}								\
-	_sys_result;							\
+	register long __v0 asm("$2") ;	\
+	register long __a0 asm("$4") = (long) arg1; 	\
+	__asm__ volatile (								\
+	".set\tnoreorder\n\t"							\
+	"syscall\n\t"									\
+	".set reorder"									\
+	: "=r" (__v0)									\
+	: "r" (__a0)									\
+	: __SYSCALL_CLOBBERS);							\
+	_sys_result = __v0;								\
+	}												\
+	_sys_result;									\
 })
 
 static inline unsigned long system_call(void *  req_package)
@@ -61,14 +61,14 @@ static inline unsigned long system_call(void *  req_package)
 /************************************************************************/
 /* KERNEL calling                                                       */
 /************************************************************************/
-#define KERNEL_REQ_BASE					0
-#define SYS_REQ_KERNEL_BASE				KE_SRV_MAKE_REQ_NUM(KERNEL_REQ_BASE, 0)
-#define SYS_REQ_KERNEL_PROCESS_CREATE	(SYS_REQ_KERNEL_BASE + 0)
-#define SYS_REQ_KERNEL_THREAD_CREATE	(SYS_REQ_KERNEL_BASE + 1)
-#define SYS_REQ_KERNEL_THREAD_WAIT		(SYS_REQ_KERNEL_BASE + 2)
-#define SYS_REQ_KERNEL_PROCESS_STARTUP	(SYS_REQ_KERNEL_BASE + 3)
-#define SYS_REQ_KERNEL_PRINTF			(SYS_REQ_KERNEL_BASE + 4)
-#define SYS_REQ_KERNEL_PROCESS_LD		(SYS_REQ_KERNEL_BASE + 5)
+#define KERNEL_REQ_BASE						0
+#define SYS_REQ_KERNEL_BASE					KE_SRV_MAKE_REQ_NUM(KERNEL_REQ_BASE, 0)
+#define SYS_REQ_KERNEL_PROCESS_CREATE		(SYS_REQ_KERNEL_BASE + 0)
+#define SYS_REQ_KERNEL_THREAD_CREATE		(SYS_REQ_KERNEL_BASE + 1)
+#define SYS_REQ_KERNEL_THREAD_WAIT			(SYS_REQ_KERNEL_BASE + 2)
+#define SYS_REQ_KERNEL_PROCESS_STARTUP		(SYS_REQ_KERNEL_BASE + 3)
+#define SYS_REQ_KERNEL_PRINTF				(SYS_REQ_KERNEL_BASE + 4)
+#define SYS_REQ_KERNEL_PROCESS_HANDLE_EXE	(SYS_REQ_KERNEL_BASE + 5)
 
 #define SYS_REQ_KERNEL_VIRTUAL_ALLOC	(SYS_REQ_KERNEL_BASE + 20)
 

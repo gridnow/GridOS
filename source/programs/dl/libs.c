@@ -10,6 +10,8 @@
 #include <types.h>
 #include <compiler.h>
 
+#include "sys/ke_req.h"
+
 __weak int strcmp(const char *cs, const char *ct)
 {
 	unsigned char c1, c2;
@@ -66,3 +68,4 @@ __weak char * strchr (const char * string, int ch)
 		return((char *)string);
 	return(NULL);
 }
+
