@@ -16,7 +16,7 @@
 #include <kernel/ke_srv.h>
 
 #include "sys/ke_req.h"
-#include "../../libs/elf2/internal.h"
+
 #include "../../libs/elf2/elf.h"
 
 /************************************************************************/
@@ -32,6 +32,11 @@ struct dependency_list
 {
 	struct exe_objects * obj;
 	struct dependency_list * next;
+};
+
+struct elf_context
+{
+	char data[512];
 };
 
 struct exe_objects 
@@ -218,7 +223,7 @@ open_again:
 	req.base.req_id		= SYS_REQ_KERNEL_PROCESS_HANDLE_EXE;
 	req.name			= name;
 	req.context			= &obj->exe_desc;
-	req.context_length	= sizeof(obj->exe_desc);
+	req.context_length	= elf_get_private_size();
 	req.function_type	= SYSREQ_PROCESS_OPEN_EXE;
 	image_handle = system_call(&req);
 	obj->user_ctx.base = req.map_base;
@@ -238,7 +243,7 @@ open_again:
 			goto end1;
 		if (elf_analyze(file, file_size, &entry_address, &obj->exe_desc) == false)
 			goto end1;
-		if (_inject_exe_object(name, &obj->exe_desc, sizeof(obj->exe_desc)) == false)
+		if (_inject_exe_object(name, &obj->exe_desc, elf_get_private_size()) == false)
 			goto end1;
 		
 		new_loaded = 1;
@@ -380,7 +385,6 @@ unsigned long lazy_get_symbole_by_id(unsigned long mode_base, int relocate_id)
 	struct elf_context * p = (struct elf_context *)mode_base;
 	struct exe_objects * object = container_of(p, struct exe_objects, exe_desc);
 
-	
 // 	early_print("lazy_get_symbole_by_id, base: ");
 // 	str[elf2_h2c(str, mode_base)] = 0;
 // 	early_print(str);

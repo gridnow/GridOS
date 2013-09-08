@@ -19,6 +19,14 @@ struct elf_segment
 #define ELF_SEG_HAS_UNINITED	(1 << 3)
 
 /**
+ @brief Elf 在用户层的描述
+ */
+struct elf_user_ctx
+{
+	unsigned long base;
+};
+
+/**
 	@brief Get the mapping base the image wants to run
 
 	@param[in] elf 有效的ELF描述符
@@ -76,6 +84,8 @@ void * elf_relocation(void * elf, void * manager_elf, void * user_ctx);
 	The user may set a function to be called when a symbol is undefined (or unlinked) during the running.
 */
 void elf_set_lazy_linker(void * elf, void * func, void * user_ctx);
+
+unsigned long elf_relocate_by_id(void *elf, int rel_id, struct elf_user_ctx * user_ctx);
 
 /**
 	@brief Resolve the symbol value in current elf

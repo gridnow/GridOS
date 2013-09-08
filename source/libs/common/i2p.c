@@ -78,10 +78,10 @@ void print_i2p(struct i2p * i2pt_head)
 }
 
 
-static struct i2p_node * i2p_node_create(struct i2p * i2pt_head)
+static struct i2p_node *i2p_node_create(struct i2p *i2pt_head)
 {
-	struct i2p_node * i2pt = NULL;
-	unsigned long * bitmap_buf = NULL;
+	struct i2p_node *i2pt = NULL;
+	unsigned long *bitmap_buf = NULL;
 	int node_size, bitmap_bufsize;
 
 	bitmap_bufsize	= MAX_COUNT_PER_ARRAY / CHAR_BIT + 1;					// (MAX_COUNT_PER_ARRAY/CHAR_BIT)向上取整
@@ -122,9 +122,9 @@ err1:
 }
 
 /* delete the empty nodes at the rear of list, reserve one node at least */
-static void __i2p_node_release(struct i2p * i2pt_head)
+static void __i2p_node_release(struct i2p *i2pt_head)
 {
-	struct i2p_node * i2pt = i2pt_head->last;
+	struct i2p_node *i2pt = i2pt_head->last;
 
 	/* 
 		从链表尾部开始遍历链表，当遍历到的结点没有使用时释放该结点的所占空间
@@ -148,8 +148,8 @@ static void __i2p_node_release(struct i2p * i2pt_head)
 static bool __i2p_dealloc(struct i2p *i2pt_head, i2p_handle index)
 {
 	int ret;
-	int offset;
-	struct i2p_node * i2pt = i2pt_head->first;
+	i2p_handle offset;
+	struct i2p_node *i2pt = i2pt_head->first;
 
 	/* 定位索引所在结点 */
 	while (index > i2pt->end_index)
@@ -163,7 +163,7 @@ static bool __i2p_dealloc(struct i2p *i2pt_head, i2p_handle index)
 	offset = index - i2pt->start_index;							// 计算释放的索引描述符在结点中的索引偏移
 	memset(i2pt->array + offset, 0, sizeof(void *));
 
-	ret = cl_bitmap_dealloc_bit(&i2pt->arr_bitmap, offset);	// 释放索引对应的bitmap位
+	ret = cl_bitmap_dealloc_bit(&i2pt->arr_bitmap, offset);		// 释放索引对应的bitmap位
 	if(ret == false)
 		goto err_out;
 	

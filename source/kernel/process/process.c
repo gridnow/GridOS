@@ -10,6 +10,7 @@
 #include <memory.h>
 #include <thread.h>
 #include <exe.h>
+#include <handle.h>
 
 #include "string.h"
 #include "object.h"
@@ -52,7 +53,7 @@ static void object_init(real_object_t *obj)
 		created in walk as root table.
 	 */
 	km_walk_init(&p->mem_ctx);
-	km_arch_ctx_init(&p->mem_ctx);	
+	km_arch_ctx_init(&p->mem_ctx);
 }
 
 static struct cl_object_ops process_object_ops = {
@@ -217,6 +218,7 @@ bool kp_run_user(struct ko_exe *ke, void *entry_address, char *cmdline)
 		TODO("");
 		goto err;
 	}
+	ke_handle_init(kp);
 	
 	/* And the first thread */
 	ctx.thread_entry	= entry_address;
