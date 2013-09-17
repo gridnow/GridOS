@@ -19,6 +19,18 @@ static bool address_in_user(unsigned long address)
 	return false;
 }
 
+static void copy_kernel_to_user(struct km * mm_ctx, int base, int end)
+{
+	unsigned long *src, *dst;
+	int i;
+
+	/* Copy the entry from kernel to dst */
+	src = hal_x86_get_init_pgtable();
+	dst = mm_ctx->translation_table;
+	for (i = base; i < end; i++)
+		dst[i] = src[i] & (~PAGE_FLAG_USER);
+}
+
 /**	
 	@brief Page fault handler
 */
@@ -27,7 +39,8 @@ asmregparm void do_page_fault(struct pt_regs * regs, long error_code)
 	unsigned long error_address = read_cr2();	
 	bool in_user = address_in_user(error_address);
 	struct ko_thread *current;	 
-	
+
+	//printk("PAGE fault: eip %x addr %x code %x\n", regs->ip, error_address, error_code);
 	/*
 		Access violation.
 		¶Á¡¢Ð´ºÍu/sÒì³£
@@ -40,8 +53,11 @@ asmregparm void do_page_fault(struct pt_regs * regs, long error_code)
 			goto die_cur;			
 		
 	}
-	//printk("eip %x addr %x code %x\n", regs->ip, error_address, error_code);
-	
+		
+	if (error_code & PAGE_FAULT_P)
+	{
+		printk("addr = %x.\n", *(int*)error_address);
+	}
 	current = kt_current();
 	if (unlikely(false == ks_exception(current, error_address, error_code)))
 		goto die_cur;
@@ -53,7 +69,7 @@ die_cur:
 
 	//TODO kill thread
 	//fak_arch_x86_dump_register(regs);
-	while(1);
+	kt_delete_current();
 }
 
 __init void km_arch_trim()
@@ -96,4 +112,45 @@ __init void km_arch_trim()
 void km_arch_init_for_kernel(struct km *mem)
 {
 	mem->translation_table = hal_x86_get_init_pgtable();
+}
+
+/**
+	@brief Arch ctx init
+*/
+void km_arch_ctx_init(struct km * mm_ctx)
+{
+	/* Share the core's address space */
+	int base = HAL_GET_BASIC_KADDRESS(0) / 0x400000;
+	int end  = ARCH_KM_LV2_COUNT;
+
+	copy_kernel_to_user(mm_ctx, base, end);
+}
+
+void km_arch_ctx_deinit(struct km * mm_ctx)
+{
+	/* Nothing for x86 */
+}
+
+/**
+	@brief Switch memory context
+*/
+void km_arch_ctx_switch(struct km * pre_ctx, struct km * next_ctx)
+{
+	unsigned long cr3_physical;
+
+	/* Get physical base of cr3 */
+	cr3_physical = HAL_GET_BASIC_PHYADDRESS(next_ctx->translation_table);
+	//TODO: not use this macro
+
+	/* Write to cr3 to switch */
+	write_cr3(cr3_physical);
+
+#if 0
+	/*load the LDT, if the LDT is different*/
+	if(unlikely(pre_ctx->ldt!=new_ctx->ldt))
+	{
+		//printk("\nnew_ctx->ldt :%h,%d.",new_ctx->ldt,new_ctx->ldt_entries);
+		set_ldt(new_ctx->ldt,new_ctx->ldt_entries);
+	}
+#endif
 }

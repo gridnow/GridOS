@@ -20,9 +20,36 @@ DLLEXPORT void ke_spin_init(struct ke_spinlock * lock)
 {
 	__spin_lock_init(lock);
 }
+static int h2c(char *p,unsigned long hex)
+{	
+	int i;
+	int j=((sizeof(void*))*8)/4;						//*8 means bits,/4 means a char represent 4 bits
+	unsigned long mask,old=hex;
 
+	j--;												//j-- means goto the end of the string
+	for(i=j;i>=0;i--)
+	{
+		hex&=0xf;
+		if(hex<=9)
+			hex+='0';
+		else
+			hex='a'+(hex-0xa);
+		*(p+i)=(char)hex;
+		old>>=4;
+		hex=old;
+	}
+	j++;												//goto the hex string end
+	*(p+j)='h';
+	j++;												//point to the next usable position
+	return j;
+}
 DLLEXPORT void ke_spin_lock(struct ke_spinlock * lock)
 {
+//	char str[32];
+	//str[h2c(str, __builtin_return_address(0))] = 0;
+//	serial_puts("lock:", 1000);
+//	serial_puts(str, 1000);
+//	serial_puts("\n", 1000);
 	arch_spin_lock((arch_spinlock_t*)lock);
 }
 

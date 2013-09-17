@@ -74,6 +74,7 @@ DLLEXPORT void fss_vfs_register(struct fss_vfs_driver *driver)
 	void *private;
 	struct fss_volumn *v = NULL;
 	
+	printk("注册文件系统 %s...\n", driver->name);
 	list_add_tail(&driver->list, &fss.drv_list);
 	
 	/* Probe with volumn */
@@ -86,7 +87,7 @@ DLLEXPORT void fss_vfs_register(struct fss_vfs_driver *driver)
 		goto err;
 	if (fss_tree_init(v, driver, private) == false)
 		goto err;
-	
+	printk("注册ok。\n");
 	return;
 	
 err:

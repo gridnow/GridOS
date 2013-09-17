@@ -9,6 +9,8 @@
 
 #include "object.h"
 
+#define TO_CL_OBJECT(USER_OBJECT) ((struct cl_object*)(USER_OBJECT) - 1)
+
 static void object_free_handler(void * para, void *base, size_t size)
 {
 	struct cl_object_type * type = para;
@@ -44,12 +46,12 @@ again:
 	}
 	memset(object, 0, type->size);
 	object->type = type;
-	object->ref.counter++;
+	cl_atomic_dec(&object->ref);
 	if (type->ops->init)
 		type->ops->init((real_object_t*)(object + 1));
 
 end:
-	return object + 1;	
+	return object + 1;
 }
 
 /**
@@ -62,9 +64,12 @@ void cl_object_close(void *object)
 
 void cl_object_dec_ref(void *object)
 {
-	//TODO
+	struct cl_object *p = TO_CL_OBJECT(object);
+	cl_atomic_dec(&p->ref);
 }
+
 void cl_object_inc_ref(void *object)
 {
-	//TODO
+	struct cl_object *p = TO_CL_OBJECT(object);
+	cl_atomic_inc(&p->ref);
 }

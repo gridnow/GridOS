@@ -48,7 +48,6 @@ struct kt_thread_creating_context
 #define KT_STATE_RUNNING				1
 #define KT_STATE_WAITING_SYNC			2
 #define KT_STATE_KILLING				3
-#define KT_STATE_WAIT_IN_DRIVER			4
 #define KT_STATE_MASK					(0xffff)
 #define KT_STATE_ADD_UNINTERRUPT		(1 << 16)												//附加属性：不可中断地做某件事情
 #define KT_STATE_ADD_FORCE_BY_SYSTEM	(1 << 17)												//附加属性：强制休眠的，常规唤醒（用户层的唤醒）是不能的
@@ -56,15 +55,19 @@ struct kt_thread_creating_context
 #define KT_STATE_ADD_USING_FPU			(1 << 19)												//附加属性：线程本次使用了FPU.
 #define KT_STATE_ADD_NO_SWITCHING		(1 << 20)												//附加属性：线程操作后不切换线程.
 
+#define KT_THREAD_FIRST_STACK_SIZE		(0x200000)
+
 #define KT_GET_KP(THREAD)				((THREAD)->process)
 #define KT_STATUS_BASE(THREAD)			((THREAD)->state & KT_STATE_MASK)
 #define KT_CURRENT_KILLING()			((kt_current()->state & KT_STATE_MASK) == KT_STATE_KILLING)
+#define KP_CURRENT()					(KT_GET_KP(kt_current()))
 static inline struct ko_thread *kt_current()
 {
 	return kt_arch_get_current();
 }
 
 //thread.c
+bool kt_init();
 
 /**
 	@brief Raw interface for create thread in kernel
@@ -101,6 +104,8 @@ void kt_wakeup_driver(struct ko_thread *who);
 	@brief 切换线程
 */
 void kt_schedule();
+
+void kt_schedule_driver();
 
 //arch
 void kt_arch_switch(struct ko_thread *prev, struct ko_thread *next);

@@ -182,6 +182,10 @@
 					RelativePath="..\..\source\kernel\mutex.c"
 					>
 				</File>
+				<File
+					RelativePath="..\..\source\kernel\srv.c"
+					>
+				</File>
 				<Filter
 					Name="memory"
 					>
@@ -303,6 +307,10 @@
 					</File>
 					<File
 						RelativePath="..\..\source\kernel\process\Makefile"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\kernel\process\msg.c"
 						>
 					</File>
 					<File
@@ -1278,6 +1286,10 @@
 								>
 							</File>
 							<File
+								RelativePath="..\..\source\drivers\hal\arch\x86\misca_32.S"
+								>
+							</File>
+							<File
 								RelativePath="..\..\source\drivers\hal\arch\x86\pci-dma.c"
 								>
 							</File>
@@ -1667,6 +1679,10 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\source\libs\common\include\exefmt.h"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\common\include\memalloc.h"
 							>
 						</File>
@@ -1937,6 +1953,44 @@
 					</Filter>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="programs"
+				>
+				<Filter
+					Name="dl"
+					>
+					<File
+						RelativePath="..\..\source\programs\dl\lazy.S"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\programs\dl\main.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)6.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)6.xdc"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)6.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)6.xdc"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\source\programs\dl\Makefile"
+						>
+					</File>
+				</Filter>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Í·ÎÄ¼þ"
@@ -2196,6 +2250,18 @@
 				>
 				<File
 					RelativePath="..\..\include\arch\errno-generic.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="sys"
+				>
+				<File
+					RelativePath="..\..\include\sys\elf.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\include\sys\mman.h"
 					>
 				</File>
 			</Filter>

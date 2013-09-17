@@ -12,7 +12,7 @@
 #include <spinlock.h>
 #include <kernel/kernel.h>
 
-struct ko_thread;
+#include <thread.h>
 
 /**
 	线程阻塞的点
@@ -22,7 +22,14 @@ struct thread_wait
 	struct ko_thread * who;
 	struct list_head task_list;
 };
-#if 0 /* 等待条件的完成，暂时没有用到漂亮的宏 */
+#if 1 /* 等待条件的完成，暂时没有用到漂亮的宏 */
+#define KT_DELETE_WAIT(WAIT_NODE) \
+	list_del(&(WAIT_NODE)->task_list)
+#define KT_PREPARE_WAIT(WAIT_QUEUE, WAIT_NODE) do { \
+	(WAIT_NODE)->who = kt_current(); \
+	list_add_tail(&(WAIT_NODE)->task_list, &(WAIT_QUEUE)); \
+	}while (0)
+
 #define KT_WAIT(__condition__)  \
 ({									\
 	unsigned long __ret__ = KE_WAIT_OK; \

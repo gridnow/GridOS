@@ -2,13 +2,17 @@
 *   See the readme.txt at the root directory of this project for the idea and originality of this operating system.
 *   See the license.txt at the root directory of this project for the copyright information about this file and project.
 *
-*   Wuxin
+*   Sihai
 *   Exception handling
 */
 
 #include <section.h>
 #include <thread.h>
 #include <process.h>
+#include <memory.h>
+#include <exe.h>
+
+#include <string.h>
 
 #include <page.h>
 
@@ -21,6 +25,80 @@ static refill_handler exception_handler[KS_TYPE_MAX];
 static bool refill_null(struct ko_thread * current, struct ko_section * where, unsigned long address, unsigned long code)
 {
 	printk("Uninited refill handler.\n");
+	return false;
+}
+
+static bool refill_exe(struct ko_thread * current, struct ko_section * where, unsigned long address, unsigned long code)
+{
+	bool cow;
+	struct km *mem;
+	struct ko_section * detailed;
+
+	/* Get sub section */
+	detailed = ks_sub_locate(where, address);
+	if (unlikely(!detailed))
+		goto err1;
+	
+	/*
+		But the address may exceed the shared range, it must be a BSS like segment. 
+		The first BSS page may have some valid data from merged data&bss page, but it is handled at image relocating, so this will not meet this condition.
+	*/
+	if (unlikely(address >= detailed->node.start/*mapped base*/ + detailed->priv.share.size/*file size*/))
+	{
+		unsigned long phy;
+
+		//printk("    BSS like segment virtual base %p ", detailed->start);
+
+		/* 
+			TODO: Optimize: If just read, a common zero page from system can be mapped until the page is written.
+		*/
+
+		/* Have no source address to map, create page with zero filled and RW mode(so no COW) */
+		mem = kp_get_mem(KT_GET_KP(current));
+		km_page_create(mem, address, KM_PROT_READ | KM_PROT_WRITE);
+		kp_put_mem(mem);
+
+		/* 由于是缺页异常，那么经过page写入就可以立即访问该页了，无需刷新TLB */
+		memset((void*)KM_PAGE_ROUND_ALIGN(address), 0, PAGE_SIZE);	
+	}
+	else
+	{
+		cow = false;
+
+		/* Caused by write may trigger COW */
+		if (code & PAGE_FAULT_W)
+		{
+			if (!(detailed->prot & KM_PROT_WRITE))
+			{
+				/* 
+					In the process of image relocation, TEXT segment may be written.
+					But in when we are not relocation, writing to TEXT segment should not be permitted. 
+				*/
+				//TODO: To handle these two cases for Text Segment Writing.
+				//goto err1;
+			}
+
+			/* But the page is present? Non present require to construct the relation first */
+			if (code & PAGE_FAULT_P)
+				cow = true;
+		}
+		
+		if (cow == false)
+		{
+			if (kp_exe_share(KT_GET_KP(current), detailed, address,
+				where->priv.exe.exe_object) == false)
+					goto err1;
+		}
+		else
+		{
+			TODO("");
+			goto err1;
+		}
+	}
+ok:
+	return true;
+
+err1:
 	return false;
 }
 
@@ -39,6 +117,7 @@ static bool refill_private(struct ko_thread * current, struct ko_section * where
 		goto end;
 	}
 	
+	/* Get the address key, and it may be fixed by other thread */
 	mem = kp_get_mem(KT_GET_KP(current));
 	if(km_page_create(mem, address, where->prot) == false)
 		goto end;
@@ -113,6 +192,24 @@ err1:
 	return false;
 }
 
+bool ks_restore_file(struct ko_process *who, struct ko_section *where, unsigned long address)
+{
+	TODO("");
+	return false;
+}
+
+bool ks_restore(struct ko_process *who, struct ko_section *where, unsigned long address)
+{
+	switch(where->type & KS_TYPE_MASK)
+	{
+	case KS_TYPE_FILE:
+		return ks_restore_file(who, where, address);
+
+	}
+	
+	return false;
+}
+
 /**
 	@brief Init the exception module
 */
@@ -125,9 +222,9 @@ bool __init ks_exception_init()
 		exception_handler[i] = refill_null;
 
 	/* For specified type */
-//	exception_handler[KS_TYPE_EXE]		= refill_exe;
+	exception_handler[KS_TYPE_EXE]		= refill_exe;
 	exception_handler[KS_TYPE_PRIVATE]	= refill_private;
-//	exception_handler[KS_TYPE_STACK]	= refill_normal;
+	exception_handler[KS_TYPE_STACK]	= refill_private;
 //	exception_handler[KS_TYPE_FILE]		= refill_file;
 //	exception_handler[KS_TYPE_SHARE]	= refill_share;
 //	exception_handler[KS_TYPE_KERNEL]	= refill_kernel;

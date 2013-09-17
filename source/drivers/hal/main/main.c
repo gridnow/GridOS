@@ -58,7 +58,6 @@ void __init __noreturn hal_main()
 	/* KERNEL */
 	kc_init();
 	kp_init();
-	kt_init();
 	ks_init();
 
 	hal_malloc_init();
@@ -68,7 +67,7 @@ void __init __noreturn hal_main()
 	
 	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
 	
-	printk("Starting up modules...");
+	printk("GridOS 启动中...\n");
 	ke_module_entry();
 	
 	local_irq_enable();
@@ -89,12 +88,17 @@ void __init __noreturn hal_main()
 	printk("Hal startup ok.\n");
 	
 	kernel_test();
-	while (1) dumy_idle_ops(0);	
+	while (1) 
+	{
+		kt_schedule_driver();
+		dumy_idle_ops(0);	
+	}
 }
 
 void hal_do_panic(char *why)
 {
-	printk("内核异常:%s.\n", why);
+	printk("内核异常:%s.\n内核Die。\n", why);
+	while(1);
 }
 
 void ke_panic(char *why)

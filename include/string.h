@@ -71,7 +71,9 @@ char *strcpy(char *__restrict dest, __const char *__restrict src);
 
 	@return 返回字符首次出现的位置指针，如果字符串中不存在要搜索的字符则返回NULL。
 */
-char * strchr(const char *str, int ch);
+char *strchr(const char *str, int ch);
+
+char *strrchr(const char *str, int ch);
 
 /**
 	@brief 比较两个字符串的内容是否一样

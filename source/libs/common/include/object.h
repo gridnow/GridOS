@@ -10,7 +10,7 @@
 
 #include <list.h>
 #include <types.h>
-#include <kernel/ke_atomic.h>
+#include <cl_atomic.h>
 #include "blkbuf.h"
 
 struct cl_object_type;

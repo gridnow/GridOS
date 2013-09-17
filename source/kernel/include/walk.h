@@ -36,6 +36,12 @@ struct km
 {
 	spinlock_t lock;
 	void *translation_table;
+
+	/* µØÖ·²Ù×÷Õ» */
+#define KM_MAX_ADDRESS_STACK 32
+	int address_idx;
+	unsigned long address_array[KM_MAX_ADDRESS_STACK];
+	struct list_head wait_queue[KM_MAX_ADDRESS_STACK];
 };
 
 struct km_walk_ctx
@@ -128,23 +134,26 @@ static inline bool km_pte_next(struct km_walk_ctx * ctx)
 	if (likely(ctx->hirarch_id[1] + 1 != ARCH_KM_LV1_COUNT))
 		ctx->hirarch_id[1]++;
 	else
-	{
-		if (km_walk_to(ctx, ctx->current_virtual_address) == false)
-			return false;
-	}
-	
+		return km_walk_to(ctx, ctx->current_virtual_address);
+
 	return true;
 }
+
 static inline pte_t km_pte_read(struct km_walk_ctx *ctx)
 {
-	int i;
 	pte_t *entry  = &(ctx->table_base[1][ctx->hirarch_id[1]]);
 	return *entry;
 }
 	
-static inline bool km_pte_write_and_next(struct km_walk_ctx *ctx, unsigned long what)
+static inline bool km_pte_write_and_next(struct km_walk_ctx *ctx, pte_t what)
 {
 	km_pte_write(ctx, what);
+	return km_pte_next(ctx);
+}
+
+static inline bool km_pte_read_and_next(struct km_walk_ctx *ctx, pte_t *pte)
+{
+	*pte = km_pte_read(ctx);
 	return km_pte_next(ctx);
 }
 
