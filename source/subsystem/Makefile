@@ -1,8 +1,8 @@
 include $(MY_BUILD_BASE)/config.mk
 
 
-#要编译的文件列表
-OBJS = 
+#瑕佺紪璇戠殑鏂囦欢鍒楄〃
+OBJS =
 PARTS = fs
 
 all:  subs_parts $(OBJS)
