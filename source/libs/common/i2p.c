@@ -6,9 +6,10 @@
  *   
  */
 
-#include "string.h"
+
 #include "bitmap.h"
 #include "bits.h"
+#include "cl_string.h"
 
 #include "i2p.h"
 

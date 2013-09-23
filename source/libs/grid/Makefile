@@ -6,9 +6,9 @@ TARGET					= grid.so
 #DEPENDS				= -lhead_so.o 
 #DEPENDS				+=../../pthread/pthread.o
 DEPENDS					+= ../../libs/common/*.o
-ADD_INCLUDE				+=-I./include
+ADD_INCLUDE				+=-I./include $(CL_INCLUDE)
 LDFLAGS					+=-Ttext-segment=0x70000000
-PARTS					= dlfun malloc string stdio sys
+PARTS					= crt0 dlfun malloc string stdio sys
 
 all: subs_parts $(OBJS)
 	$(LD) $(LDFLAGS) -o $(TARGET) $(ADD_LDFLAGS) $(DEPENDS) *.o $(ARCH_LD_FLAGS) 

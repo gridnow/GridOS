@@ -1,4 +1,3 @@
-#include <string.h>
 #include <compiler.h>
 
 DLLEXPORT __weak char *strcpy (char *dest, const char *src)

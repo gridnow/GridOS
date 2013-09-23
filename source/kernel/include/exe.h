@@ -59,6 +59,11 @@ bool kp_exe_copy_private(struct ko_exe *ke, void *dst_ctx, int dst_size);
 struct ko_exe *kp_exe_create_temp();
 
 /**
+	@brief Open the exe object
+*/
+struct ko_exe *kp_exe_open_by_name(struct ko_process *who, xstring name);
+
+/**
 	@brief Init the EXE module
 */
 void kp_exe_init();

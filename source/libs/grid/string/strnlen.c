@@ -1,4 +1,4 @@
-#include <string.h>
+#include <types.h>
 #include <compiler.h>
 
 DLLEXPORT __weak size_t strnlen(const char *s, size_t maxlen)

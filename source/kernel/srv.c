@@ -15,16 +15,39 @@
 #include <exe.h>
 #include <handle.h>
 
+#include "string.h"
 #include <asm/abicall.h>
 
 #include <kernel/ke_srv.h>
 
-#include "string.h"
+#include "../source/subsystem/fs/include/vfs.h"
 #include "../source/libs/grid/include/sys/ke_req.h"
 
 bool ke_validate_user_buffer(void * buffer, size_t size, bool rw)
 {
 	return true;
+}
+
+static unsigned long map_file(struct ko_process *to, xstring name, page_prot_t prot)
+{
+	struct ko_section *ks_file;
+	unsigned long size;
+	void *fp;
+	
+	fp = fss_open(name);
+	if (!fp) goto end;
+	
+	size = fss_get_size(fp);
+	ks_file = ks_create(to, KS_TYPE_FILE, NULL, size, prot);
+	if (!ks_file)
+		goto err1;
+	ks_file->priv.file.file = ks_file;
+	return ks_file->node.start;
+	
+err1:
+	fss_close(fp);
+end:
+	return NULL;
 }
 
 /************************************************************************/
@@ -56,7 +79,7 @@ static void process_startup(struct sysreq_process_startup * req)
 }
 
 /**
- @brief dynamic linker ops
+	@brief dynamic linker ops
  */
 static ke_handle process_ld(struct sysreq_process_ld * req)
 {
@@ -71,7 +94,6 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 			
 			module_name = req->name;
 			
-			/* Validate the user buffer */
 			if (ke_validate_user_buffer(req->context, req->context_length, true) == false)
 				goto ld_0_err;
 			if (ke_validate_user_buffer(module_name, strlen(module_name), false) == false)
@@ -79,8 +101,7 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 			if (ke_validate_user_buffer(&req->map_base, sizeof(req->map_base), true) == false)
 				goto ld_0_err;
 			
-			/* Open the image by name */
-			image = 0;
+			image = kp_exe_open_by_name(KP_CURRENT(), module_name);
 			if (!image) goto ld_0_err;
 			if (kp_exe_copy_private(image, req->context, req->context_length) == false)
 				goto ld_0_err1;
@@ -98,12 +119,17 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 			return KE_INVALID_HANDLE;
 		}
 		
-		/* Get file base and size */
 		case SYSREQ_PROCESS_MAP_EXE_FILE:
 		{
-			void *base;
-		
 			module_name = req->name;
+			
+			if (ke_validate_user_buffer(module_name, strlen(module_name), false) == false)
+				goto map_0_err;
+		
+			return (ke_handle)map_file(KP_CURRENT(), module_name, KM_PROT_READ);
+		
+		map_0_err:
+			return 0;
 		}
 		
 		/* 删除本地map的文件 */
@@ -111,6 +137,7 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 		{
 			void *base = req->name;
 		}
+		break;
 		
 		/* Add a new exe object, return bool */
 		case SYSREQ_PROCESS_ENJECT_EXE:
@@ -135,6 +162,8 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 		default:
 			break;
 	}
+
+	return 0;
 }
 
 /************************************************************************/

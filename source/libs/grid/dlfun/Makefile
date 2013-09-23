@@ -1,6 +1,6 @@
 include $(MY_BUILD_BASE)/config.mk
 
-ADD_INCLUDE +=-I../include
+ADD_INCLUDE +=-I../include $(CL_INCLUDE)
 
 #要编译的文件列表
 OBJS = dlopen.o dlsym.o dlerr.o dlclose.o dladdr.o

@@ -50,6 +50,11 @@ struct ko_section
 			int offset;
 		} share;
 		
+		struct __file
+		{
+			void *file;
+		} file;
+		
 	} priv;
 };
 

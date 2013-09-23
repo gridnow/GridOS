@@ -212,12 +212,13 @@ struct ko_exe *kp_exe_create_from_file(xstring name, void *ctx)
 	struct ko_exe *kee = NULL;
 	int size = 0;
 	
-	ks = ks_create(kp_get_file_process(), KS_TYPE_PRIVATE, 0, size, KM_PROT_READ|KM_PROT_WRITE);
+	ks = ks_create(kp_get_file_process(), KS_TYPE_FILE, 0, size, KM_PROT_READ|KM_PROT_WRITE);
 	if (!ks)
 		goto err;
 	kee = kp_exe_create(ks, ctx);
 	if (!kee)
 		goto err;
+	//TODO: link the file name with ks
 	
 	return kee;
 	
@@ -226,6 +227,19 @@ err:
 	{
 		//TODO:
 	}
+}
+
+struct ko_exe *kp_exe_open_by_name(struct ko_process *who, xstring name)
+{
+	struct ko_exe *ke = cl_object_search_name(&exe_type, name);
+	
+	printk("kp_exe_open_by_name for %s.\n", name);
+	if (!ke)
+		return NULL;
+	
+	//TODO Open it
+	
+	return ke;
 }
 
 void kp_exe_init()

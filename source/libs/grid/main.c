@@ -4,9 +4,8 @@
 
 #include <compiler.h>
 #include <stdio.h>
-#include <string.h>
 
-
+#include "cl_string.h"
 #include "sys/ke_req.h"
 
 #include "malloc/malloc.h"
@@ -70,3 +69,13 @@ DLLEXPORT void set_errno(int value)
 
 }
 
+/************test**************/
+__weak void exefmt_load()
+{
+	
+}
+
+__weak void printk()
+{
+	
+}

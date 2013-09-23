@@ -59,6 +59,16 @@ static char static_d_list_usage[ELF_MAX_STATIC_DL_IMAGE_INFO] = {1};
 static xchar cmdline_buffer[SYSREQ_PROCESS_STARTUP_MAX_SIZE] = {' '};
 static char *exe_split_point = "分割空隙";
 
+/************************************************************************/
+/* 路径处理                                                                     */
+/************************************************************************/
+static int construct_path(xstring exe_name)
+{
+	/* exe_name 中的路径必须是绝对路径 */
+
+	return 0;
+}
+
 static void *_map_exe_file(xstring name, int *size)
 {
 	void *base;
@@ -70,7 +80,7 @@ static void *_map_exe_file(xstring name, int *size)
 	base = (void*)system_call(&req);
 	
 	*size = req.context_length;
-	return (void*)req.map_base;
+	return base;
 }
 
 static void _unmap_exe_file(void *base)
@@ -237,12 +247,14 @@ open_again:
 		int file_size;
 		void *entry_address;
 		void *file;
-		
+		early_print("map new file for analyze\n");
 		file = _map_exe_file(name, &file_size);
 		if (!file)
 			goto end1;
+		early_print("Analyze new file for analyze\n");
 		if (elf_analyze(file, file_size, &entry_address, &obj->exe_desc) == false)
 			goto end1;
+		early_print("Register new file for analyze\n");
 		if (_inject_exe_object(name, &obj->exe_desc, elf_get_private_size()) == false)
 			goto end1;
 		
@@ -551,12 +563,13 @@ void dl_dynamic_linker()
 	
 	/* 分离可执行文件 */
 	exe_name = strchr(cmdline_buffer, ' '/*space*/);
-	if (exe_name) goto name_split_ok;
-	exe_name = strchr(cmdline_buffer, '	'/*tab*/);
-	if (exe_name) goto name_split_ok;
-	goto startup_end;
-name_split_ok:
-	
+	if (!exe_name)
+		exe_name = strchr(cmdline_buffer, '	'/*tab*/);
+	if (!exe_name)
+		goto startup_end;
+	if (construct_path(exe_name))
+		goto startup_end;
+
 	/* TODO:获取可执行文件路径，以后用于设置线程的当前路径 */
 	INIT_LIST_HEAD(&objs_linear_list);
 	ret = dl_build_image_context(exe_name);

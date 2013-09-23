@@ -14,6 +14,7 @@ all: update_exp.sys subs_parts $(OBJS)
 	
 update_exp.sys:
 	$(OBJCOPY) -S linux.drv linux.drv
+	touch hal.exp.sys
 	#$(CP) $(SYSTEM_DIR)/hal.exp.sys .
 	
 include $(MY_BUILD_BASE)/cc.mk

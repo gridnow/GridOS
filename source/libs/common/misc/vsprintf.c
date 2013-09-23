@@ -1,11 +1,11 @@
 #include <compiler.h>
 #include <limits.h>
 #include <stdarg.h>
-#include <string.h>
 #include <ctype.h>
 #include <stdio.h>
 
 #include "digits.h"
+#include "cl_string.h"
 
 struct va_format {
 	const char *fmt;

@@ -1,4 +1,4 @@
-#include <string.h>
+#include <types.h>
 #include <compiler.h>
 
 DLLEXPORT __weak char * strchr (const char * string, int ch)
