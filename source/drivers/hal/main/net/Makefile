@@ -1,7 +1,5 @@
 include $(MY_BUILD_BASE)/config.mk
 
-ADD_INCLUDE +=$(HAL_INCLUDE) 
-
 #要编译的文件列表
 OBJS	= 
 PARTS	= ethernet core

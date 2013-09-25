@@ -9,14 +9,21 @@
 #define KE_VM_H
 
 #include <list.h>
-
+#include <types.h>
 struct ko_process;
+
 struct km_vm_node
 {
-	struct list_head node, subsection_link;
+	struct list_head node, subsection_head, subsection_link;
 	unsigned long start, size;
 };
 
 bool km_vm_create(struct ko_process *where, struct km_vm_node *node);
+
+/**
+	@brief Allocate space in a section
+*/
+unsigned long km_vm_create_sub(struct ko_process *where, struct km_vm_node *parent, struct km_vm_node *sub_node, unsigned long start, unsigned long size);
+bool __init km_valloc_init();
 
 #endif

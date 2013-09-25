@@ -22,7 +22,8 @@ static bool object_close(real_object_t *obj)
 
 static void object_init(real_object_t *obj)
 {
-
+	struct ko_section *p = (void*)obj;
+	INIT_LIST_HEAD(&p->node.subsection_head);
 }
 
 static struct cl_object_ops section_object_ops = {
@@ -68,20 +69,18 @@ static struct cl_object_type section_type = {
 	.free_space	= free_space,
 };
 
-struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsigned long base, size_t size)
+struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsigned long base, unsigned long size, page_prot_t prot)
 {
 	struct ko_section *p;
 	
-	if (size == 0)
-		goto err;
-	
+	if (size == 0) goto err;	
 	p = cl_object_create(&section_type);
-	if (!p)
-		goto err;
-	
-	p->type 	= type;
+	if (!p)	goto err;	
+
+	p->type 		= type;
 	p->node.size 	= size;
 	p->node.start 	= base;
+	p->prot			= prot;
 	if (km_vm_create(where, &p->node) == false)
 		goto err1;
 	
@@ -98,38 +97,101 @@ void ks_close(struct ko_section *ks)
 	cl_object_close(ks);
 }
 
+/**
+	@brief Create a sub node on the current section
+*/
+struct ko_section * ks_sub_create(struct ko_process * who, struct ko_section * where, unsigned long sub_address, unsigned long sub_size)
+{
+	struct ko_section * sub;
+
+	/* Create the sub-section and type is set to normal */
+	sub = cl_object_create(&section_type);
+	if (!sub) goto err1;
+	sub->type = KS_TYPE_PRIVATE;
+	sub->prot = KM_PROT_READ;
+
+	/* Create the base */
+	sub_address = km_vm_create_sub(who, &where->node, &sub->node, sub_address, sub_size);
+	if (!sub_address) goto err2;
+
+	return sub;
+
+err2:
+	ks_close(sub);
+err1:
+	return NULL;
+}
+
+/**
+	@brief Locate sub
+
+	@note
+		This is an unlock version. parent 不动，subsection的链表也没有去修改，是吧？
+*/
+struct ko_section *ks_sub_locate(struct ko_section * where, unsigned long address)
+{
+	struct list_head * list;
+	struct km_vm_node *node = &where->node, *sub;
+
+	list_for_each(list, &node->subsection_head)
+	{
+		sub = list_entry(list, struct km_vm_node, subsection_link);		
+		if (address >= sub->start && address < sub->start + sub->size)
+			return KM_VM_NODE_TO_SECTION(sub);
+	}
+
+	return NULL;
+}
+
+/**
+	@brief Close the subsection of a section
+*/
+void ks_sub_close(struct ko_process * who, struct ko_section * which)
+{
+	struct list_head * list, * n;
+	struct km_vm_node *node = &which->node, *sub;
+
+	list_for_each_safe(list, n, &node->subsection_head)
+	{
+		sub = list_entry(list, struct km_vm_node, subsection_link);
+		list_del_init(&sub->node);
+		ks_close(KM_VM_NODE_TO_SECTION(sub));
+	}
+} 
+
 void __init ks_init()
 {
 	cl_object_type_register(&section_type);
 	
 	/* Trim the memory mapping, i386 is full mapping */
 	km_arch_trim(); 
-}
-
-void *km_map_physical(unsigned long physical, size_t size, unsigned int flags)
-{
-	struct ko_section *ks;
-	
-	ks = ks_create(kp_get_system(), KS_TYPE_DEVICE, 0, size);
-	if (!ks)
-		goto err;
-//	printk("km_map_physical got virtual start = %p, size = %d, mapping physical...", ks->node.start, ks->node.size);
-	
-	if (km_page_map_range(&kp_get_system()->mem_ctx, ks->node.start,
-					ks->node.size, physical >> PAGE_SHIFT, KM_MAP_DEVICE) == false)
-		goto err1;
-	
-	return (void*)ks->node.start;
-	
-err1:
-	ks_close(ks);
-err:
-	return NULL;
+	ks_exception_init();
+	km_valloc_init();
 }
 
 //------------test-----------------
+#include <kernel/ke_event.h>
+#include <thread.h>
+struct ke_event ev;
+static void test_thread(unsigned long para)
+{
+	printk("test thread. %d...", para);
+	while (1)
+		kt_schedule();
+}
 
 void kernel_test()
 {
+	int i;
+	
+	//for (i = 0; i < 34; i++)
+	//	kt_create_kernel(test_thread, i);
+	fss_main();
 
+	/* we have timer tick to switch preemptly */
+#if 0
+	/* Startup first disk file */
+	while (1)
+		kt_schedule();
+#endif
 }

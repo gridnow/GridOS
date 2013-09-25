@@ -9,5 +9,8 @@
 /* IRQ */
 #define local_irq_save hal_local_irq_save
 #define local_irq_restore hal_local_irq_restore
+
+#define request_irq hal_irq_request
+
 #endif
 

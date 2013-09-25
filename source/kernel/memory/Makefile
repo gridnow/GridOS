@@ -4,7 +4,7 @@ include ../kernel.mk
 ADD_INCLUDE +=-I../include $(HAL_INCLUDE)
 
 #要编译的文件列表
-OBJS	= pa.o percpu.o vm.o section.o walk.o page.o
+OBJS	= pa.o percpu.o vm.o section.o walk.o page.o exp.o valloc.o ctx.o
 PARTS	= 
 
 all:  subs_parts $(OBJS)

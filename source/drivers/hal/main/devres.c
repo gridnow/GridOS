@@ -2,7 +2,6 @@
 	所谓的devres,兼容现有的驱动需要这个东西
 */
 #include <ddk/types.h>
-#include <kernel/ke_lock.h>
 #include <ddk/compatible.h>
 #include <ddk/slab.h>
 #include <ddk/debug.h>

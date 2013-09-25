@@ -9,7 +9,11 @@
 #ifndef HAL_SMP_H
 #define HAL_SMP_H
 
-extern int raw_smp_processor_id();
+static inline int raw_smp_processor_id()
+{
+	//TODO to support smp
+	return 0;
+}
 #define smp_processor_id() raw_smp_processor_id()
 
 #endif

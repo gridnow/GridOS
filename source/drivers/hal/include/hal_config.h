@@ -74,7 +74,11 @@
 #define CONFIG_HZ							250
 #define CONFIG_GENERIC_CLOCKEVENTS_BUILD	1								/* Clockchips.h 需要 */
 #define CONFIG_CLKEVT_I8253					1								/* 8253 可以作为时钟事件 */
+//#define CONFIG_CLKSRC_I8253					1								/* 8253 可以作为时钟源 */
 #define CONFIG_GENERIC_HARDIRQS             1
+
+/* Config for common lib, should be splited */
+#define CONFIG_CRC32_SLICEBY8				1								//crc32.c 中要用
 
 /* Basic HAL memory conversion */
 #ifndef PHYS_OFFSET															/* No physical offset means physical address starting from 0 */

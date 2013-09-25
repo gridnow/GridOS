@@ -14,6 +14,21 @@ __weak ke_module_entry()
 	
 }
 
+static void *driver_pakcage = NULL;
+static int driver_size = 0;
+static int driver_package_id, last_package_id;
+static void *start_driver_ctx(void *data, int size, char *name, int id)
+{
+	/* We got the driver package? And we got again, error */
+	if (!strcmp(name, "linux.drv"))
+	{
+		driver_pakcage = data;
+		driver_size = size;
+		driver_package_id = id;
+	}
+	last_package_id = id;
+}
+
 static void build_ram_list()
 {
 	
@@ -43,51 +58,47 @@ void __init __noreturn hal_main()
 	/* KERNEL */
 	kc_init();
 	kp_init();
-	kt_init();
 	ks_init();
 
 	hal_malloc_init();
+	hal_dpc_init();
 	hal_time_init();
 	hal_console_init();
 	
-	printk("Starting up modules...");
+	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
+	
+	printk("GridOS 启动中...\n");
 	ke_module_entry();
-	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
-
-	printk("Hal startup ok.\n");
-		
-	kernel_test();
-	while (1) dumy_idle_ops(0);
-
-	/* IRQ,平台的初始化，如平台的中断，各种配置信息 */	
-	hal_irq_init();
-	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
-
-	/* DPC */
-	hal_dpc_init();
-	hal_timer_init();
-	hal_hardware_init();
-	hal_console_init();
-
-	/* 平台后期初始化,比如最终启动其他处理器，并开中断*/
-	hal_arch_init(HAL_ARCH_INIT_PHASE_LATE);
-
-	/* Manager */
-	kma_setup();
-	kmm_init();
-	kmp_init();
-	ko_init();
-	kp_init();
-	ks_init();	
-
-	while(1)
+	
+	local_irq_enable();
+	
+	/* Driver pakcage loading, and it must be the last file */
+	hal_boot_module_loop(start_driver_ctx);
+	if (last_package_id == driver_package_id && driver_pakcage)
 	{
+		ke_startup_driver_process(driver_pakcage, driver_size);
+	}
+	else
+	{
+		if (driver_size)
+			printk("Driver package is not the last one, BSS in it may overlay the useful file data after it...");
+		else
+			printk("No driver package was loaded...");
+	}
+	printk("Hal startup ok.\n");
+	
+	kernel_test();
+	while (1) 
+	{
+		kt_schedule_driver();
+		dumy_idle_ops(0);	
 	}
 }
 
 void hal_do_panic(char *why)
 {
-	printk("内核异常:%s.\n", why);
+	printk("内核异常:%s.\n内核Die。\n", why);
+	while(1);
 }
 
 void ke_panic(char *why)

@@ -9,9 +9,7 @@
 #ifndef HAL_PCPU_H
 #define HAL_PCPU_H
 
-#ifdef CONFIG_SMP
-#warning "Percpu should be supported on smp, now we #0 cpu is used"
-#endif
 #define per_cpu(v, cpu) v
-
+#define __this_cpu_read(pcp) pcp
+#define __raw_get_cpu_var(var) var
 #endif /* PCPU_H */

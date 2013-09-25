@@ -1,7 +1,6 @@
 
 #ifdef CONFIG_RTC
 
-#include <lock.h>
 #include <rtc.h>
 #include <irq.h>
 #include <errno.h>
@@ -10,7 +9,7 @@
 #include <bcd.h>
 
 #include <ddk/compatible.h>
-#include <ddk/irq.h>
+#include <ddk/compatible_irq.h>
 
 #include <mc146818rtc.h>
 
@@ -200,7 +199,7 @@ int rtc_init(void)
 	if (rtc_has_irq == 0)
 		goto no_irq2;
 
-	spin_lock_irq(&rtc_lock);
+	spin_lock_irqsave(&rtc_lock, flags);
 	rtc_freq = 1024;
 	if (!hpet_set_periodic_freq(rtc_freq)) {
 		/*
@@ -210,7 +209,7 @@ int rtc_init(void)
 		CMOS_WRITE(((CMOS_READ(RTC_FREQ_SELECT) & 0xF0) | 0x06),
 			   RTC_FREQ_SELECT);
 	}
-	spin_unlock_irq(&rtc_lock);
+	spin_unlock_irqrestore(&rtc_lock, flags);
 no_irq2:
 #endif
 

@@ -6,8 +6,8 @@
 *   固定尺寸的块分配器
 */
 #include <types.h>
-#include <string.h>
 
+#include "cl_string.h"
 #include "blkbuf.h"
 #include "bitmap.h"
 
@@ -37,9 +37,19 @@ struct block_instance
 		where = where->DIRECTION;											\
 	}																		\
 
-/************************************************************************/
-/*                                                                      */
-/************************************************************************/
+/************************************************************************
+	导出接口
+************************************************************************/
+
+/**
+	@brief 初始化一个bkb对象
+*/
+void cl_bkb_init(struct cl_bkb *bkb, const xstring name, int node_size)
+{
+	memset(bkb, 0, sizeof(*bkb));
+	bkb->name = name;
+	bkb->node_size = node_size;
+}
 
 /**
 	@brief 创建一个BLOCK数据缓冲区
@@ -54,13 +64,13 @@ void cl_bkb_extend(struct cl_bkb *bkb, void *base, size_t size, cl_bkb_free_hand
 	cur_count	= size / bkb->node_size;
 	bitmap_size = cl_bitmap_calc_size(cur_count);
 	
-	while ((total_size = bitmap_size + cur_count * bkb->node_size + sizeof(struct cl_bkb)) > size)
+	while ((total_size = bitmap_size + cur_count * bkb->node_size + sizeof(*buf)) > size)
 	{
 		cur_count--;
 		bitmap_size = cl_bitmap_calc_size(cur_count);
 	}
 
-#if 1
+#if 0
 	{
 		printk("分配%s调整至%d个节点,每个%d大小,总尺寸%d,浪费%d字节,地址:%x.\n",
 			bkb->name, 
@@ -85,7 +95,7 @@ void cl_bkb_extend(struct cl_bkb *bkb, void *base, size_t size, cl_bkb_free_hand
 	buf->block_size		= size;
 	cl_bitmap_init(&buf->bitmap, (unsigned long*)(buf + 1)/*bitmap area*/, cur_count);
 
-	/* Insert to the instance list */
+	/* Insert to the instance list after the prefer node*/
 	if (bkb->prefer == NULL)
 		bkb->prefer = buf;
 	else

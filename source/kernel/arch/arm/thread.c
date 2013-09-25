@@ -21,7 +21,7 @@ static void __noreturn first_time_entry()
 	unsigned long _ds,_cs;
 	who = kt_arch_get_current();
 	
-	if (who->process->cpl == KP_CPL0)
+	if (who->process->cpl != KP_USER)
 	{
 		
 		printk("Ring 0 stack is %x.\n", _sp);

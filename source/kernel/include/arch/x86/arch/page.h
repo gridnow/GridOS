@@ -8,6 +8,8 @@
 #ifndef ARCH_PAGE_H
 #define ARCH_PAGE_H
 
+#include <kernel/kernel.h>
+
 /**
 	@brief Error code of page fault
  */
@@ -34,7 +36,7 @@
 #define PAGE_FLAG_FROM_OTHER		(1 << 9)
 static inline void km_write_sub_table(unsigned long *table, int sub_id, unsigned long phyiscal)
 {
-	table[sub_id] = phyiscal | PAGE_FLAG_VALID | PAGE_FLAG_RW;
+	table[sub_id] = phyiscal | PAGE_FLAG_USER | PAGE_FLAG_VALID | PAGE_FLAG_RW;
 }
 
 static inline unsigned long km_arch_get_flags(page_prot_t prot)

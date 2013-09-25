@@ -9,8 +9,8 @@
 #include <types.h>
 #include <stddef.h>
 #include <list.h>
-#include <string.h>
 
+#include "cl_string.h"
 #include "memalloc.h"
 #define FREE_NODE 0x00000001
 #define P_MAGIC 0x12332101

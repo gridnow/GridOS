@@ -1,6 +1,6 @@
 include $(MY_BUILD_BASE)/config.mk
 
-ADD_INCLUDE +=$(HAL_INCLUDE) 
+ADD_INCLUDE +=$(CL_INCLUDE)
 
 #要编译的文件列表
 OBJS	= eth.o

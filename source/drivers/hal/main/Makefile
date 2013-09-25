@@ -4,7 +4,7 @@ include ../hal_include.mk
 ADD_INCLUDE +=$(HAL_INCLUDE) -include hal_config.h
 
 #要编译的文件列表
-OBJS	= main.o interface.o obj.o resource.o malloc.o devres.o bootmod.o
+OBJS	= main.o interface.o obj.o resource.o malloc.o devres.o bootmod.o dma.o
 PARTS	= net
 
 all:  subs_parts $(OBJS)

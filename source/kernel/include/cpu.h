@@ -9,6 +9,7 @@
 #ifndef KC_H
 #define KC_H
 #include <list.h>
+#include "preempt.h"
 #include "priority.h"
 
 struct ko_thread;
@@ -24,6 +25,7 @@ struct kc_cpu
 	/* Thread queue */
 	struct list_head run_queue[KT_PRIORITY_COUNT];
 	unsigned int run_count[KT_PRIORITY_COUNT];
+	struct ko_thread *driver_thread;
 	unsigned long run_mask;
 	unsigned long running_count;
 
@@ -46,19 +48,20 @@ static inline struct kc_cpu *kac_get()
 	return &tmp_boot_cpu;
 }
 
+static inline struct kc_cpu *kc_get_raw()
+{
+	return kac_get();
+}
+
 static inline struct kc_cpu *kc_get()
 {
-	//TODO:preempt disable
-	struct kc_cpu *cpu = kac_get();
-	return cpu;
+	hal_preempt_disable();
+	return kc_get_raw();
 }
 
 static inline void kc_put()
 {
-	//TODO:preempt enable
+	hal_preempt_enable();
 }
-
-#define kc_get_raw()		(kac_get())
-
 
 #endif

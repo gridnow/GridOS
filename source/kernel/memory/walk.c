@@ -10,16 +10,9 @@
 
 #include <memory.h>
 #include <walk.h>
+#include <process.h>
 
-void km_walk_lock(struct km *mem)
-{
-	//TODO
-}
-
-void km_walk_unlock(struct km *mem)
-{
-	//TODO
-}
+#include <sync.h>
 
 void *km_get_sub_table(unsigned long *table, int sub_id)
 {
@@ -36,7 +29,7 @@ void *km_get_sub_table(unsigned long *table, int sub_id)
 	@brief Walk to a given virtual address
  
 	@note
-		Prevent the table from been deleted
+		Memory ctx should be "got"
 */
 bool km_walk_to(struct km_walk_ctx *ctx, unsigned long va)
 {
@@ -47,16 +40,12 @@ bool km_walk_to(struct km_walk_ctx *ctx, unsigned long va)
 	ctx->level_id					= i = KM_WALK_MAX_LEVEL;
 	ctx->current_virtual_address	= va;
 	
-	km_walk_lock(ctx->mem);
-	
 	table			= ctx->mem->translation_table;
 
 	do
 	{
 		int sub_id;
-		void *subtable;
 		
-		/* Table from current level is empty? */
 		if (unlikely(table == NULL))
 		{
 			if (NULL == ctx->miss_action ||
@@ -64,25 +53,19 @@ bool km_walk_to(struct km_walk_ctx *ctx, unsigned long va)
 				goto end;
 		}
 		
-		/* Get the sub table's ID and record it(or to be created) */
 		sub_id = km_get_vid(i, ctx->current_virtual_address);
 		ctx->hirarch_id[i]		= sub_id;
 		ctx->table_base[i]		= table;
 		ctx->level_id			= i;
-		printk("id %d, sub_id = %d, table = %p\n", i, sub_id, table);
 		
-		/* Level 0 has no subtable */
 		if (--i == 0)
 			break;
 		
-		/* Get sub table from current table */
-		subtable = km_get_sub_table(table, sub_id);
-		table = subtable;
+		table = km_get_sub_table(table, sub_id);
 	} while (1);
 	r = true;
 	
-end:
-	km_walk_unlock(ctx->mem);
+end:	
 	return r;
 }
 
@@ -95,7 +78,6 @@ void *km_walk_alloc_table(struct km_walk_ctx *ctx)
 	if (!p) goto end;
 	memset(p, 0, PAGE_SIZE);
 	
- 	//printk("Allocated the table %x for virtual %x.\n", p, ctx->virtual_address);
 end:
 	return p;
 }
@@ -136,12 +118,137 @@ void *km_create_sub_table(struct km_walk_ctx *ctx, void *table, int sub_id)
 	return sub_table;
 }
 
+/**
+	@brief 准备对address进行操作
+*/
+struct km *kp_get_mem(struct ko_process *who)
+{
+	struct km *mem = &who->mem_ctx;
+
+#if 0 /* 细粒度的还没有用，并且细粒度在page walk的时候还需要锁来处理translation table 互斥问题 */
+	int met = 0;
+	int i, null_id = -1;
+	struct thread_wait wait;
+
+claim_again:
+	spin_lock(&mem->lock);
+
+	/* Address can be merged? */
+	for (i = 0; i < KM_MAX_ADDRESS_STACK; i++)
+	{
+		if (KM_PAGE_ROUND_ALIGN(address) == mem->address_array[i])
+		{
+			met = 1;
+			goto wait_this_address;
+		}
+		if (null_id == -1 && mem->address_array[i] == -1UL)
+			null_id = i;
+	}
+
+	/* No empty slot? wait a random index to finish */
+	if (null_id == -1)
+		goto wait_this_address;
+
+	/* Has an empty slot, goto into it and do what you want */
+	else
+	{
+		mem->address_array[null_id] = KM_PAGE_ROUND_ALIGN(address);
+		*key = null_id;
+	}
+	spin_unlock(&mem->lock);
+
+	return mem;
+
+wait_this_address:
+	/* Goto wait list */
+	if (met == 1)
+		KT_PREPARE_WAIT(mem->wait_queue[i/*wait the mached to finish*/], &wait);
+	else
+		KT_PREPARE_WAIT(mem->wait_queue[0/*满了，随机选择是不是更好？*/], &wait);
+	spin_unlock(&mem->lock);
+
+	if (met == 1)
+	{
+		if (KT_WAIT(KM_PAGE_ROUND_ALIGN(address) != mem->address_array[i]) == KE_WAIT_ABANDONED)
+			goto abandoned;
+	}
+	else
+	{
+		/* 由于没有slot而休眠，那么唤醒后继续再去找slot */
+		if (KT_WAIT(-1UL == mem->address_array[0]) == KE_WAIT_ABANDONED)
+			goto abandoned;
+		
+		goto claim_again;
+	}
+
+	return NULL; 
+
+abandoned:
+	/* The thread is forced not to wait, AND let the thread out, it will be killed at exception return */
+	spin_lock(&mem->lock);
+	list_del(&wait.task_list);
+	spin_unlock(&mem->lock);
+
+	return NULL;
+#else
+	spin_lock(&mem->lock);
+	return mem;
+#endif
+}
+
+void kp_put_mem(struct km *mem)
+{
+#if 0/* See get */
+	struct thread_wait *wait, *n;
+	int count = 0;
+	unsigned long address ;
+
+	spin_lock(&mem->lock);
+
+	address = mem->address_array[key];
+	mem->address_array[key] = -1UL;
+
+	/* Has waiter on this merged address? */
+	list_for_each_entry_safe(wait, n, &mem->wait_queue[key], task_list)
+	{
+		/* We have to use "init" version, because the thread my be abandoned and release the list by itself */
+		list_del_init(&wait->task_list);
+		kt_wakeup(wait->who);
+		count ++;
+	}
+
+	//printk("Wakeup %d waiter for address %x, key is %d.\n", count, address, key);
+
+	spin_unlock(&mem->lock);
+#else
+	spin_unlock(&mem->lock);
+#endif
+}
+
 void km_walk_init_for_kernel(struct km *mem)
 {
+	spin_lock_init(&mem->lock);
 	km_arch_init_for_kernel(mem);
 }
 
-void km_walk_init(struct km *mem)
+bool km_walk_init(struct km *mem)
 {
+	int i;
+	struct km_walk_ctx ctx;
+	
+	spin_lock_init(&mem->lock);
+	for (i = 0; i < KM_MAX_ADDRESS_STACK; i++)
+	{
+		INIT_LIST_HEAD(&mem->wait_queue[i]);
+		mem->address_array[i] = -1UL;
+	}
 
+	/* Walk to NULL will create the Very First table */
+	KM_WALK_INIT(mem, &ctx);
+	if (unlikely(km_walk_to(&ctx, 0) == false))
+		goto err;
+	return true;
+
+err:
+	return false;
 }

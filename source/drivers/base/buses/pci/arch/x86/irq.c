@@ -7,11 +7,11 @@
 #include <ddk/pci/class.h>
 #include <ddk/pci/global_ids.h>
 #include <ddk/compatible_io.h>
+#include <ddk/string.h>
 
 #include <FIRMWARE/dmi/dmi.h>
 
 #include <errno.h>
-#include <string.h>
 
 #include <pci.h>
 

@@ -24,6 +24,12 @@ void hal_free(void * hal_address)
 	memfree(block, hal_address);
 }
 
+void *kmalloc_node(int size, unsigned long unused, int cpu_node)
+{
+	//TODO: support cpu node affinity allocation
+	return hal_malloc(size);
+}
+
 bool hal_malloc_init()
 {
 	if (memalloc_init_allocation(block, HAL_MEMORY_BLOCK_SIZE) == false)

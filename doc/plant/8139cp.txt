@@ -1,3 +1,13 @@
+3.8.13
+
+____cacheline_aligned是手动定义的。
+
 1，cp_init_one函数
 	1.1 该函数是驱动启动一个网卡实例时初始化的代码。其中netif_napi_add poll不分没有用到。
 	1.2 watchdog_timeo 、vlan_features 没有用
+
+2,cp_start_xmit 
+	由于我们的缓冲区模型不是skb，因此发送接口不能用原来的思路去实现。
+
+3，cp_tx_vlan_tag
+	暂时空着，应该只是个tag

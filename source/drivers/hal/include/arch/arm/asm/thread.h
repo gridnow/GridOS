@@ -3,15 +3,16 @@
  *   See the license.txt at the root directory of this project for the copyright information about this file and project.
  *
  *   Wuxin
- *   骞冲彴绾跨▼鎻忚堪
+ *   平台线程描述
  */
 #ifndef HAL_ARCH_THREAD_H
 #define HAL_ARCH_THREAD_H
 
 #include <linkage.h>
+#include <compiler.h>
 #include <asm/processor.h>
 
-/* Ring0鏍堝簳鍖呮嫭褰撳墠绾跨▼鐨勬牴鎸囬拡 */
+/* Ring0栈底包括当前线程的根指针 */
 struct stack_thread_info
 {
 	void *thread_object;
@@ -26,7 +27,7 @@ struct kt_arch_thread {
 	unsigned long preempt_count;
 };
 
-/* 鐢ㄧ‖浠跺姞閫熺殑鏂规硶鑾峰彇鍒板綋鍓嶇殑绾跨▼ */
+/* 用硬件加速的方法获取到当前的线程 */
 static __always_inline void * kt_arch_get_current()
 {
 	register unsigned long sp asm ("sp");
@@ -35,10 +36,10 @@ static __always_inline void * kt_arch_get_current()
 	return p->thread_object;
 }
 
-/* 鐢ㄧ‖浠跺姞閫熺殑鏂规硶鑾峰彇鍒癈PU鎸囬拡 */
+/* 用硬件加速的方法获取到CPU指针 */
 static __always_inline void * kt_arch_get_cpu()
 {
-	return NULL;
+	return 0;
 }
 
 #define kt_arch_current() ((struct kt_arch_thread *)kt_arch_get_current())

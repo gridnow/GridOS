@@ -18,14 +18,6 @@ void ke_atomic_dec(struct ke_atomic * atomic)
 } 
 
 /**
-	@brief 读取计数器
-*/
-int ke_atomic_read(struct ke_atomic * atomic)
-{
-	return atomic_read((atomic_t*)atomic);
-}
-
-/**
 	@brief 设置一个原子计数器
 */
 void ke_atomic_set(struct ke_atomic * atomic, int count)

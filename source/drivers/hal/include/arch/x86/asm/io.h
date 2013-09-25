@@ -35,6 +35,20 @@ build_mmio_write(__writeb, "b", unsigned char, "q", )
 build_mmio_write(__writew, "w", unsigned short, "r", )
 build_mmio_write(__writel, "l", unsigned int, "r", )
 
+/*
+*	Cache management
+*
+*	This needed for two cases
+*	1. Out of order aware processors
+*	2. Accidentally out of order processors (PPro errata #51)
+*/
+static inline void flush_write_buffers(void)
+{
+#if defined(CONFIG_X86_OOSTORE) || defined(CONFIG_X86_PPRO_FENCE)
+	asm volatile("lock; addl $0,0(%%esp)": : :"memory");
+#endif
+}
+
 static inline void slow_down_io(void)
 {
 	native_io_delay();
@@ -88,5 +102,6 @@ static inline void ins##bwl(int port, void *addr, unsigned long count)	\
 BUILDIO(b, b, char)
 BUILDIO(w, w, short)
 BUILDIO(l, , int)
+
 
 #endif

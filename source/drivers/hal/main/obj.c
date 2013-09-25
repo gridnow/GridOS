@@ -12,9 +12,7 @@
 #include <stdarg.h>
 #include <list.h>
 
-#include <kernel/ke_lock.h>
 #include <ddk/compatible.h>
-
 #include <ddk/slab.h>
 #include <ddk/obj.h>
 #include <ddk/debug.h>

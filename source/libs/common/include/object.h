@@ -10,18 +10,20 @@
 
 #include <list.h>
 #include <types.h>
-#include <kernel/ke_atomic.h>
+#include <cl_atomic.h>
 #include "blkbuf.h"
 
 struct cl_object_type;
 struct cl_object
 {
-	char					*name;					/* 对象名 */
+	xstring					name;					/* 对象名 */
 	struct cl_object_type	*type;					/* 指向type */
 	struct ke_atomic		ref;					/* 对象引用计数器 */
 	struct list_head		list;					/* 同一类对象链表 */
 };
 typedef void *real_object_t;
+#define TO_CL_OBJECT(USER_OBJECT) ((struct cl_object*)(USER_OBJECT) - 1)
+#define TO_USER_OBJECT(CL_OBJECT) ((real_object_t)((CL_OBJECT) + 1))
 
 struct cl_object_ops
 {
@@ -47,8 +49,8 @@ struct object_tree_node
 
 struct cl_object_type
 {
-	const char	*name;
-	size_t		size;
+	const xstring	name;
+	size_t			size;
 
 	/* 对象缓冲区操作，用与为对象分配器创立对象内存 */
 	bool (*add_space)(struct cl_object_type *type, void **base, size_t *size, enum cl_object_memory_type);
@@ -89,5 +91,10 @@ void cl_object_type_register(struct cl_object_type *type);
 	@brief 设置对象的名称
 */
 xstring cl_object_set_name(real_object_t who, xstring what);
+
+/**
+	@brief 搜索对象，如果搜索到，则增加Ref,使用者一般情况下应该减少Ref
+*/
+real_object_t cl_object_search_name(struct cl_object_type *type, xstring name);
 
 #endif

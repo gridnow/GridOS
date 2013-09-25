@@ -11,8 +11,6 @@
 #include <ddk/resource.h>
 #include <ddk/debug.h>
 #include <ddk/slab.h>
-
-#include <kernel/ke_lock.h>
 #include <ddk/compatible.h>
 
 

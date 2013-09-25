@@ -51,7 +51,7 @@ void hal_fb_register_simple(unsigned long fb, int w, int h, int bpp)
 	main_screen.height = h;
 	main_screen.width = w;
 	main_screen.bpp = bpp;
-	main_screen.fb_physical = fb;
+	main_screen.fb_physical = (void*)fb;
 	
 	/* Map it */
 	base = ioremap(fb, h * w * bpp / 8);
