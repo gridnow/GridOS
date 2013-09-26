@@ -75,7 +75,7 @@ unsigned long cl_bitmap_alloc_bit(struct cl_bitmap *cur_bitmap)
 	unsigned long bit_offset;
 	bool scan_flag = false;
 again_scan:
-	bit_offset = find_next_zero_bit((unsigned long *)cur_bitmap->bitmap, cur_bitmap->mask_count, cur_bitmap->last_bit);
+	bit_offset = cl_find_next_zero_bit((unsigned long *)cur_bitmap->bitmap, cur_bitmap->mask_count, cur_bitmap->last_bit);
 	if (bit_offset != cur_bitmap->mask_count)
 	{
 		__set_bit(bit_offset, (unsigned long *)cur_bitmap->bitmap);
@@ -100,11 +100,11 @@ unsigned long cl_bitmap_alloc_consistant_bits(struct cl_bitmap *cur_bitmap, int 
 
 restart_scan:
 	temp_count = 0;
-	bit_offset = find_next_zero_bit((unsigned long *)cur_bitmap->bitmap, cur_bitmap->mask_count, cur_bitmap->last_bit);
+	bit_offset = cl_find_next_zero_bit((unsigned long *)cur_bitmap->bitmap, cur_bitmap->mask_count, cur_bitmap->last_bit);
 	if (bit_offset == cur_bitmap->mask_count)
 	{
 		cur_bitmap->last_bit = 0;
-		bit_offset = find_next_zero_bit((unsigned long *)cur_bitmap->bitmap, cur_bitmap->mask_count, cur_bitmap->last_bit);
+		bit_offset = cl_find_next_zero_bit((unsigned long *)cur_bitmap->bitmap, cur_bitmap->mask_count, cur_bitmap->last_bit);
 		if (bit_offset == cur_bitmap->mask_count)
 		{
 			goto error;
