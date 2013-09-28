@@ -6,8 +6,8 @@
 *   ¹Ì¶¨³ß´çµÄ¿é·ÖÅäÆ÷
 */
 #include <types.h>
-#include <string.h>
 
+#include "cl_string.h"
 #include "blkbuf.h"
 #include "bitmap.h"
 

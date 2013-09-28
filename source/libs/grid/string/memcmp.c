@@ -1,4 +1,4 @@
-#include <string.h>
+#include <types.h>
 #include <compiler.h>
 
 DLLEXPORT __weak int memcmp(const void *cs, const void *ct, size_t count)

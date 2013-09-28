@@ -1,4 +1,3 @@
-#include <string.h>
 #include <compiler.h>
 
 DLLEXPORT __weak void *memcpy(void *dst, const void *src, unsigned long len)

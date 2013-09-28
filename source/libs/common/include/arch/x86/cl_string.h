@@ -1,4 +1,6 @@
-#ifdef CONFIG_X86_32
+#include <compiler.h>
+
+#ifdef __i386__
 # include "string_32.h"
 #else
 # include "string_64.h"

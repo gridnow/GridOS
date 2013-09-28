@@ -19,16 +19,16 @@
 /**
 	@brief The handler type for exception handler
 */
-typedef bool (*refill_handler)(struct ko_thread * current, struct ko_section * where, unsigned long address, unsigned long code);
+typedef bool (*refill_handler)(struct ko_thread *current, struct ko_section * where, unsigned long address, unsigned long code);
 static refill_handler exception_handler[KS_TYPE_MAX];
 
-static bool refill_null(struct ko_thread * current, struct ko_section * where, unsigned long address, unsigned long code)
+static bool refill_null(struct ko_thread *current, struct ko_section * where, unsigned long address, unsigned long code)
 {
 	printk("Uninited refill handler.\n");
 	return false;
 }
 
-static bool refill_exe(struct ko_thread * current, struct ko_section * where, unsigned long address, unsigned long code)
+static bool refill_exe(struct ko_thread *current, struct ko_section * where, unsigned long address, unsigned long code)
 {
 	bool cow;
 	struct km *mem;
@@ -105,7 +105,7 @@ err1:
 /**
 	@brief Private memory 
 */
-static bool refill_private(struct ko_thread * current, struct ko_section * where, unsigned long address, unsigned long code)
+static bool refill_private(struct ko_thread *current, struct ko_section * where, unsigned long address, unsigned long code)
 {
 	bool r = false;
 	struct km *mem = NULL;
@@ -135,7 +135,33 @@ end:
 	return r;
 }
 
-struct ko_section * ks_get_by_vaddress_unlock(struct ko_process * where, unsigned long address)
+static bool refill_file(struct ko_thread *current, struct ko_section *where, unsigned long address, unsigned long code)
+{
+	void *db_addr;
+	uffset pos;
+	struct km *mem_src, *mem_dst;
+
+	/* Map can be written? */
+	if (code & PAGE_FAULT_W)
+	{
+		if (where->prot & KM_PROT_WRITE == 0)
+			goto err;
+	}
+
+	/* TODO: Get db address by fss_map_prepare_dbd */
+
+
+	/* TODO: Get memory descritpor */
+
+
+	/* TODO: Copy page */
+
+	return true;
+err:
+	return false;
+}
+
+struct ko_section * ks_get_by_vaddress_unlock(struct ko_process *where, unsigned long address)
 {
 	struct ko_section *ks = NULL;
 	struct km_vm_node *p;
@@ -225,7 +251,7 @@ bool __init ks_exception_init()
 	exception_handler[KS_TYPE_EXE]		= refill_exe;
 	exception_handler[KS_TYPE_PRIVATE]	= refill_private;
 	exception_handler[KS_TYPE_STACK]	= refill_private;
-//	exception_handler[KS_TYPE_FILE]		= refill_file;
+	exception_handler[KS_TYPE_FILE]		= refill_file;
 //	exception_handler[KS_TYPE_SHARE]	= refill_share;
 //	exception_handler[KS_TYPE_KERNEL]	= refill_kernel;
 

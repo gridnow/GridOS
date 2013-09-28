@@ -1,8 +1,6 @@
 
 #include <compiler.h>
 #include <types.h>
-#include <string.h>
-
 
 DLLEXPORT bool ke_module_entry(int type)
 {

@@ -40,6 +40,20 @@ __weak void *memset(void *dst, int value, unsigned long count)
 	return start;
 }
 
+__weak void *memcpy(void *dst, const void *src, unsigned long len)
+{
+	void *ret = dst;
+	
+	while(len--)
+	{
+		*(char *)dst = *(char *)src;
+		
+		dst = (char *)dst + 1;
+		src = (char *)src + 1;
+	}
+	
+	return ret;
+}
 __weak size_t strlen(const char *s)
 {
 	const char *sc;
@@ -48,6 +62,18 @@ __weak size_t strlen(const char *s)
 	/* nothing */;
 	return sc - s;
 }
+
+__weak size_t strnlen(const char *s, size_t maxlen)
+{
+	const char *es = s;
+	while (*es && maxlen) {
+		es++;
+		maxlen--;
+	}
+	
+	return (es - s);
+}
+
 
 __weak char *strrchr(const char *s, int c)
 {

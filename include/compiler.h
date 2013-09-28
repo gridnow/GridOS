@@ -9,6 +9,7 @@
 #define COMPILER_H
 
 #define __attribute_const__		__attribute__((__const__))
+#define __always_inline		inline __attribute__((always_inline))
 #define  noinline			__attribute__ ((noinline))
 #define likely(x)			__builtin_expect(!!(x), 1)
 #define unlikely(x)			__builtin_expect(!!(x), 0)

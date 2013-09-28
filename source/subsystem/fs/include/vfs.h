@@ -84,6 +84,9 @@ ssize_t fss_read(struct fss_file * who, unsigned long block, void * buffer);
 */
 struct fss_file *fss_open(char *name);
 
+ssize_t fss_get_size(struct fss_file *who);
+void fss_close(struct fss_file *who);
+
 /************************************************************************/
 /* STRING                                                               */
 /************************************************************************/

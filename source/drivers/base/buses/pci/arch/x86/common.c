@@ -8,12 +8,12 @@
 #include <ddk/slab.h>
 #include <ddk/pci/pci_regs.h>
 #include <ddk/pci/class.h>
+#include <ddk/string.h>
 
 #include <FIRMWARE/dmi/dmi.h>
 
 #include <compiler.h>
 #include <list.h>
-#include <string.h>
 #include <errno.h>
 
 #include <pci.h>

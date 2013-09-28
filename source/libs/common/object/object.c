@@ -5,11 +5,10 @@
 *   Wuxin
 *   对象管理器
 */
-#include <string.h>
+#include <types.h>
 
+#include "cl_string.h"
 #include "object.h"
-
-#define TO_CL_OBJECT(USER_OBJECT) ((struct cl_object*)(USER_OBJECT) - 1)
 
 static void object_free_handler(void * para, void *base, size_t size)
 {

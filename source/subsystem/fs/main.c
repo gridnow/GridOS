@@ -111,7 +111,8 @@ struct fss_file *fss_open(char *name)
 	struct fss_file *f;
 
 	f = fss_loop_file(NULL, name, NULL, NULL);
-	
+	if (!f)
+		goto err0;
 	/* It's time to notify file system driver about the event */
 	f->private = f->volumn->drv->ops->fOpen(f->parent->private, f->name);
 	if (f->private == NULL)
@@ -122,6 +123,13 @@ struct fss_file *fss_open(char *name)
 	
 
 	return f;
+err0:
+	return NULL;
+}
+
+void fss_close(struct fss_file *who)
+{
+	//TODO
 }
 
 /**
@@ -154,6 +162,11 @@ end:
 	return ret;
 }
 
+ssize_t fss_get_size(struct fss_file *who)
+{
+	//TODO
+	return 1024;
+}
 
 void fss_main()
 {

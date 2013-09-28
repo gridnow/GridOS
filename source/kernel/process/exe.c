@@ -134,6 +134,8 @@ bool kp_exe_bind(struct ko_process *who, struct ko_exe *what)
 			goto err;
 
 		/* Some useful matters */
+		if (seg.flags & ELF_SEG_WRITE)
+			sub->prot |= KM_PROT_READ;
 		sub->priv.share.size = seg.size_in_file;
 		sub->priv.share.offset = seg.offset_in_file;
 		//printk("sub is = %x, start %x, size = %x.\n", sub, seg.log_start, seg.size_in_log);
@@ -158,11 +160,9 @@ bool kp_exe_share(struct ko_process *where, struct ko_section *ks_dst, unsigned 
 	struct km *dst_mem, *src_mem;
 
 	/* Share... */
-	source = ke_src->backend->node.start + ks_dst->priv.share.offset;	/* Base */
-	if (source & (PAGE_SIZE - 1))
-		goto err;
+	source = ke_src->backend->node.start + ks_dst->priv.share.offset;	/* Base + section offset*/
 	source += to - ks_dst->node.start;									// Offset of the to Current process
-//	printk("Source address %x.\n", source);
+//	printk("Source address %x, to %x.\n", source, to);
 
 	dst_mem = kp_get_mem(where);
 	src_mem = kp_get_mem(kp_get_file_process());
@@ -212,12 +212,13 @@ struct ko_exe *kp_exe_create_from_file(xstring name, void *ctx)
 	struct ko_exe *kee = NULL;
 	int size = 0;
 	
-	ks = ks_create(kp_get_file_process(), KS_TYPE_PRIVATE, 0, size, KM_PROT_READ|KM_PROT_WRITE);
+	ks = ks_create(kp_get_file_process(), KS_TYPE_FILE, 0, size, KM_PROT_READ|KM_PROT_WRITE);
 	if (!ks)
 		goto err;
 	kee = kp_exe_create(ks, ctx);
 	if (!kee)
 		goto err;
+	//TODO: link the file name with ks
 	
 	return kee;
 	
@@ -226,6 +227,19 @@ err:
 	{
 		//TODO:
 	}
+}
+
+struct ko_exe *kp_exe_open_by_name(struct ko_process *who, xstring name)
+{
+	struct ko_exe *ke = cl_object_search_name(&exe_type, name);
+	
+	printk("kp_exe_open_by_name for %s.\n", name);
+	if (!ke)
+		return NULL;
+	
+	//TODO Open it
+	
+	return ke;
 }
 
 void kp_exe_init()

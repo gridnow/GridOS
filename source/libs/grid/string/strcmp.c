@@ -1,4 +1,3 @@
-#include <string.h>
 #include <compiler.h>
 
 DLLEXPORT __weak int strcmp(const char *src1, const char *src2)

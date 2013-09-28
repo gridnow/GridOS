@@ -1,7 +1,5 @@
-
 #include <types.h>
 #include <stdarg.h>
-#include <string.h>
 #include <stdio.h>
 
 #include "std_console.h"

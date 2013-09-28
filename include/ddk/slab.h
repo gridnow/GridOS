@@ -9,6 +9,7 @@
 #ifndef _DDK_SLAB_H_
 #define _DDK_SLAB_H_
 
+#include <ddk/types.h>
 #include <ddk/string.h>
 
 /* Compatible flags */
