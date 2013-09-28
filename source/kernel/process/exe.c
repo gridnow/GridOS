@@ -100,7 +100,7 @@ struct ko_exe *kp_exe_create_temp()
 	return kp_exe_create(&ts, KO_EXE_TO_PRIVATE(&te));
 }
 
-#include <ELF2/elf.h>
+#include <elf2/elf.h>
 bool kp_exe_bind(struct ko_process *who, struct ko_exe *what)
 {
 	int i;
