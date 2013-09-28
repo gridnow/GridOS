@@ -120,6 +120,24 @@ struct fss_cache
 	(DBD)->access_counter - FSS_DBD_LEVEL_EXCHANGE_MASK : (DBD)->access_counter = 0)
 
 /**
+	@make sure data is valid
+ 
+ 	@file descriptor and dbd pointer
+ 
+*/
+
+ssize_t fss_dbd_make_valid(struct fss_file * who, struct dbd * which);
+
+/**
+ 	@
+
+ 	@
+*/
+
+int fss_map_init();
+
+
+/**
 	@brief ¸üĞÂLRUÅÅĞò
 
 	@param[in] dbd :DBDÖ¸Õë

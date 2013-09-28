@@ -15,7 +15,7 @@
 
 static struct fss_vfs_info fss;
 
-static ssize_t make_sure_valid_data(struct fss_file * who, struct dbd * which)
+ssize_t fss_dbd_make_valid(struct fss_file * who, struct dbd * which)
 {
 	unsigned long size = FSS_CACHE_DB_SIZE;
 	int ret = -EBADF;
@@ -146,7 +146,7 @@ ssize_t fss_read(struct fss_file * who, unsigned long block, void *buffer)
 		goto end;
 
 	/* Fill the dbd with valid data from disk */	
-	ret = make_sure_valid_data(who, which);
+	ret = fss_dbd_make_valid(who, which);
 	if (ret < 0)
 		goto end;
 	
