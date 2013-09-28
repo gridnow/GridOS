@@ -138,7 +138,7 @@ end:
 static bool refill_file(struct ko_thread *current, struct ko_section *where, unsigned long address, unsigned long code)
 {
 	void *db_addr;
-	uffset pos;
+	uoffset pos;
 	struct km *mem_src, *mem_dst;
 
 	/* Map can be written? */

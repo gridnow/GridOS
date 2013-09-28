@@ -41,7 +41,7 @@ static unsigned long map_file(struct ko_process *to, xstring name, page_prot_t p
 	ks_file = ks_create(to, KS_TYPE_FILE, NULL, size, prot);
 	if (!ks_file)
 		goto err1;
-	ks_file->priv.file.file = ks_file;
+	ks_file->priv.file.file = fp;
 	return ks_file->node.start;
 	
 err1:
