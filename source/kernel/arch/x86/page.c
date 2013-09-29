@@ -50,14 +50,16 @@ asmregparm void do_page_fault(struct pt_regs * regs, long error_code)
 	if (error_code & PAGE_FAULT_U)
 	{
 		if (in_user == false)
-			goto die_cur;			
-		
+			goto die_cur;
 	}
-		
+	
 	if (error_code & PAGE_FAULT_P)
 	{
 		printk("addr = %x.\n", *(int*)error_address);
 	}
+	
+	if (!in_user)
+		error_code |= PAGE_FAULT_IN_KERNEL;
 	current = kt_current();
 	if (unlikely(false == ks_exception(current, error_address, error_code)))
 		goto die_cur;

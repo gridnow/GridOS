@@ -120,7 +120,6 @@ struct fss_file *fss_open(char *name)
 		//TODO: Close the vfs
 		TODO("¹Ø±Õ½©Ê¬ÎÄ¼þ");
 	}
-	
 
 	return f;
 err0:

@@ -16,6 +16,8 @@
 
 #include <page.h>
 
+#include "../source/subsystem/fs/include/fss.h"
+
 /**
 	@brief The handler type for exception handler
 */
@@ -139,26 +141,33 @@ static bool refill_file(struct ko_thread *current, struct ko_section *where, uns
 {
 	void *db_addr;
 	uoffset pos;
+	bool ret = false;
 	struct km *mem_src, *mem_dst;
-
+	
 	/* Map can be written? */
 	if (code & PAGE_FAULT_W)
 	{
 		if (where->prot & KM_PROT_WRITE == 0)
-			goto err;
+			goto end;
 	}
 
-	/* TODO: Get db address by fss_map_prepare_dbd */
+	pos = address - where->node.start;
+	db_addr = fss_map_prepare_dbd(where->priv.file.file, KT_GET_KP(current), pos);
+	if (db_addr == NULL)
+		goto end;
 
-
-	/* TODO: Get memory descritpor */
-
-
-	/* TODO: Copy page */
-
-	return true;
-err:
-	return false;
+	mem_dst = kp_get_mem(KT_GET_KP(current));
+	mem_src = kp_get_mem(kp_get_system());
+	if (km_page_share(mem_dst, address, mem_src, (unsigned long)db_addr) != KM_PAGE_SHARE_RESULT_OK)
+		goto end1;
+	
+	ret = true;
+	
+end1:
+	kp_put_mem(mem_dst);
+	kp_put_mem(mem_src);
+end:
+	return ret;
 }
 
 struct ko_section * ks_get_by_vaddress_unlock(struct ko_process *where, unsigned long address)
@@ -171,6 +180,8 @@ struct ko_section * ks_get_by_vaddress_unlock(struct ko_process *where, unsigned
 	list_for_each(t, &where->vm_list)
 	{
 		p = list_entry(t, struct km_vm_node, node);
+		//printk("address = %x, start %x, size %x.\n", address, p->start, p->size);
+		
 		/* The address must in the section limit */
 		if (p->start <= address && address < p->start + p->size)
 		{
@@ -203,14 +214,20 @@ struct ko_section * ks_get_by_vaddress(struct ko_process * where, unsigned long 
 */
 bool ks_exception(struct ko_thread *thread, unsigned long error_address, unsigned long code)
 {
-	struct ko_thread * current = thread;
-	struct ko_section * ks = ks_get_by_vaddress(KT_GET_KP(current), error_address); 
+	struct ko_process *where;
+	struct ko_thread *current = thread;
+	struct ko_section *ks;
+	
+	if (code & PAGE_FAULT_IN_KERNEL)
+		where = kp_get_system();
+	else
+		where = KT_GET_KP(current);
+	ks = ks_get_by_vaddress(where, error_address);
 	if (!ks) goto err1;
 
 // 	printk("线程名 %s:", KO_GET_NAME_SIMPLE(current));	
 // 	printk("线程%p发生了地址%p异常，尝试修复Section %p(%s), &ks = %x.\n", current, error_address, ks, ks_type_name(ks), &ks);
 	
-
 	/* Call it handler */
 	return exception_handler[ks->type & KS_TYPE_MASK](current, ks, error_address, code);
 

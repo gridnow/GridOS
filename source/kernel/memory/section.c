@@ -157,7 +157,13 @@ void ks_sub_close(struct ko_process * who, struct ko_section * which)
 		list_del_init(&sub->node);
 		ks_close(KM_VM_NODE_TO_SECTION(sub));
 	}
-} 
+}
+
+void ks_init_for_process(struct ko_process *who)
+{
+	INIT_LIST_HEAD(&who->vm_list);
+	ke_spin_init(&who->vm_list_lock);
+}
 
 void __init ks_init()
 {

@@ -79,14 +79,6 @@ void fss_init();
 */
 ssize_t fss_read(struct fss_file * who, unsigned long block, void * buffer);
 
-/**
-	@brief 打开文件
-*/
-struct fss_file *fss_open(char *name);
-
-ssize_t fss_get_size(struct fss_file *who);
-void fss_close(struct fss_file *who);
-
 /************************************************************************/
 /* STRING                                                               */
 /************************************************************************/

@@ -63,6 +63,11 @@ void ks_close(struct ko_section *ks);
 void ks_init();
 
 /**
+	@brief Init the section part for a process 
+*/
+void ks_init_for_process(struct ko_process *who);
+
+/**
 	@brief Create a sub node on the current section
 
 	The sub-section is the additional description for the section

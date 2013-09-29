@@ -14,17 +14,6 @@
 #include <vfs.h>
 #include <node.h>
 
-
-
-
-/**
-	@brief 准备好DBD/DMR等关键数据结构
-
-	@return
-		DB 地址
-	@note
-		本函数保证DB中有有效数据
-*/
 void *fss_map_prepare_dbd(struct fss_file *file, void *process, uoffset file_pos)
 {
      ssize_t ret;
@@ -52,10 +41,10 @@ void *fss_map_prepare_dbd(struct fss_file *file, void *process, uoffset file_pos
 		 goto  end;
      map->process	= process;
      map->base		= 0;
+     db_addr		= which->buffer/*base*/ + file_pos % FSS_CACHE_DB_SIZE;
+     //TODO: LOCK the list
      list_add_tail(&map->list ,&which->map_list);
-
-     db_addr		= which->buffer;
-
+	
 end:
 	 if (which)
 		fss_dbd_put(which);

@@ -168,18 +168,21 @@ bool kp_exe_share(struct ko_process *where, struct ko_section *ks_dst, unsigned 
 	src_mem = kp_get_mem(kp_get_file_process());
 share_again:
 	ret = km_page_share(dst_mem, to, src_mem, source);
-	if (ret == KM_PAGE_SHARE_RESULT_ERR)
+	if (ret != KM_PAGE_SHARE_RESULT_OK)
 	{
-		TODO("");
-		goto err1;
-	}
-	else if (ret == KM_PAGE_SHARE_RESULT_SRC_INVALID)
-	{
-		if (ks_restore(kp_get_file_process(), ke_src->backend, source) == false)
+		if (ret == KM_PAGE_SHARE_RESULT_ERR)
+		{
+			TODO("");
 			goto err1;
-		goto share_again;		
+		}
+		else if (ret == KM_PAGE_SHARE_RESULT_SRC_INVALID)
+		{
+			printk("%s %s %d.\n", __FILE__, __FUNCTION__, __LINE__);
+			if (ks_restore(kp_get_file_process(), ke_src->backend, source) == false)
+				goto err1;
+			goto share_again;
+		}
 	}
-
 	kp_put_mem(dst_mem);
 	kp_put_mem(src_mem);
 

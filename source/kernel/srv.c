@@ -20,7 +20,7 @@
 
 #include <kernel/ke_srv.h>
 
-#include "../source/subsystem/fs/include/vfs.h"
+#include "../source/subsystem/fs/include/fss.h"
 #include "../source/libs/grid/include/sys/ke_req.h"
 
 bool ke_validate_user_buffer(void * buffer, size_t size, bool rw)
@@ -28,7 +28,7 @@ bool ke_validate_user_buffer(void * buffer, size_t size, bool rw)
 	return true;
 }
 
-static unsigned long map_file(struct ko_process *to, xstring name, page_prot_t prot)
+static unsigned long map_file(struct ko_process *to, xstring name, page_prot_t prot, unsigned long *map_size)
 {
 	struct ko_section *ks_file;
 	unsigned long size;
@@ -37,7 +37,7 @@ static unsigned long map_file(struct ko_process *to, xstring name, page_prot_t p
 	fp = fss_open(name);
 	if (!fp) goto end;
 	
-	size = fss_get_size(fp);
+	*map_size = size = fss_get_size(fp);
 	ks_file = ks_create(to, KS_TYPE_FILE, NULL, size, prot);
 	if (!ks_file)
 		goto err1;
@@ -125,9 +125,10 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 			
 			if (ke_validate_user_buffer(module_name, strlen(module_name), false) == false)
 				goto map_0_err;
-		
-			return (ke_handle)map_file(KP_CURRENT(), module_name, KM_PROT_READ);
-		
+			handle = (ke_handle)map_file(KP_CURRENT(), module_name, KM_PROT_READ, &req->context_length);
+			
+			return handle;
+			
 		map_0_err:
 			return 0;
 		}
@@ -149,11 +150,11 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 			if (ke_validate_user_buffer(ctx, ctx_size, false) == false)
 				goto ld_3_err;
 			if (ke_validate_user_buffer(module_name, strlen(module_name), false) == false)
-				goto ld_3_err;
+				goto ld_3_err;printk("%s %s %d.\n", __FILE__, __FUNCTION__, __LINE__);
 			if (ctx_size > kp_exe_get_context_size())
-				goto ld_3_err;
+				goto ld_3_err;printk("%s %s %d.\n", __FILE__, __FUNCTION__, __LINE__);
 			if (kp_exe_create_from_file(module_name, ctx) == NULL)
-				goto ld_3_err;
+				goto ld_3_err;printk("%s %s %d.\n", __FILE__, __FUNCTION__, __LINE__);
 			return true;
 			
 		ld_3_err:
