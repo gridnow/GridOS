@@ -10,7 +10,7 @@
 #include "cl_string.h"
 #include "object.h"
 
-static void object_free_handler(void * para, void *base, size_t size)
+static void object_free_handler(void *para, void *base, size_t size)
 {
 	struct cl_object_type * type = para;
 	type->free_space(type, base, size, COMMON_OBJECT_MEMORY_TYPE_OBJ);
@@ -44,8 +44,11 @@ again:
 		goto end;
 	}
 	memset(object, 0, type->size);
+	
 	object->type = type;
+	list_add_tail(&object->list, &type->unname_objects);
 	cl_atomic_dec(&object->ref);
+	
 	if (type->ops->init)
 		type->ops->init((real_object_t*)(object + 1));
 

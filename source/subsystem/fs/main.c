@@ -106,14 +106,15 @@ err:
 /**
 	@brief 打开文件
 */
-struct fss_file *fss_open(char *name)
+struct fss_file *fss_open(struct fss_file *current_dir, char *name)
 {
 	struct fss_file *f;
 
-	f = fss_loop_file(NULL, name, NULL, NULL);
+	/* 搜索文件将增加文件的引用计数 */
+	f = fss_loop_file(current_dir, name, NULL, NULL);
 	if (!f)
 		goto err0;
-	/* It's time to notify file system driver about the event */
+
 	f->private = f->volumn->drv->ops->fOpen(f->parent->private, f->name);
 	if (f->private == NULL)
 	{

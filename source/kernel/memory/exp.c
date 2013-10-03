@@ -21,25 +21,51 @@
 /**
 	@brief The handler type for exception handler
 */
-typedef bool (*refill_handler)(struct ko_thread *current, struct ko_section * where, unsigned long address, unsigned long code);
+typedef bool (*refill_handler)(struct ko_thread *current, struct ko_section *where, unsigned long address, unsigned long code);
 static refill_handler exception_handler[KS_TYPE_MAX];
 
-static bool refill_null(struct ko_thread *current, struct ko_section * where, unsigned long address, unsigned long code)
+static bool restore_file(struct ko_process *who, struct ko_section *where, unsigned long address)
+{
+	void *db_addr;
+	uoffset pos;
+	bool ret = false;
+	struct km *mem_src, *mem_dst;
+
+	pos = address - where->node.start;
+	db_addr = fss_map_prepare_dbd(where->priv.file.file, who, pos);
+	if (db_addr == NULL)
+		goto end;
+
+	mem_dst = kp_get_mem(who);
+	mem_src = kp_get_mem(kp_get_system());
+	if (km_page_share(mem_dst, address, mem_src, (unsigned long)db_addr, KM_PROT_READ) != KM_PAGE_SHARE_RESULT_OK)
+		goto end1;
+
+	ret = true;
+
+end1:
+	kp_put_mem(mem_dst);
+	kp_put_mem(mem_src);
+end:
+	return ret;
+}
+
+static bool refill_null(struct ko_thread *current, struct ko_section *where, unsigned long address, unsigned long code)
 {
 	printk("Uninited refill handler.\n");
 	return false;
 }
 
-static bool refill_exe(struct ko_thread *current, struct ko_section * where, unsigned long address, unsigned long code)
+static bool refill_exe(struct ko_thread *current, struct ko_section *where, unsigned long address, unsigned long code)
 {
-	bool cow;
+	bool cow, r = false;
 	struct km *mem;
-	struct ko_section * detailed;
+	struct ko_section *detailed;
 
 	/* Get sub section */
 	detailed = ks_sub_locate(where, address);
 	if (unlikely(!detailed))
-		goto err1;
+		goto end;
 	
 	/*
 		But the address may exceed the shared range, it must be a BSS like segment. 
@@ -49,7 +75,7 @@ static bool refill_exe(struct ko_thread *current, struct ko_section * where, uns
 	{
 		unsigned long phy;
 
-		//printk("    BSS like segment virtual base %p ", detailed->start);
+		printk("    BSS like segment virtual base %p ", detailed->node.start);
 
 		/* 
 			TODO: Optimize: If just read, a common zero page from system can be mapped until the page is written.
@@ -57,11 +83,12 @@ static bool refill_exe(struct ko_thread *current, struct ko_section * where, uns
 
 		/* Have no source address to map, create page with zero filled and RW mode(so no COW) */
 		mem = kp_get_mem(KT_GET_KP(current));
-		km_page_create(mem, address, KM_PROT_READ | KM_PROT_WRITE);
+		r = km_page_create(mem, address, KM_PROT_READ | KM_PROT_WRITE);
 		kp_put_mem(mem);
 
 		/* 由于是缺页异常，那么经过page写入就可以立即访问该页了，无需刷新TLB */
-		memset((void*)KM_PAGE_ROUND_ALIGN(address), 0, PAGE_SIZE);	
+		if (r == true)
+			memset((void*)KM_PAGE_ROUND_ALIGN(address), 0, PAGE_SIZE);	
 	}
 	else
 	{
@@ -86,28 +113,23 @@ static bool refill_exe(struct ko_thread *current, struct ko_section * where, uns
 		}
 		
 		if (cow == false)
-		{
-			if (kp_exe_share(KT_GET_KP(current), detailed, address,
-				where->priv.exe.exe_object) == false)
-					goto err1;
-		}
+			r = kp_exe_share(KT_GET_KP(current), detailed, address, where->priv.exe.exe_object);
 		else
 		{
-			TODO("");
-			goto err1;
+			mem = kp_get_mem(KT_GET_KP(current));
+			r = km_page_create_cow(mem, address);
+			kp_put_mem(mem);
 		}
 	}
-ok:
-	return true;
-
-err1:
-	return false;
+	
+end:
+	return r;
 }
 
 /**
 	@brief Private memory 
 */
-static bool refill_private(struct ko_thread *current, struct ko_section * where, unsigned long address, unsigned long code)
+static bool refill_private(struct ko_thread *current, struct ko_section *where, unsigned long address, unsigned long code)
 {
 	bool r = false;
 	struct km *mem = NULL;
@@ -139,58 +161,44 @@ end:
 
 static bool refill_file(struct ko_thread *current, struct ko_section *where, unsigned long address, unsigned long code)
 {
-	void *db_addr;
-	uoffset pos;
-	bool ret = false;
-	struct km *mem_src, *mem_dst;
-	
-	/* Map can be written? */
+	bool r = false;
+
 	if (code & PAGE_FAULT_W)
 	{
-		if (where->prot & KM_PROT_WRITE == 0)
+		if (!(where->prot & KM_PROT_WRITE))
 			goto end;
+		TODO("COW");
+		goto end;
 	}
 
-	pos = address - where->node.start;
-	db_addr = fss_map_prepare_dbd(where->priv.file.file, KT_GET_KP(current), pos);
-	if (db_addr == NULL)
-		goto end;
+	r = restore_file(KT_GET_KP(current), where, address);
 
-	mem_dst = kp_get_mem(KT_GET_KP(current));
-	mem_src = kp_get_mem(kp_get_system());
-	if (km_page_share(mem_dst, address, mem_src, (unsigned long)db_addr) != KM_PAGE_SHARE_RESULT_OK)
-		goto end1;
-	
-	ret = true;
-	
-end1:
-	kp_put_mem(mem_dst);
-	kp_put_mem(mem_src);
 end:
-	return ret;
+	return r;
 }
 
-struct ko_section * ks_get_by_vaddress_unlock(struct ko_process *where, unsigned long address)
+struct ko_section *ks_get_by_vaddress_unlock(struct ko_process *where, unsigned long address)
 {
 	struct ko_section *ks = NULL;
 	struct km_vm_node *p;
 	struct list_head *t;
 	
+	//REFINE: 红黑树优化
+
 	/* Loop each section */
 	list_for_each(t, &where->vm_list)
 	{
 		p = list_entry(t, struct km_vm_node, node);
 		//printk("address = %x, start %x, size %x.\n", address, p->start, p->size);
 		
-		/* The address must in the section limit */
 		if (p->start <= address && address < p->start + p->size)
 		{
 			//printk("address = %x, start %x, size %x.\n", address, p->start, p->size);
 			ks = (struct ko_section*)p;
+
 			break;
 		}
-		
-		/* If section is behind the address, not need to find */
+				
 		if (p->start > address)
 			break;
 	}
@@ -214,30 +222,18 @@ struct ko_section * ks_get_by_vaddress(struct ko_process * where, unsigned long 
 */
 bool ks_exception(struct ko_thread *thread, unsigned long error_address, unsigned long code)
 {
+	struct ko_section *ks;
 	struct ko_process *where;
 	struct ko_thread *current = thread;
-	struct ko_section *ks;
 	
 	if (code & PAGE_FAULT_IN_KERNEL)
 		where = kp_get_system();
 	else
 		where = KT_GET_KP(current);
 	ks = ks_get_by_vaddress(where, error_address);
-	if (!ks) goto err1;
+	if (ks)
+		return exception_handler[ks->type & KS_TYPE_MASK](current, ks, error_address, code);
 
-// 	printk("线程名 %s:", KO_GET_NAME_SIMPLE(current));	
-// 	printk("线程%p发生了地址%p异常，尝试修复Section %p(%s), &ks = %x.\n", current, error_address, ks, ks_type_name(ks), &ks);
-	
-	/* Call it handler */
-	return exception_handler[ks->type & KS_TYPE_MASK](current, ks, error_address, code);
-
-err1:
-	return false;
-}
-
-bool ks_restore_file(struct ko_process *who, struct ko_section *where, unsigned long address)
-{
-	TODO("");
 	return false;
 }
 
@@ -246,8 +242,9 @@ bool ks_restore(struct ko_process *who, struct ko_section *where, unsigned long 
 	switch(where->type & KS_TYPE_MASK)
 	{
 	case KS_TYPE_FILE:
-		return ks_restore_file(who, where, address);
-
+		return restore_file(who, where, address);
+	default:
+		TRACE_UNIMPLEMENTED("");
 	}
 	
 	return false;

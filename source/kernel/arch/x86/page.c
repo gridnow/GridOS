@@ -53,11 +53,6 @@ asmregparm void do_page_fault(struct pt_regs * regs, long error_code)
 			goto die_cur;
 	}
 	
-	if (error_code & PAGE_FAULT_P)
-	{
-		printk("addr = %x.\n", *(int*)error_address);
-	}
-	
 	if (!in_user)
 		error_code |= PAGE_FAULT_IN_KERNEL;
 	current = kt_current();

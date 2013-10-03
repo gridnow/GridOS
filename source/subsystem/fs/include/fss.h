@@ -21,7 +21,6 @@ struct fss
 	struct fss_vfs_info 	*vfs;
 };
 
-
 /* MAP.C */
 /**
 	@brief 准备好DBD/DMR等关键数据结构
@@ -34,7 +33,7 @@ struct fss
 void *fss_map_prepare_dbd(struct fss_file *file, void *process, uoffset file_pos);
 
 /* MAIN.c */
-struct fss_file *fss_open(char *name);
+struct fss_file *fss_open(struct fss_file *current_dir, char *name);
 ssize_t fss_get_size(struct fss_file *who);
 void fss_close(struct fss_file *who);
 

@@ -171,6 +171,28 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\source\kernel\handle.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\source\kernel\lock.c"
 					>
 				</File>
@@ -1388,6 +1410,18 @@
 								>
 							</File>
 						</Filter>
+						<Filter
+							Name="libs"
+							>
+							<File
+								RelativePath="..\..\source\drivers\hal\arch\x86\lib\memcpy_32.c"
+								>
+							</File>
+							<File
+								RelativePath="..\..\source\drivers\hal\arch\x86\lib\string_32.c"
+								>
+							</File>
+						</Filter>
 					</Filter>
 				</Filter>
 				<Filter
@@ -1973,6 +2007,30 @@
 							>
 						</File>
 					</Filter>
+					<Filter
+						Name="crt0"
+						>
+						<File
+							RelativePath="..\..\source\libs\grid\crt0\exe.mk"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\crt0\head_exe.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\crt0\head_so.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\crt0\Makefile"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\crt0\so.mk"
+							>
+						</File>
+					</Filter>
 				</Filter>
 			</Filter>
 			<Filter
@@ -2009,6 +2067,36 @@
 					</File>
 					<File
 						RelativePath="..\..\source\programs\dl\Makefile"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="startup"
+					>
+					<File
+						RelativePath="..\..\source\programs\startup\main.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)7.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)7.xdc"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)7.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)7.xdc"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\source\programs\startup\Makefile"
 						>
 					</File>
 				</Filter>

@@ -74,6 +74,15 @@ __weak size_t strnlen(const char *s, size_t maxlen)
 	return (es - s);
 }
 
+__weak char *strcpy (char *dest, const char *src)
+{
+	char *s = dest;
+	
+	while (*dest++ = *src++)
+		;
+	
+	return s;
+}
 
 __weak char *strrchr(const char *s, int c)
 {

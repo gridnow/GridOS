@@ -38,7 +38,7 @@ COMMON_CC_FLAGS    += -fvisibility=hidden
 #
 LDFLAGS				= -L$(SYSTEM_DIR)
 ifeq ($(DLL),yes)
-LDFLAGS    			+= -shared
+LDFLAGS    			+= -shared --entry=_start
 endif
 
 #
