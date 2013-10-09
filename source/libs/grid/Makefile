@@ -3,7 +3,7 @@ include $(MY_BUILD_BASE)/config.mk
 
 OBJS					= main.o
 TARGET					= grid.so
-#DEPENDS				= -lhead_so.o 
+DEPENDS					= -lhead_so.o 
 #DEPENDS				+=../../pthread/pthread.o
 DEPENDS					+= ../../libs/common/*.o
 ADD_INCLUDE				+=-I./include $(CL_INCLUDE)

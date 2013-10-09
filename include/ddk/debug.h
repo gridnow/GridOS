@@ -50,7 +50,11 @@ extern void hal_do_panic();
 #define TODO(__what__)	\
 	do {	\
 		printk("%s->%s line %d TODO %s.\n", __FILE__, __FUNCTION__, __LINE__, __what__);	\
-	} while(0)	
+	} while(0)
+#define TODO_ROLL_BACK() \
+	do {	\
+		TODO("出错需要撤销前面的操作");	\
+	} while (0)
 #define TRACE_UNIMPLEMENTED(__info__) \
 	do {	\
 		printk("文件%s中的%s函数（行号%d）没有实现：%s。\n", __FILE__,__FUNCTION__,__LINE__,__info__);	\

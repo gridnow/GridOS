@@ -9,6 +9,7 @@
 #define ARCH_PAGE_H
 
 #include <kernel/kernel.h>
+#include <asm/tlbflush.h>
 
 /**
 	@brief Error code of page fault
@@ -17,6 +18,8 @@
 #define PAGE_FAULT_W				(1<<1)
 #define PAGE_FAULT_U				(1<<2)
 #define PAGE_FAULT_RESERVED			(1<<3)
+/*Self define */
+#define PAGE_FAULT_IN_KERNEL		(1<<4)
 
 /**
 	@brief Define the entry flags in Hardware
@@ -32,8 +35,12 @@
 #define PAGE_FLAG_BIG_PAGE			(1<<7)
 #define PAGE_FLAG_GLOBAL			(1<<8)
 #define PAGE_FLAG_PAT				(1<<7)
+#define	PAGE_FLAG_MASK				0x3ff
 
+/* Self define */
 #define PAGE_FLAG_FROM_OTHER		(1 << 9)
+
+
 static inline void km_write_sub_table(unsigned long *table, int sub_id, unsigned long phyiscal)
 {
 	table[sub_id] = phyiscal | PAGE_FLAG_USER | PAGE_FLAG_VALID | PAGE_FLAG_RW;
@@ -57,6 +64,15 @@ static inline unsigned long km_arch_get_flags(page_prot_t prot)
 	}
 	
 	return arch_flags;
+}
+
+/**
+	@brief 刷新当前地址空间中的地址在tlb中条目
+ */
+static inline void km_arch_flush_page(unsigned long virtual_address)
+{
+	//TODO: SMP flush is different
+	__flush_tlb_one(virtual_address);
 }
 
 #endif

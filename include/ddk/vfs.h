@@ -87,7 +87,7 @@ struct fss_directory_entry
 	s64 off;
 	unsigned short record_len;
 	unsigned char type;
-	char name[0];
+	char name[0]/* Allocated by provider */;
 };
 
 struct fss_state_info

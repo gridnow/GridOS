@@ -4,7 +4,6 @@
 */
 	.global so_lazy_link
 	.extern lazy_get_symbole_by_id
-	.type	so_lazy_link, @function
 so_lazy_link:
 #if defined(__i386__)
 	/*

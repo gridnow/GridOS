@@ -57,17 +57,6 @@ static char static_d_list_usage[ELF_MAX_STATIC_DL_IMAGE_INFO] = {1};
 
 /* 命令行传递 */
 static xchar cmdline_buffer[SYSREQ_PROCESS_STARTUP_MAX_SIZE] = {' '};
-static char *exe_split_point = "分割空隙";
-
-/************************************************************************/
-/* 路径处理                                                                     */
-/************************************************************************/
-static int construct_path(xstring exe_name)
-{
-	/* exe_name 中的路径必须是绝对路径 */
-
-	return 0;
-}
 
 static void *_map_exe_file(xstring name, int *size)
 {
@@ -223,7 +212,7 @@ static void add_obj_to_dependency_list(struct exe_objects * dependency, struct e
 	@note
 		name 必须是文件的绝对路径
 */
-static unsigned long load(xstring name, struct exe_objects * obj)
+static ke_handle load(xstring name, struct exe_objects * obj)
 {
 	struct sysreq_process_ld req = {0};
 	ke_handle image_handle;
@@ -240,21 +229,19 @@ open_again:
 
 	if (image_handle != KE_INVALID_HANDLE)
 	{
-	
+		//early_print("Exe object open success.\n");
 	}
 	else if (new_loaded == 0)
 	{
 		int file_size;
 		void *entry_address;
 		void *file;
-		early_print("map new file for analyze\n");
+
 		file = _map_exe_file(name, &file_size);
 		if (!file)
-			goto end1;
-		early_print("Analyze new file for analyze\n");
+			goto err;
 		if (elf_analyze(file, file_size, &entry_address, &obj->exe_desc) == false)
 			goto end1;
-		early_print("Register new file for analyze\n");
 		if (_inject_exe_object(name, &obj->exe_desc, elf_get_private_size()) == false)
 			goto end1;
 		
@@ -273,9 +260,9 @@ err:
 	return KE_INVALID_HANDLE;
 }
 
-static struct exe_objects * load_image(xstring name)
+static struct exe_objects *load_image(xstring name)
 {
-	struct exe_objects * p;
+	struct exe_objects *p;
 
 	p = _allocate_static_exe();
 	if (!p) goto err; 
@@ -313,12 +300,13 @@ err:
 		1 : OK;
 		-1: Error;
 */
-static int load_dependency(struct exe_objects * p, int id)
+static int load_dependency(struct exe_objects *p, int id)
 {
-	struct exe_objects * obj;
-	
+	struct exe_objects *obj;
+	xstring name;
+
 	/* Get the name of this id */
-	char * name = elf_get_needed(&p->exe_desc, id, &p->user_ctx);
+	name = elf_get_needed(&p->exe_desc, id, &p->user_ctx);
 	if (!name) return 0;
 
 	/* 如果对象已存在于linear list中，就没必要再执行load_image获取 */
@@ -354,7 +342,7 @@ static int load_dependencies()
 	{	
 		/* 从linear list中取出image，linear list头结点代表first image */
 		obj = list_entry(node, struct exe_objects , linear_list);
-// 		early_print("Loading dep for ");early_print(obj->name);early_print(".\n");
+ 		//early_print("Loading dep for ");early_print(obj->name);early_print(".\n");
 
 		/* 查找image的依赖 */
 		for (id = 0; ; id++)
@@ -364,12 +352,14 @@ static int load_dependencies()
 			/* Error */
 			if (ret < 0)
 			{
+#if 1
 				char * dep = elf_get_needed(&obj->exe_desc, id, &obj->user_ctx);
 				early_print("Loading dep ");
 				early_print(dep);
 
 				early_print(" 失败，但是继续.\n");
 				//return ret;
+#endif
 			}
 			/* End */
 			else if (ret == 0)
@@ -394,8 +384,8 @@ static unsigned long undefined_function()
 unsigned long lazy_get_symbole_by_id(unsigned long mode_base, int relocate_id)
 {
 // 	char str[32];
-	struct elf_context * p = (struct elf_context *)mode_base;
-	struct exe_objects * object = container_of(p, struct exe_objects, exe_desc);
+	struct elf_context *p = (struct elf_context *)mode_base;
+	struct exe_objects *object = container_of(p, struct exe_objects, exe_desc);
 
 // 	early_print("lazy_get_symbole_by_id, base: ");
 // 	str[elf2_h2c(str, mode_base)] = 0;
@@ -412,22 +402,47 @@ unsigned long lazy_get_symbole_by_id(unsigned long mode_base, int relocate_id)
 	return (unsigned long)undefined_function;
 }
 
+static void handle_bss(struct exe_objects *exe)
+{
+	int i;
+	struct elf_segment seg;
+	volatile unsigned char *last_byte;
+
+	for (i = 0; ; i++)
+	{
+		if (elf_read_segment(&exe->exe_desc, &seg, i) == false)
+			break;
+		if (seg.fsize == seg.vsize)
+			continue;
+
+		/* Get the address of the last byte of valid file mapping */
+		last_byte = (unsigned char*)(seg.fsize - 1 + seg.vstart);
+
+		/* Reading the last byte cause exe refill exception of sharing, writing cause cow */
+		*last_byte = *last_byte;
+
+		/* Set the space after valid_size to zero to clean the "topmost" bss part */
+		memset((void*)last_byte + 1, 0, seg.align - ((unsigned long)(last_byte + 1) & (seg.align - 1)));
+	}
+}
+
 /**
 	@brief relocate image
 */
 static int relocation()
 {
 	int id, ret;
-	struct exe_objects * obj;
+	struct exe_objects *obj;
 	struct list_head * node;
-
+	
 	/* 第一次循环时，node代表的first image */
 	list_for_each(node, &objs_linear_list)
 	{	
 		/* 从linear list中取出image，linear list头结点代表first image */
 		obj = list_entry(node, struct exe_objects , linear_list);
-
+		
 		/* Do relocation */
+		handle_bss(obj);
 		elf_relocation(&obj->exe_desc, &obj->exe_desc, &obj->user_ctx);
 
 #ifndef __mips__
@@ -477,7 +492,6 @@ static int startup()
 	}
 	
 	/* 可执行文件要在执行完所有依赖库后执行 */
-	*exe_split_point = ' ';													// 恢复原始的空格，参见装载文件时裁断
 	return start_first((unsigned long)cmdline_buffer);						// 传递命令行到main
 }
 
@@ -547,8 +561,8 @@ bool __weak ki_get_symbol(struct elf_context * elf, xstring name, unsigned long 
 void dl_dynamic_linker()
 {
 	struct sysreq_process_startup st;
-	xstring exe_name;
-	int ret;
+	xstring exe_name, path_end;
+	int ret = -1, i;
 
 	/* 
 		Get the cmd line, 
@@ -567,10 +581,32 @@ void dl_dynamic_linker()
 		exe_name = strchr(cmdline_buffer, '	'/*tab*/);
 	if (!exe_name)
 		goto startup_end;
-	if (construct_path(exe_name))
-		goto startup_end;
-
-	/* TODO:获取可执行文件路径，以后用于设置线程的当前路径 */
+	exe_name++;																			// Escape blank
+	
+	/* 获取可执行文件路径，以后用于设置线程的当前路径 */
+	path_end = strchr(exe_name, ' '/*space*/);
+	if (!path_end)
+		path_end = strchr(exe_name, '	'/*tab*/);
+	if (!path_end)
+	{
+		/* The exe name is the last string in the cmdline */
+		path_end = exe_name + strlen(exe_name);
+	}
+	for (i = sizeof(xchar); ; i++)
+	{
+		if (path_end[-i] == '/' || path_end[-i] == '\\')
+			break;
+		if (path_end == exe_name)
+			goto startup_end;
+	}
+	path_end[-i]		= 0;
+	st.base.req_id		= SYS_REQ_KERNEL_PROCESS_STARTUP;
+	st.cmdline_buffer	= exe_name;
+	st.func				= SYSREQ_PROCESS_STARTUP_FUNC_SET_PATH;							// Get command line
+	system_call(&st);
+	path_end[-i]		= '/';
+	
+	/* 开始装载 */
 	INIT_LIST_HEAD(&objs_linear_list);
 	ret = dl_build_image_context(exe_name);
 

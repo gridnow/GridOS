@@ -24,6 +24,7 @@ struct cl_object
 typedef void *real_object_t;
 #define TO_CL_OBJECT(USER_OBJECT) ((struct cl_object*)(USER_OBJECT) - 1)
 #define TO_USER_OBJECT(CL_OBJECT) ((real_object_t)((CL_OBJECT) + 1))
+#define CL_OBJECT_NAME_SLOTE_LENGTH 64				/* 名字节点的每个slot的长度 */
 
 struct cl_object_ops
 {
@@ -60,7 +61,7 @@ struct cl_object_type
 	struct cl_object_ops *ops;
 
 	/* HIDE to user */
-	struct cl_bkb obj_allocator, node_allocator;
+	struct cl_bkb obj_allocator, node_allocator, name_allocator/*TODO: tree mode will not use this */;
 	struct list_head unname_objects;
 	struct object_tree_node *node;
 };

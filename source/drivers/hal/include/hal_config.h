@@ -42,6 +42,8 @@
 #define PAGE_SHIFT							12
 #define __LINUX_ARM_ARCH__					6
 #define CONFIG_ARM_L1_CACHE_SHIFT			5								//From the generated
+#define CONFIG_AEABI						1								//Use EABI
+
 #else
 #error "config.h of hal is invalid"
 #endif

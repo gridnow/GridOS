@@ -22,6 +22,7 @@
 #include <irq.h>
 #include <smp.h>
 #include <timer.h>
+#include <percpu-defs.h>
 #include <topology.h>
 
 #define CONFIG_BASE_SMALL 0

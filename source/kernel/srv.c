@@ -20,7 +20,7 @@
 
 #include <kernel/ke_srv.h>
 
-#include "../source/subsystem/fs/include/vfs.h"
+#include "../source/subsystem/fs/include/fss.h"
 #include "../source/libs/grid/include/sys/ke_req.h"
 
 bool ke_validate_user_buffer(void * buffer, size_t size, bool rw)
@@ -28,21 +28,21 @@ bool ke_validate_user_buffer(void * buffer, size_t size, bool rw)
 	return true;
 }
 
-static unsigned long map_file(struct ko_process *to, xstring name, page_prot_t prot)
+static struct ko_section *map_file(struct ko_process *to, xstring name, page_prot_t prot, unsigned long *map_size)
 {
 	struct ko_section *ks_file;
 	unsigned long size;
 	void *fp;
 	
-	fp = fss_open(name);
+	fp = fss_open(kt_current()->current_dir, name);
 	if (!fp) goto end;
 	
-	size = fss_get_size(fp);
+	*map_size = size = fss_get_size(fp);
 	ks_file = ks_create(to, KS_TYPE_FILE, NULL, size, prot);
 	if (!ks_file)
 		goto err1;
-	ks_file->priv.file.file = ks_file;
-	return ks_file->node.start;
+	ks_file->priv.file.file = fp;
+	return ks_file;
 	
 err1:
 	fss_close(fp);
@@ -70,6 +70,14 @@ static void process_startup(struct sysreq_process_startup * req)
 		memcpy(cmdline, (void*)(kt_arch_get_sp0(kt_current()) - KT_ARCH_THREAD_CP0_STACK_SIZE),
 			   SYSREQ_PROCESS_STARTUP_MAX_SIZE);
 		printk("cmdline is %s.\n", cmdline);
+	}
+	else if (req->func == SYSREQ_PROCESS_STARTUP_FUNC_SET_PATH)
+	{
+		/* The user buffer can be written ? */
+		if (ke_validate_user_buffer(cmdline, SYSREQ_PROCESS_STARTUP_MAX_SIZE, false) == false)
+			return;
+		printk("current dir = %s.\n", cmdline);
+		kt_current()->current_dir = fss_open(NULL, cmdline);
 	}
 	else if (req->func == SYSREQ_PROCESS_STARTUP_FUNC_END)
 	{
@@ -102,7 +110,8 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 				goto ld_0_err;
 			
 			image = kp_exe_open_by_name(KP_CURRENT(), module_name);
-			if (!image) goto ld_0_err;
+			if (!image)
+				goto ld_0_err;
 			if (kp_exe_copy_private(image, req->context, req->context_length) == false)
 				goto ld_0_err1;
 			
@@ -119,15 +128,21 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 			return KE_INVALID_HANDLE;
 		}
 		
+		/* Return the map base */
 		case SYSREQ_PROCESS_MAP_EXE_FILE:
 		{
+			struct ko_section *file_section;
+			
 			module_name = req->name;
 			
 			if (ke_validate_user_buffer(module_name, strlen(module_name), false) == false)
 				goto map_0_err;
-		
-			return (ke_handle)map_file(KP_CURRENT(), module_name, KM_PROT_READ);
-		
+			file_section = map_file(KP_CURRENT(), module_name, KM_PROT_READ, &req->context_length);
+			if (file_section == NULL)
+				goto map_0_err;
+			
+			return (ke_handle)file_section->node.start;
+			
 		map_0_err:
 			return 0;
 		}
@@ -136,6 +151,7 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 		case SYSREQ_PROCESS_UNMAP_EXE_FILE:
 		{
 			void *base = req->name;
+			TRACE_UNIMPLEMENTED("");
 		}
 		break;
 		
@@ -143,8 +159,14 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 		case SYSREQ_PROCESS_ENJECT_EXE:
 		{
 			struct ko_exe *image;
-			void *ctx		= req->context;
-			int ctx_size	= req->context_length;
+			void *ctx;
+			int ctx_size;
+			unsigned long size;
+			struct ko_section *file_section;
+			
+			ctx_size		= req->context_length;
+			ctx				= req->context;
+			module_name		= req->name;
 			
 			if (ke_validate_user_buffer(ctx, ctx_size, false) == false)
 				goto ld_3_err;
@@ -152,8 +174,11 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 				goto ld_3_err;
 			if (ctx_size > kp_exe_get_context_size())
 				goto ld_3_err;
-			if (kp_exe_create_from_file(module_name, ctx) == NULL)
+			if ((file_section = map_file(kp_get_file_process(), module_name, KM_PROT_READ, &size)) == NULL)
 				goto ld_3_err;
+			if (kp_exe_create_from_file(module_name, file_section, ctx) == NULL)
+				goto ld_3_err;
+			
 			return true;
 			
 		ld_3_err:

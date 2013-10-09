@@ -45,9 +45,9 @@ static bool object_close(real_object_t *obj)
 static void object_init(real_object_t *obj)
 {
 	struct ko_process *p = (struct ko_process *)obj;
-	INIT_LIST_HEAD(&p->vm_list);
-	ke_spin_init(&p->vm_list_lock);
 	
+	ks_init_for_process(p);
+
 	/* 
 		Although init_process will call it, but it dose not matter for a page disappeared
 		created in walk as root table.

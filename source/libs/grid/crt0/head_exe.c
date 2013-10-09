@@ -40,7 +40,7 @@ static int crt0_split_cmdline(char * cmdline, int max_size, int *argc, int max_a
 }
 
 extern int main(int argc, char ** argv);
-#if defined(__i386__)
+#if defined(__i386__) || defined(__arm__)
 int _start(unsigned long para)
 #elif defined(__mips__)
 int __start(unsigned long para)

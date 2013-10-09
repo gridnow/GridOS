@@ -25,7 +25,7 @@ struct ko_exe *kp_exe_create(struct ko_section *backend, void *ctx);
 /**
 	@brief 一般从文件创立exe对象
 */
-struct ko_exe *kp_exe_create_from_file(xstring name, void *ctx);
+struct ko_exe *kp_exe_create_from_file(xstring name, struct ko_section *ks, void *ctx);
 
 /**
 	@brief Bind an EXE object to process

@@ -8,10 +8,11 @@ struct elf_segment
 
 	/* Output */
 	unsigned int flags;
-	unsigned long log_start;
-	unsigned long offset_in_file;
-	int size_in_file;
-	int size_in_log;
+	unsigned long vstart;
+	unsigned long foffset;
+	int fsize;
+	int vsize;
+	int align;
 };
 #define ELF_SEG_READ			(1 << 0)
 #define ELF_SEG_WRITE			(1 << 1)

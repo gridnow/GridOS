@@ -15,7 +15,7 @@
 
 static struct fss_vfs_info fss;
 
-static ssize_t make_sure_valid_data(struct fss_file * who, struct dbd * which)
+ssize_t fss_dbd_make_valid(struct fss_file * who, struct dbd * which)
 {
 	unsigned long size = FSS_CACHE_DB_SIZE;
 	int ret = -EBADF;
@@ -106,21 +106,21 @@ err:
 /**
 	@brief 打开文件
 */
-struct fss_file *fss_open(char *name)
+struct fss_file *fss_open(struct fss_file *current_dir, char *name)
 {
 	struct fss_file *f;
 
-	f = fss_loop_file(NULL, name, NULL, NULL);
+	/* 搜索文件将增加文件的引用计数 */
+	f = fss_loop_file(current_dir, name, NULL, NULL);
 	if (!f)
 		goto err0;
-	/* It's time to notify file system driver about the event */
+
 	f->private = f->volumn->drv->ops->fOpen(f->parent->private, f->name);
 	if (f->private == NULL)
 	{
 		//TODO: Close the vfs
 		TODO("关闭僵尸文件");
 	}
-	
 
 	return f;
 err0:
@@ -146,7 +146,7 @@ ssize_t fss_read(struct fss_file * who, unsigned long block, void *buffer)
 		goto end;
 
 	/* Fill the dbd with valid data from disk */	
-	ret = make_sure_valid_data(who, which);
+	ret = fss_dbd_make_valid(who, which);
 	if (ret < 0)
 		goto end;
 	

@@ -1,6 +1,7 @@
 #ifndef KE_SYS_REQ
 #define KE_SYS_REQ
 
+#include <types.h>
 #include "syscall.h"
 
 /************************************************************************/
@@ -55,6 +56,7 @@ struct sysreq_process_startup
 	int func;																		// 0 is get cmdline; 1 is set current path; 2 is end of process
 	int ret_code;																	// the return code of the the process
 #define SYSREQ_PROCESS_STARTUP_FUNC_START		0
+#define SYSREQ_PROCESS_STARTUP_FUNC_SET_PATH	1									// Set working path
 #define SYSREQ_PROCESS_STARTUP_FUNC_END			2
 #define SYSREQ_PROCESS_STARTUP_MAX_SIZE			512									// Max size of the user buffer to store the cmdline
 };

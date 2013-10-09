@@ -22,7 +22,11 @@ struct ko_thread
 	
 	/* If this is a drvier thread, it should have ti */
 	void *desc_of_driver;
+	
+	/* File */
+	void *current_dir;
 
+	/* Scheduler */
 	struct list_head queue_list;
 	unsigned long state;
 	unsigned char priority_level;

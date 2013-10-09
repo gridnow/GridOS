@@ -10,31 +10,49 @@
 #include <types.h>
 #endif
 
-#include "cache.h"
+#include <cache.h>
+#include <vfs.h>
+#include <node.h>
 
-/**
-	@brief Create map instance
- */
-struct dmr *fss_map_create()
+void *fss_map_prepare_dbd(struct fss_file *file, void *process, uoffset file_pos)
 {
+     ssize_t ret;
+     struct dbd *which;
+     void *db_addr = NULL;
+     unsigned long block_id;
+     struct dbmr *map;
+    
+     block_id	= file_pos / FSS_CACHE_DB_SIZE;
+     which	= fss_dbd_get(file, block_id);
+     if (unlikely(!which))
+		 goto end;
+
+     ret	= fss_dbd_make_valid(file, which);
+     if(ret < 0) 
+		 goto end;
+
+#ifdef _MSC_VER
+     map	= (struct dbmr*)malloc(sizeof(struct dbmr));
+#else
+     map	= km_valloc(sizeof(struct dbmr));
+#endif
+     
+     if (map == NULL)
+		 goto  end;
+     map->process	= process;
+     map->base		= 0;
+     db_addr		= which->buffer/*base*/ + file_pos % FSS_CACHE_DB_SIZE;
+     //TODO: LOCK the list
+     list_add_tail(&map->list ,&which->map_list);
+	
+end:
+	 if (which)
+		fss_dbd_put(which);
+
+	 return db_addr;
 	
 }
 
-/**
-	@brief Map part of file to desired space
- */
-int fss_map_file(struct dmr *map, uoffset file_pos)
-{
-	
-}
-
-/**
-	@brief Unmap the part/total file from desired space
- */
-int fss_map_delete(struct dmr *map, uoffset file_pos)
-{
-	
-}
 
 int fss_map_init()
 {

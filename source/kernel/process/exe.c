@@ -100,17 +100,13 @@ struct ko_exe *kp_exe_create_temp()
 	return kp_exe_create(&ts, KO_EXE_TO_PRIVATE(&te));
 }
 
-#include <ELF2/elf.h>
+#include <elf2/elf.h>
 bool kp_exe_bind(struct ko_process *who, struct ko_exe *what)
 {
 	int i;
 	struct ko_section *ks, *sub;
 	unsigned long base, size;
 	
-	/*
-		Create EXE section on the process addressing space.
-		The exe object have to be linked to this EXE section.
-	*/
 	base = elf_get_mapping_base(KO_EXE_TO_PRIVATE(what), &size, NULL);
 	ks = ks_create(who, KS_TYPE_EXE, base, size, KM_PROT_READ);
 	if (!ks)
@@ -118,10 +114,8 @@ bool kp_exe_bind(struct ko_process *who, struct ko_exe *what)
 		TODO("");
 		goto err;
 	}
-	
 	cl_object_inc_ref(what);
 	ks->priv.exe.exe_object = what;
-	//printk("The exe's desired base %x, size in memory %d.\n", base, size);
 	
 	for (i = 0; ; i++)
 	{
@@ -129,15 +123,15 @@ bool kp_exe_bind(struct ko_process *who, struct ko_exe *what)
 
 		if (elf_read_segment(KO_EXE_TO_PRIVATE(what), &seg, i) == false)
 			break;
-		sub = ks_sub_create(who, ks, seg.log_start, seg.size_in_log);
+		sub = ks_sub_create(who, ks, seg.vstart, seg.vsize);
 		if (!sub)
 			goto err;
 
 		/* Some useful matters */
 		if (seg.flags & ELF_SEG_WRITE)
-			sub->prot |= KM_PROT_READ;
-		sub->priv.share.size = seg.size_in_file;
-		sub->priv.share.offset = seg.offset_in_file;
+			sub->prot |= KM_PROT_WRITE;
+		sub->priv.share.size = seg.fsize;
+		sub->priv.share.offset = seg.foffset;
 		//printk("sub is = %x, start %x, size = %x.\n", sub, seg.log_start, seg.size_in_log);
 	}
 	if (i == 0)
@@ -159,38 +153,32 @@ bool kp_exe_share(struct ko_process *where, struct ko_section *ks_dst, unsigned 
 	unsigned long source;
 	struct km *dst_mem, *src_mem;
 
-	/* Share... */
 	source = ke_src->backend->node.start + ks_dst->priv.share.offset;	/* Base + section offset*/
 	source += to - ks_dst->node.start;									// Offset of the to Current process
-//	printk("Source address %x, to %x.\n", source, to);
 
+share_again:
 	dst_mem = kp_get_mem(where);
 	src_mem = kp_get_mem(kp_get_file_process());
-share_again:
-	ret = km_page_share(dst_mem, to, src_mem, source);
-	if (ret == KM_PAGE_SHARE_RESULT_ERR)
-	{
-		TODO("");
-		goto err1;
-	}
-	else if (ret == KM_PAGE_SHARE_RESULT_SRC_INVALID)
-	{
-		if (ks_restore(kp_get_file_process(), ke_src->backend, source) == false)
-			goto err1;
-		goto share_again;		
-	}
-
+	ret = km_page_share(dst_mem, to, src_mem, source, KM_PROT_READ);
 	kp_put_mem(dst_mem);
 	kp_put_mem(src_mem);
+
+	if (ret != KM_PAGE_SHARE_RESULT_OK)
+	{
+		if (ret == KM_PAGE_SHARE_RESULT_ERR)
+			goto err;
+		else if (ret == KM_PAGE_SHARE_RESULT_SRC_INVALID)
+		{
+			if (ks_restore(kp_get_file_process(), ke_src->backend, source) == false)
+				goto err;
+			goto share_again;
+		}
+	}
 
 	return true;
 	
-err1:
-	kp_put_mem(dst_mem);
-	kp_put_mem(src_mem);
 err:
 	return false;
-
 }
 
 int kp_exe_get_context_size()
@@ -206,40 +194,45 @@ bool kp_exe_copy_private(struct ko_exe *ke, void *dst_ctx, int dst_size)
 	return true;
 }
 
-struct ko_exe *kp_exe_create_from_file(xstring name, void *ctx)
+struct ko_exe *kp_exe_create_from_file(xstring name, struct ko_section *ks, void *ctx)
 {
-	struct ko_section *ks = NULL;
-	struct ko_exe *kee = NULL;
-	int size = 0;
+	struct ko_exe *p;
 	
-	ks = ks_create(kp_get_file_process(), KS_TYPE_FILE, 0, size, KM_PROT_READ|KM_PROT_WRITE);
-	if (!ks)
+	p = kp_exe_create(ks, ctx);
+	if (!p)
 		goto err;
-	kee = kp_exe_create(ks, ctx);
-	if (!kee)
+	if (cl_object_set_name(p, name) == NULL)
 		goto err;
-	//TODO: link the file name with ks
 	
-	return kee;
+	return p;
 	
 err:
-	if (ks)
+	if (p)
 	{
-		//TODO:
+		TODO_ROLL_BACK();
 	}
+	return NULL;
 }
 
 struct ko_exe *kp_exe_open_by_name(struct ko_process *who, xstring name)
 {
-	struct ko_exe *ke = cl_object_search_name(&exe_type, name);
-	
-	printk("kp_exe_open_by_name for %s.\n", name);
+	struct ko_exe *ke;
+
+	/* Search will get reference count */
+	ke = cl_object_search_name(&exe_type, name);
 	if (!ke)
-		return NULL;
-	
-	//TODO Open it
-	
+		goto err;
+
+	if (kp_exe_bind(who, ke) == false)
+		goto err;
+
 	return ke;
+
+err:
+	if (ke)
+		cl_object_close(ke);
+	
+	return NULL;
 }
 
 void kp_exe_init()

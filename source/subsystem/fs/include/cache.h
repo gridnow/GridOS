@@ -120,6 +120,24 @@ struct fss_cache
 	(DBD)->access_counter - FSS_DBD_LEVEL_EXCHANGE_MASK : (DBD)->access_counter = 0)
 
 /**
+	@make sure data is valid
+ 
+ 	@file descriptor and dbd pointer
+ 
+*/
+
+ssize_t fss_dbd_make_valid(struct fss_file * who, struct dbd * which);
+
+/**
+ 	@
+
+ 	@
+*/
+
+int fss_map_init();
+
+
+/**
 	@brief 更新LRU排序
 
 	@param[in] dbd :DBD指针
@@ -186,25 +204,6 @@ void fss_dbd_lru_add(struct dbd * which);
 	@param[in] which dbd指针
 */
 void fss_dbd_add_to_dirty(struct dbd * which);
-
-
-/*************************************************************************
- Fast method
- *************************************************************************/
-
-
-/************************************************************************/
-/* 文件映射管理（map.c），只有映射的文件才能被访问                             */
-/************************************************************************/
-/**
-	@brief Create map record
- 
-	Map record（dmr）是后续映射关系，以及内核内存管理等操作的关键数据结构，
-	一个dmr表示一个文件在进程地址空间的信息。一个文件当然也可以有多个dmr。
- */
-struct dmr *fss_map_create();
-
-
 
 /************************************************************************/
 /* 转换表                                                               */

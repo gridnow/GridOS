@@ -11,9 +11,12 @@
 
 #define BITOP_WORD(nr)		((nr) / BITS_PER_LONG)
 
-unsigned long find_next_zero_bit(const unsigned long *addr, unsigned long size,
+unsigned long cl_find_next_zero_bit(const unsigned long *addr, unsigned long size,
 				 unsigned long offset)
 {
+#ifdef find_next_zero_bit
+	return find_next_zero_bit(addr, size, offset);
+#else
 	const unsigned long *p = addr + BITOP_WORD(offset);
 	unsigned long result = offset & ~(BITS_PER_LONG-1);
 	unsigned long tmp;
@@ -48,6 +51,7 @@ found_first:
 		return result + size;	/* Nope. */
 found_middle:
 	return result + ffz(tmp);
+#endif
 }
 
 /*
@@ -55,6 +59,9 @@ found_middle:
  */
 unsigned long cl_find_next_bit(const unsigned long *addr, unsigned long size, unsigned long offset)
 {
+#ifdef find_next_bit
+	return find_next_bit(addr, size, offset);
+#else
 	const unsigned long *p = addr + BITOP_WORD(offset);
 	unsigned long result = offset & ~(BITS_PER_LONG-1);
 	unsigned long tmp;
@@ -89,6 +96,8 @@ found_first:
 		return result + size;	/* Nope. */
 found_middle:
 	return result + __ffs(tmp);
+#endif
+
 }
 
 unsigned long find_last_bit(const unsigned long *addr, unsigned long size)

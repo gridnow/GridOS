@@ -123,6 +123,14 @@ static inline void km_pte_write(struct km_walk_ctx * ctx, pte_t what)
 	*p = what;
 }
 
+static inline void km_pte_write_force(struct km_walk_ctx * ctx, pte_t what)
+{
+	void *entry  = &(ctx->table_base[1][ctx->hirarch_id[1]]);
+	pte_t *p = entry;
+	
+	*p = what;
+}
+
 #endif
 
 /**

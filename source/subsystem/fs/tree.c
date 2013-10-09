@@ -15,19 +15,8 @@
 
 static void tree_thread(struct fss_volumn *v)
 {
-	struct fss_file *f;
-	void *buffer = km_valloc(FSS_CACHE_DB_SIZE);
-	ssize_t r;
-
-	printk("%s %s %d.\n", __FILE__, __FUNCTION__, __LINE__);
-	/* test first,haha  */
-	f = fss_open("0:/grub.exe"); 
-	printk("test open %x.\n", f);
-
-	r = fss_read(f, 0, buffer);
-	printk("Read out %d.\n", r);
-
 }
+
 
 /**
 	@brief 导入目录下的文件
@@ -48,8 +37,16 @@ static int import_file(struct fss_file *current_path)
 	if (current_path->type != FSS_FILE_TYPE_DIR)
 		goto end;
 	ret = 0;
+	
 	if (current_path->t.dir.tree_flags & FSS_FILE_TREE_COMPLETION)
 		goto end;
+	if (current_path->private == (void*)-1/*Not open before*/)
+	{
+		ret = -EIO;
+		current_path->private = current_path->volumn->drv->ops->fOpen(current_path->parent->private, current_path->name);
+		if (!current_path->private)
+			goto end;
+	}
 
 	ret = -EIO;
 	volumn = current_path->volumn;
@@ -66,22 +63,22 @@ static int import_file(struct fss_file *current_path)
 	if (ret < 0)
 		goto end;
 
-	size = ret;	
+	size = ret;
 	for (p = entries; size != 0; p = (void*)p + p->record_len)	
 	{
 		fss_file_type type = FSS_FILE_TYPE_NORMAL;
 		struct fss_file *f;
 
-		//if (p->type & xxx)
-		//	type = dir;		
-		f = fss_file_new(current_path, NULL/*Not open*/, p->name, type);
+		if (p->type == 4/*DT_DIR*/)
+			type = FSS_FILE_TYPE_DIR;
+		f = fss_file_new(current_path, (void*)-1/*Not open, error fd*/, p->name, type);
 		if (!f)
 		{
 			ret = -ENOMEM;
 			goto end;
 		}
 
-		size -= p->record_len;				
+		size -= p->record_len;
 	}
 
 	current_path->t.dir.tree_flags |= FSS_FILE_TREE_COMPLETION;
@@ -143,7 +140,7 @@ static struct fss_file *lockup_file_in_this_dir(struct fss_file *current_path, x
 	struct list_head * tmp = NULL;
 	int looped = 0;
 	
-	//printf("Finding file name %s(current %s) ,start %d,end %d\n", file_name, current_path->name, iStart, iEnd);
+//	printf("Finding file name %s(current %s) ,start %d,end %d\n", file_name, current_path->name, iStart, iEnd);
 	
 loop_again:
 	file = get_file_by_name(tmp, current_path, file_name, iStart, iEnd);
@@ -156,10 +153,10 @@ loop_again:
 
 	/* Refill the current path */
 	if (!looped && list_empty(&current_path->t.dir.child_head)/*如果是空目录*/)
-	{	
+	{
 		if (import_file(current_path) < 0)
 			goto unlock_end;
-
+		
 		/* Try again */
 		looped = 1;
 		ke_critical_leave(&current_path->t.dir.dir_sleep_lock);

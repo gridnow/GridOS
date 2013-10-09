@@ -11,12 +11,19 @@
 #define _ASMARM_TLBFLUSH_H
 
 #ifdef CONFIG_MMU
-
+#ifndef __ASSEMBLER__
 /* For flush compatible */
 struct mm_struct
 {
 	unsigned int asid;
 };
+struct vm_area_struct
+{
+	struct mm_struct *vm_mm;
+};
+
+#endif
+
 #ifdef CONFIG_CPU_HAS_ASID
 #define ASID_BITS	8
 #define ASID_MASK	((~0ULL) << ASID_BITS)
@@ -24,10 +31,6 @@ struct mm_struct
 #else
 #define ASID(mm)	(0)
 #endif
-struct vm_area_struct
-{
-	struct mm_struct *vm_mm;
-};
 
 #include <asm/glue.h>
 

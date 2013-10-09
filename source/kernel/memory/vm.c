@@ -156,6 +156,8 @@ void km_get_vm_range(int process_cpl, unsigned long *start, unsigned long *size)
 				*size = HAL_GET_BASIC_KADDRESS(0) - user_start;
 #elif defined(__mips64__)
 				*size = 1024 * 1024 * 1024 * 1024;
+#else
+#error "Platform must be defined for km_get_vm_range"
 #endif
 			}
 			break;
