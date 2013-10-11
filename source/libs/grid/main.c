@@ -1,5 +1,12 @@
 /**
+ *   See the readme.txt at the root directory of this project for the idea and originality of this operating system.
+ *   See the license.txt at the root directory of this project for the copyright information about this file and project.
+ */
+
+/**
 	The Grid Core Library
+ 
+	Wuxin (82828068@qq.com)
 */
 
 #include <compiler.h>
@@ -13,9 +20,8 @@
 static bool init_libc()
 {
 	bool r;
-	printf("%s %s %d.\n", __FILE__, __FUNCTION__, __LINE__);
 	r = init_malloc();
-	printf("%s %s %d.\n", __FILE__, __FUNCTION__, __LINE__);
+
 	if (r == false)
 		goto err;
 
@@ -27,7 +33,7 @@ err:
 
 void dll_main()
 {
-	printf("%s %s %d.\n", __FILE__, __FUNCTION__, __LINE__);
+//	printf("%s %s %d.\n", __FILE__, __FUNCTION__, __LINE__);
 	if (init_libc() == false)
 		goto err;
 	

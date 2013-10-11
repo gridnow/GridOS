@@ -3,7 +3,7 @@ include $(MY_BUILD_BASE)/config.mk
 
 #要编译的文件列表
 OBJS =
-PARTS = fs
+PARTS = fs session
 
 all:  subs_parts $(OBJS)
 

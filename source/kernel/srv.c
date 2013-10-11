@@ -2,8 +2,8 @@
  *   See the readme.txt at the root directory of this project for the idea and originality of this operating system.
  *   See the license.txt at the root directory of this project for the copyright information about this file and project.
  *
- *   Wuxin
- *   内核 针对用户层的接口
+ *   Wuxin（82828068@qq.com）
+ *   内核 用户层的接口
  */
 
 #include <types.h>
@@ -205,7 +205,39 @@ static void kernel_printf(struct sysreq_process_printf * req)
 /************************************************************************/
 /* MEMORY                                                               */
 /************************************************************************/
+static ke_handle memory_virtual_alloc(struct sysreq_memory_virtual_alloc * req)
+{
+	unsigned long base, sz, type;
 
+	ke_handle handle;
+	struct ko_section *ks_virtual;
+	
+	if (req->name)
+	{
+		type = KS_TYPE_SHARE;
+		TRACE_UNIMPLEMENTED("命名内存空间还没有支持");
+		goto err0;
+	}
+	else
+		type = KS_TYPE_PRIVATE;
+	
+	base	= req->base_address;
+	sz		= req->size;
+	ks_virtual = ks_create(KP_CURRENT(), type, base, sz, req->mem_prot);
+	if (!ks_virtual) goto err0;
+	handle = ke_handle_create(ks_virtual);
+	if (handle == KE_INVALID_HANDLE) goto err1;
+	
+	/* Fill output */
+	req->out_base = ks_virtual->node.start;
+	req->out_size = ks_virtual->node.size;
+	return handle;
+	
+err1:
+	TODO("分配内存段错误，须回收");
+err0:
+	return KE_INVALID_HANDLE;
+}
 
 /**
 	@brief 内核自己的服务
@@ -280,7 +312,7 @@ void ke_srv_init()
 	//kernel_entry[SYS_REQ_KERNEL_MISC_DRAW_SCREEN - SYS_REQ_KERNEL_BASE] = (void*) misc_draw_screen;
 
 	/* Memory part */
-	//kernel_entry[SYS_REQ_KERNEL_VIRTUAL_ALLOC - SYS_REQ_KERNEL_BASE]	= (void*) memory_virtual_alloc;
+	kernel_entry[SYS_REQ_KERNEL_VIRTUAL_ALLOC - SYS_REQ_KERNEL_BASE]	= (void*) memory_virtual_alloc;
 
 	ke_srv_register(&ke_srv);
 }

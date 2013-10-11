@@ -1,10 +1,11 @@
 #include <types.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <compiler.h>
 
 #include "std_console.h"
 
-int printf(const char *fmt, ...)
+DLLEXPORT int printf(const char *fmt, ...)
 {
 	char printf_buf[1024];
 	va_list args;

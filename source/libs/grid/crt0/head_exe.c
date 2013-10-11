@@ -2,7 +2,7 @@
 #include <string.h>
 #include <errno.h>
 
-static int crt0_split_cmdline(char * cmdline, int max_size, int *argc, int max_argc, char **argv)
+int crt0_split_cmdline(char * cmdline, int max_size, int *argc, int max_argc, char **argv)
 {
 	char * cur;
 	int i = 0;

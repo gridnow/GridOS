@@ -8,7 +8,7 @@ DEPENDS					= -lhead_so.o
 DEPENDS					+= ../../libs/common/*.o
 ADD_INCLUDE				+=-I./include $(CL_INCLUDE)
 LDFLAGS					+=-Ttext-segment=0x70000000
-PARTS					= crt0 dlfun malloc string stdio sys
+PARTS					= crt0 dlfun malloc string stdlib stdio sys
 
 all: subs_parts $(OBJS)
 	$(LD) $(LDFLAGS) -o $(TARGET) $(ADD_LDFLAGS) $(DEPENDS) *.o $(ARCH_LD_FLAGS) 

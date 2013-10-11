@@ -1,7 +1,16 @@
+/**
+ *   See the readme.txt at the root directory of this project for the idea and originality of this operating system.
+ *   See the license.txt at the root directory of this project for the copyright information about this file and project.
+ *
+ *   Wuxin (82828068@qq.com)
+ *	 系统请求信息数据
+ */
+
 #ifndef KE_SYS_REQ
 #define KE_SYS_REQ
 
 #include <types.h>
+#include <kernel/ke_memory.h>
 #include "syscall.h"
 
 /************************************************************************/
@@ -89,7 +98,7 @@ struct sysreq_memory_virtual_alloc
 	xstring					name;													// The segment name
 	unsigned long			base_address;
 	size_t					size;
-	unsigned long			mem_prot;												// 
+	page_prot_t				mem_prot;												//
 	
 	/* Output */
 	unsigned long			out_base;

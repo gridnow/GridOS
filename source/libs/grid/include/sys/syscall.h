@@ -75,4 +75,12 @@ static inline unsigned long system_call(void *  req_package)
 #define SYS_REQ_KERNEL_SET_PIXEL		(SYS_REQ_KERNEL_BASE + 90)
 #define SYS_REQ_KERNEL_MAX				(SYS_REQ_KERNEL_BASE + 100)
 
+/************************************************************************/
+/* Session and User Manager                                             */
+/************************************************************************/
+#define SESSION_REQ_BASE_ID					2
+#define SESSION_REQ_BASE					KE_SRV_MAKE_REQ_NUM(SESSION_REQ_BASE_ID, 0)
+#define SYS_REQ_SESSION_STDIO_READ			(SESSION_REQ_BASE + 0)
+#define SYS_REQ_SESSION_STDIO_WRITE			(SESSION_REQ_BASE + 1)
+
 #endif
