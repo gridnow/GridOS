@@ -6,7 +6,6 @@
  *   内核 用户层的接口
  */
 
-#include <types.h>
 #include <linkage.h>
 
 #include <section.h>
@@ -262,13 +261,17 @@ const static struct ke_srv_info ke_srv = {
 const static struct  ke_srv_info * ke_interface_v2[KE_SRV_MAX];
 asmregparm unsigned long arch_system_call(unsigned long * req)
 {
-	unsigned long req_id = * req;
+	unsigned long req_id = *req;
 	unsigned long ret;
 	int clasz = KE_SRV_GET_CLASZ(req_id);
 	unsigned long (*func)(unsigned long func_id, void * req);
 
-//	printk("syscall at class %d, req id %d.\n", clasz, KE_SRV_GET_FID(req_id));
-
+	/* Sanity check */
+	if (ke_interface_v2[clasz] == NULL)
+	{
+		printk("syscall at class %d, req id %d: 没有注册对应的服务处理接口。\n", clasz, KE_SRV_GET_FID(req_id));
+		return -1;
+	}
 	func = ke_interface_v2[clasz]->request_enqueue;
 	ret	= ka_call_dynamic_module_entry(func, KE_SRV_GET_FID(req_id), req);
 

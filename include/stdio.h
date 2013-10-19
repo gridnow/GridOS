@@ -65,7 +65,7 @@ int snprintf(char *__restrict buffer, __const size_t size, const char *format, .
 	@return
 		输出的字符串字节长度。
 */
-int vprintf(const char * format, va_list arg);
+int vprintf(const char *format, va_list arg);
 
 /**
 	@brief 把格式化的数据写入某个文件
@@ -78,7 +78,7 @@ int vprintf(const char * format, va_list arg);
 	@return
 		输出的字符串字节长度。
 */
-int	fprintf(FILE * file, const char * format, ...);
+int	fprintf(FILE *file, const char *format, ...);
 
 /**
 	@brief 通过标准输出设备输出一组数据
@@ -90,7 +90,7 @@ int	fprintf(FILE * file, const char * format, ...);
 	@return
 		输出的字符串字节长度。
 */
-int printf(const char * format, ...);
+int printf(const char *format, ...);
 
 /**
 	@brief 通过标准输出设备输出一个字符串
@@ -100,7 +100,7 @@ int printf(const char * format, ...);
 	@return
 		输出的字符串字节长度。
 */
-int puts(const char * str);
+int puts(const char *str);
 
 /**
 	@brief 通过标准输出设备输出一个字符
@@ -166,7 +166,7 @@ int vsnprintf(char *__restrict buffer, size_t size, const char *__restrict forma
 
 	@return	文件打开成功返回执行该文件的文件指针，失败则返回NULL，并设置errno值。
 */
-FILE * fopen(const char *name, const char *mode);
+FILE *fopen(const char *name, const char *mode);
 
 /**
 	@brief	读取文件数据

@@ -68,16 +68,6 @@ struct fss_volumn * fss_volumn_search(xstring id);
 */
 void fss_init();
 
-/**
-	@brief 读取文件的某一块
-
-	@return
-		< 0 则是错误码，> 0则表示本次读取的字节数
-
-	@note
-		调用者保证buffer能容纳一个DB的大小，为了效率本函数不做检查。
-*/
-ssize_t fss_read(struct fss_file * who, unsigned long block, void * buffer);
 
 /************************************************************************/
 /* STRING                                                               */

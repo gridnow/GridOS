@@ -21,3 +21,8 @@ DLLEXPORT int printf(const char *fmt, ...)
 
 	return printed;
 }
+
+DLLEXPORT int puts(const char *s)
+{
+	return printf(s);
+}

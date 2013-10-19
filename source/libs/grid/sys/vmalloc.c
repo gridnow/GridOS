@@ -10,7 +10,7 @@
 #include <types.h>
 #include "sys/ke_req.h"
 
-void * sys_vmalloc(xstring name, void *addr, size_t len, int prot)
+void *sys_vmalloc(xstring name, void *addr, size_t len, int prot)
 {
 	struct sysreq_memory_virtual_alloc req;
 	

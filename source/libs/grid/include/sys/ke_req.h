@@ -105,15 +105,38 @@ struct sysreq_memory_virtual_alloc
 	size_t					out_size;
 };
 
+void *sys_vmalloc(xstring name, void *addr, size_t len, int prot);
+
 /************************************************************************/
 /* misc                                                                 */
 /************************************************************************/
-struct sysreq_misc_set_pixel
+struct sysreq_misc_draw_screen
 {
 	/* INPUT */
 	struct sysreq_common base;
 	int x, y;
-	unsigned int clr;
+	union
+	{
+		struct __draw_screen_pixel__
+		{
+			unsigned int clr;
+		} pixel;
+		struct __draw_screen_bitmap__
+		{
+			int width, height;
+			int bpp;
+			void * __user buffer;
+		} bitmap;
+		
+		struct __draw_screen_resolution__
+		{
+			int width, height, bpp;
+		} resolution;
+	};
+	int type;
+#define SYSREQ_MISC_DRAW_SCREEN_PIXEL	0
+#define SYSREQ_MISC_DRAW_SCREEN_BITMAP	1
+#define SYSREQ_MISC_DRAW_GET_RESOLUTION	2
 };
 
 struct sysreq_process_printf

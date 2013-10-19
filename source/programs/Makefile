@@ -2,7 +2,7 @@ include $(MY_BUILD_BASE)/config.mk
 
 #要编译的文件列表
 OBJS	=
-PARTS	= dl startup baxi
+PARTS	= dl startup baxi plant
 
 all:  subs_parts $(OBJS)
 

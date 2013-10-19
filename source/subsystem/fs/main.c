@@ -4,9 +4,11 @@
 	All rights reserved.
 */
 
+#include <kernel/ke_memory.h>
+#include <kernel/ke_srv.h>
+
 #include <ddk/compiler.h>
 #include <ddk/debug.h>
-#include <kernel/ke_memory.h>
 #include <errno.h>
 
 #include <vfs.h>
@@ -15,23 +17,10 @@
 
 static struct fss_vfs_info fss;
 
-ssize_t fss_dbd_make_valid(struct fss_file * who, struct dbd * which)
-{
-	unsigned long size = FSS_CACHE_DB_SIZE;
-	int ret = -EBADF;
-	
-	/* Just an entry, not really opened by the file system driver */
-	if (who->private == NULL)
-		goto end;
 
-	ret = who->volumn->drv->ops->fRead(who->private, which->block_id, 
-		which->buffer, &size);
-	which->valid_size = size;
-	
-end:
-	return ret;
-}
-
+/************************************************************************/
+/* Volumn                                                               */
+/************************************************************************/
 struct fss_volumn *fss_volumn_create_simple()
 {
 	struct fss_volumn *v = NULL;
@@ -45,9 +34,7 @@ struct fss_volumn *fss_volumn_create_simple()
 	
 	return v;
 }
-/**
-	@brief Search the volumn for use
-*/
+
 struct fss_volumn *fss_volumn_search(xstring id)
 {
 	struct fss_volumn *t;
@@ -103,9 +90,26 @@ err:
 	return;
 }
 
-/**
-	@brief 打开文件
-*/
+/************************************************************************/
+/* File                                                                 */
+/************************************************************************/
+static ssize_t fss_dbd_make_valid(struct fss_file * who, struct dbd * which)
+{
+	unsigned long size = FSS_CACHE_DB_SIZE;
+	int ret = -EBADF;
+	
+	/* Just an entry, not really opened by the file system driver */
+	if (who->private == NULL)
+		goto end;
+	
+	ret = who->volumn->drv->ops->fRead(who->private, which->block_id,
+									   which->buffer, &size);
+	which->valid_size = size;
+	
+end:
+	return ret;
+}
+
 struct fss_file *fss_open(struct fss_file *current_dir, char *name)
 {
 	struct fss_file *f;
@@ -132,9 +136,6 @@ void fss_close(struct fss_file *who)
 	//TODO
 }
 
-/**
-	@brief 读取文件的某一块
-*/
 ssize_t fss_read(struct fss_file * who, unsigned long block, void *buffer)
 {
 	ssize_t ret = -ENOMEM;
@@ -168,6 +169,39 @@ ssize_t fss_get_size(struct fss_file *who)
 	return 1024;
 }
 
+/************************************************************************/
+/* User system call handler                                             */
+/************************************************************************/
+static void *req_open()
+{
+	
+}
+
+static void *req_read()
+{
+	
+}
+
+#include "../../libs/grid/include/sys/syscall.h"
+
+/* 处理函数列表，注意必须和SYS_REQ_FILE_xxx的编号一致 */
+static void * interfaces[_SYS_REQ_FILE_MAX] = {
+	req_open,
+	req_read,
+};
+
+static unsigned long kernel_srv(unsigned long req_id, void *req)
+{
+	unsigned long (*func)(void * req) = interfaces[req_id];
+	return func(req);
+}
+
+const static struct ke_srv_info ke_srv_fss = {
+	.name = "FSS服务",
+	.service_id_base = SYS_REQ_FILE_BASE,
+	.request_enqueue = kernel_srv,
+};
+
 void fss_main()
 {
 	INIT_LIST_HEAD(&fss.vol_list);
@@ -176,6 +210,8 @@ void fss_main()
 
 	fss_db_init();
 	fss_map_init();
+
+	ke_srv_register(&ke_srv_fss);
 }
 
 

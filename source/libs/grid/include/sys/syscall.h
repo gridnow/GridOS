@@ -70,10 +70,26 @@ static inline unsigned long system_call(void *  req_package)
 #define SYS_REQ_KERNEL_PRINTF				(SYS_REQ_KERNEL_BASE + 4)
 #define SYS_REQ_KERNEL_PROCESS_HANDLE_EXE	(SYS_REQ_KERNEL_BASE + 5)
 
-#define SYS_REQ_KERNEL_VIRTUAL_ALLOC	(SYS_REQ_KERNEL_BASE + 20)
+#define SYS_REQ_KERNEL_VIRTUAL_ALLOC		(SYS_REQ_KERNEL_BASE + 20)
 
-#define SYS_REQ_KERNEL_SET_PIXEL		(SYS_REQ_KERNEL_BASE + 90)
-#define SYS_REQ_KERNEL_MAX				(SYS_REQ_KERNEL_BASE + 100)
+#define SYS_REQ_KERNEL_MISC_DRAW_SCREEN		(SYS_REQ_KERNEL_BASE + 90)
+#define SYS_REQ_KERNEL_MAX					(SYS_REQ_KERNEL_BASE + 100)
+
+/************************************************************************/
+/* LIBC request id and range                                            */
+/************************************************************************/
+#define FS_REQ_BASE_ID			1
+#define SYS_REQ_FILE_BASE		KE_SRV_MAKE_REQ_NUM(FS_REQ_BASE_ID, 0)
+#define SYS_REQ_FILE_OPEN		(SYS_REQ_FILE_BASE + 0)
+#define SYS_REQ_FILE_READ		(SYS_REQ_FILE_BASE + 1)
+#define SYS_REQ_FILE_WRITE		(SYS_REQ_FILE_BASE + 2)
+#define SYS_REQ_FILE_CLOSE		(SYS_REQ_FILE_BASE + 3)
+#define SYS_REQ_FILE_CHDIR		(SYS_REQ_FILE_BASE + 4)
+#define SYS_REQ_FILE_FSTAT		(SYS_REQ_FILE_BASE + 5)
+#define SYS_REQ_FILE_FTRUNCATE	(SYS_REQ_FILE_BASE + 6)
+#define SYS_REQ_FILE_CREATE		(SYS_REQ_FILE_BASE + 7)
+#define SYS_REQ_FILE_READDIR	(SYS_REQ_FILE_BASE + 8)
+#define _SYS_REQ_FILE_MAX		9
 
 /************************************************************************/
 /* Session and User Manager                                             */

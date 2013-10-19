@@ -27,11 +27,7 @@ struct sysreq_file_open
 	unsigned int	file_type;
 
 	/* OUTPUT */
-	struct __open_file__
-	{
-		void *		subsystem_object;
-		int			fd;
-	}file;	
+	int			fd;
 
 	int				result_code;
 
@@ -47,12 +43,8 @@ struct sysreq_file_create
 	xstring 		__user name;
 
 	/* OUTPUT */
-	struct __create_file__
-	{
-		void *		subsystem_object;
-		int			fd;
-	}file;	
-
+	int			fd;
+	
 	int				result_code;
 };
 
@@ -93,11 +85,8 @@ struct sysreq_file_io
 {
 	/* INPUT */
 	struct sysreq_common base;
-	union
-	{
-		void *		subsystem_object;
-		int			fd;
-	}file;
+	
+	int			fd;
 	uoffset		pos;
 	void *		__user buffer;
 	size_t		size;
@@ -123,7 +112,7 @@ struct sysreq_file_fstat
 	}file;
 
 	/* OUTPUT */
-	file_size	size;
+	uoffset		size;
 	int			result_code;
 };
 
@@ -135,14 +124,9 @@ struct sysreq_file_ftruncate
 	/* INPUT */
 	struct sysreq_common base;
 	
-	union
-	{
-		void *		subsystem_object;
-		int			fd;
-	}file;
-
+	int			fd;
 	void *			__user buffer;
-	file_size		length;
+	uoffset			length;
 
 	/* OUTPUT */
 	int			result_code;
@@ -180,7 +164,6 @@ size_t sys_truncate(unsigned int fd, ssize_t size);
 	@param[in] name open file name
 	@param[in] file_type 要打开的文件类型，具体定义在sys/stat.h中
 
-
 	@return The fd of the file on success, read errno for the reason of failure.
 */
 int sys_open(const char *name, unsigned int file_type);
@@ -190,7 +173,7 @@ int sys_open(const char *name, unsigned int file_type);
 	
 	@return The fd of the file on success, read errno for the reason of failure.
 */
-int sys_create(const char *name, int type);
+int sys_mkfile(const char *name);
 
 /**
 	@brief Close a file by fd

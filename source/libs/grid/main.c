@@ -16,13 +16,13 @@
 #include "sys/ke_req.h"
 
 #include "malloc/malloc.h"
+#include "file.h"
 
 static bool init_libc()
 {
-	bool r;
-	r = init_malloc();
-
-	if (r == false)
+	if (init_malloc() == false)
+		goto err;
+	if (stream_file_buffer_init() == false)
 		goto err;
 
 	return true;
