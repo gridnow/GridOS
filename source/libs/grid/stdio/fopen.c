@@ -11,9 +11,11 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
+#include <errno.h>
 #include <sys/stat.h>
 
-#include "file.h"
+#include <DDK/debug.h>
+#include "stream_file.h"
 
 #define FLAG_LENGTH 3
 
@@ -108,70 +110,30 @@ static bool set_file_flags(struct stdio_file *file, const char *type)
 	return ret;
 }
 
-static bool set_file_fd(struct stdio_file *file, const char *path)
-{
-	int fd;
-	bool ret = true;
-	
-	// TODO LOCK fd
-	
-	fd = sys_open(path, S_IFREG);
-	
-	if (POSIX_INVALID_FD == fd)
-	{
-		if (file->flags & O_CREAT)
-		{
-			/* 创建长度为0的文件 */
-			fd = sys_mkfile(path);
-		}
-		else
-		{
-			/* 不能打开不存在的文件 */
-			return false;
-		}
-	}
-	/* 文件存在，需要根据进一步处理 */
-	else if (file->flags & O_TRUNC)
-	{
-		/* 文件长度截短为0 */
-		if (-1 == sys_ftruncate(fd, 0)) return false;
-	}
-	
-	/* 为文件对象设置fd */
-	file->fd = fd;
-	// TODO UNLOCK fd
-	
-	return ret;
-}
-
-static struct stdio_file *open_stream_file(const char *path, const char *type)
-{
-	struct stdio_file *file;
-	
-	file = malloc(sizeof(struct stdio_file));
-	if (!file)	goto end_exit;
-	memset(file, 0, sizeof(struct stdio_file));
-	
-	/*  */
-	if (false == set_file_flags(file, type)) goto err;
-	
-	/* 文件描述符 */
-	if (false == set_file_fd(file, path)) goto err;
-	
-	stream_file_init_ops(file);
-	
-	return file;
-	
-err:
-	free(file);
-	
-	file = NULL;
-	
-end_exit:
-	return file;
-}
-
 DLLEXPORT FILE *fopen(const char *path, const char *type)
 {
-	return (FILE *)open_stream_file(path, type);
+	struct file *filp;
+	struct stdio_file *file;
+	
+	filp = file_new(sizeof(struct stdio_file));
+	if (!filp)
+		goto err;
+	file = file_get_detail(filp);
+	memset(file, 0, sizeof(struct stdio_file));
+	
+	if (false == set_file_flags(file, type))
+	{
+		set_errno(EINVAL);
+		goto err;
+	}	
+	if (KE_INVALID_HANDLE == file_open(filp, path, file->flags))
+		goto err;	
+	stream_file_init_ops(filp);
+	
+	return (FILE*)file;
+	
+err:
+	if (filp)
+		file_delete(filp);
+	return NULL;
 }

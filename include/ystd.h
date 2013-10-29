@@ -42,7 +42,7 @@ typedef enum
 	@return
 		成功返回进程句柄，失败返回Y_INVALID_HANDLE
 */
-y_handle y_process_create(xstring name, char * cmdline);
+y_handle y_process_create(xstring name, char *cmdline);
 
 
 /**

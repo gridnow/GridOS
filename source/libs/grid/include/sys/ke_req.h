@@ -24,9 +24,6 @@ struct sysreq_thread_create
 	void * wrapper, * entry;
 	unsigned long para;
 	bool run;
-
-	/* Output */
-	ke_handle thread;
 };
 
 struct sysreq_thread_delete
@@ -50,7 +47,7 @@ struct sysreq_process_create
 {
 	/* Input */
 	struct sysreq_common base;
-	xstring name, image;
+	xstring name, cmdline;
 
 	/* Output */
 	ke_handle process;

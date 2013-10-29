@@ -44,7 +44,15 @@ struct sysreq_common
 	unsigned long req_id;
 };
 
-bool ke_srv_register(const struct ke_srv_info * info);
+bool ke_srv_register(const struct ke_srv_info *info);
+
+/**
+	@brief Handler part
+*/
+int ke_handle_put(ke_handle handle, void *kobject);
+void *ke_handle_translate(ke_handle handle);
+bool ke_handle_delete(ke_handle handle);
+ke_handle ke_handle_create(void *kobject);
 
 #endif
 /** @} */

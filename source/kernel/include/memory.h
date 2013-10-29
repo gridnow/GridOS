@@ -76,6 +76,7 @@ void km_arch_init_for_kernel(struct km *mem);
 void km_arch_ctx_init(struct km * mm_ctx);
 void km_arch_ctx_deinit(struct km * mm_ctx);
 void km_arch_ctx_switch(struct km * pre_ctx, struct km * next_ctx);
+void km_arch_copy_kernel(struct km * mm_ctx, unsigned long address);
 
 /**
 	@brief

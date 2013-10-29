@@ -32,14 +32,16 @@ static asmregparm __noreturn void kernel_thread_fate_entry(unsigned long (*threa
 
 static bool object_close(real_object_t *obj)
 {
-
+	return true;
 }
 
-static void object_init(real_object_t *obj)
+static bool object_init(real_object_t *obj)
 {
 	struct ko_thread *thread = (struct ko_thread *)obj;
 	INIT_LIST_HEAD(&thread->queue_list);
 	spin_lock_init(&thread->ops_lock);
+
+	return true;
 }
 
 static struct cl_object_ops thread_object_ops = {

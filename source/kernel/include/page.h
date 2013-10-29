@@ -34,6 +34,10 @@ bool km_page_create_cow(struct km *mem_dst, unsigned long address);
  */
 int km_page_share(struct km *dst, unsigned long dst_addr, struct km *src, unsigned long src_addr, page_prot_t prot);
 
+/**
+ */
+void km_page_share_kernel(struct km* mem_dst, unsigned long virtual_address);
+
 /* Default physical address in entry is at high part and is the high significant bits */
 #ifndef ARCH_KM_ENTRY_PHYSICAL_MASK
 #define ARCH_KM_ENTRY_PHYSICAL_MASK (~(PAGE_SIZE - 1))

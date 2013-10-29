@@ -18,7 +18,7 @@ struct km_vm_node
 	unsigned long start, size;
 };
 
-bool km_vm_create(struct ko_process *where, struct km_vm_node *node);
+bool km_vm_create(struct ko_process *where, struct km_vm_node *node, int is_type_kernel);
 
 /**
 	@brief Allocate space in a section

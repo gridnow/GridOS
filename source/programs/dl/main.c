@@ -55,6 +55,9 @@ static char static_usage[ELF_MAX_STATIC_DL_IMAGE_INFO] = {1};
 static struct dependency_list static_d_list[ELF_MAX_STATIC_DL_IMAGE_INFO] = {(void*)1};	/* dependency list */
 static char static_d_list_usage[ELF_MAX_STATIC_DL_IMAGE_INFO] = {1};
 
+static char *exe_name_end = (char*)1;
+static char exe_name_end_char = (char)1;
+
 /* 命令行传递 */
 static xchar cmdline_buffer[SYSREQ_PROCESS_STARTUP_MAX_SIZE] = {' '};
 
@@ -305,15 +308,21 @@ static int load_dependency(struct exe_objects *p, int id)
 	struct exe_objects *obj;
 	xstring name;
 
+//	char str[32];
+
 	/* Get the name of this id */
 	name = elf_get_needed(&p->exe_desc, id, &p->user_ctx);
 	if (!name) return 0;
+//	str[h2c(str, name)] = 0;
+//	early_print("load_dependency ");early_print(str); early_print(name); early_print(".\n");
 
 	/* 如果对象已存在于linear list中，就没必要再执行load_image获取 */
 	obj = get_obj_from_linear_list(name);
 	if (!obj)
 	{
+//		early_print("LOading from disk... ");
 		obj = load_image(name);
+//		early_print("OK\n");
 		if (!obj) return -1;
 	}
 
@@ -342,7 +351,7 @@ static int load_dependencies()
 	{	
 		/* 从linear list中取出image，linear list头结点代表first image */
 		obj = list_entry(node, struct exe_objects , linear_list);
- 		//early_print("Loading dep for ");early_print(obj->name);early_print(".\n");
+// 		early_print("Loading dep for ");early_print(obj->name);early_print(".\n");
 
 		/* 查找image的依赖 */
 		for (id = 0; ; id++)
@@ -492,6 +501,7 @@ static int startup()
 	}
 	
 	/* 可执行文件要在执行完所有依赖库后执行 */
+	*exe_name_end = exe_name_end_char;										// 回复参数列表
 	return start_first((unsigned long)cmdline_buffer);						// 传递命令行到main
 }
 
@@ -576,12 +586,7 @@ void dl_dynamic_linker()
 	system_call(&st);
 	
 	/* 分离可执行文件 */
-	exe_name = strchr(cmdline_buffer, ' '/*space*/);
-	if (!exe_name)
-		exe_name = strchr(cmdline_buffer, '	'/*tab*/);
-	if (!exe_name)
-		goto startup_end;
-	exe_name++;																			// Escape blank
+	exe_name = cmdline_buffer;
 	
 	/* 获取可执行文件路径，以后用于设置线程的当前路径 */
 	path_end = strchr(exe_name, ' '/*space*/);
@@ -592,11 +597,13 @@ void dl_dynamic_linker()
 		/* The exe name is the last string in the cmdline */
 		path_end = exe_name + strlen(exe_name);
 	}
+	exe_name_end = path_end;
+
 	for (i = sizeof(xchar); ; i++)
 	{
 		if (path_end[-i] == '/' || path_end[-i] == '\\')
 			break;
-		if (path_end == exe_name)
+		if (&path_end[-i] == exe_name)
 			goto startup_end;
 	}
 	path_end[-i]		= 0;
@@ -604,9 +611,11 @@ void dl_dynamic_linker()
 	st.cmdline_buffer	= exe_name;
 	st.func				= SYSREQ_PROCESS_STARTUP_FUNC_SET_PATH;							// Get command line
 	system_call(&st);
-	path_end[-i]		= '/';
+	path_end[-i]		= '\\';
 	
 	/* 开始装载 */
+	exe_name_end_char = *exe_name_end;
+	exe_name_end[0] = 0;																// 可执行文件名和参数之间的空隙
 	INIT_LIST_HEAD(&objs_linear_list);
 	ret = dl_build_image_context(exe_name);
 

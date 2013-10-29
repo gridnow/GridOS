@@ -10,6 +10,7 @@
 #include <memory.h>
 #include <thread.h>
 #include <exe.h>
+#include <section.h>
 #include <handle.h>
 
 #include "string.h"
@@ -39,21 +40,24 @@ static void file_thread(void *para)
 
 static bool object_close(real_object_t *obj)
 {
-
+	return true;
 }
 
-static void object_init(real_object_t *obj)
+static bool object_init(real_object_t *obj)
 {
 	struct ko_process *p = (struct ko_process *)obj;
 	
-	ks_init_for_process(p);
-
 	/* 
 		Although init_process will call it, but it dose not matter for a page disappeared
 		created in walk as root table.
 	 */
 	km_walk_init(&p->mem_ctx);
 	km_arch_ctx_init(&p->mem_ctx);
+
+	return true;
+
+err:
+	return false;
 }
 
 static struct cl_object_ops process_object_ops = {
@@ -131,6 +135,9 @@ struct ko_process *kp_create(int cpl, xstring name)
 	if (!cl_object_set_name(p, name))
 		goto err1;
 	
+	if (ks_init_for_process(p) == false)
+		goto err;
+	
 	return p;
 	
 err1:
@@ -204,34 +211,29 @@ err:
 	printk("驱动包影射到内核空间失败，可能是地址冲突，要影射的地址范围为%d@%x.\n", size, base);
 }
 
-bool kp_run_user(struct ko_exe *ke, void *entry_address, char *cmdline)
+struct ko_process *kp_run_user(struct ko_exe *ke, char *cmdline)
 {
-	struct ko_process	*kp = NULL;
+	struct ko_process *kp = NULL;
 	struct kt_thread_creating_context ctx = {0};
-	
-	/* Create process for it */ 
+
+	/* Create process for it */
 	kp = kp_create(KP_USER, "初始化进程");
 	if (!kp)
 		goto err;
-	if (kp_exe_bind(kp, ke) == false)
-	{
-		TODO("");
+	if (kp_exe_bind(kp, ke) == NULL)
 		goto err;
-	}
+	
 	ke_handle_init(kp);
 	
-	/* And the first thread */
-	ctx.thread_entry	= entry_address;
-	ctx.fate_entry		= entry_address/* special first thread */;
+	/* And the first thread (entry is absolute address) */
+	ctx.thread_entry	= ke->entry;
+	ctx.fate_entry		= ke->entry/* special first thread */;
 	ctx.flags			= KT_CREATE_RUN | KT_CREATE_STACK_AS_PARA;
 	ctx.para			= (unsigned long)cmdline;
 	if (kt_create(kp, &ctx) == NULL)
-	{
-		TODO("");
 		goto err;
-	}
 
-	return true;
+	return kp;
 err:
 	if (ke)
 	{
@@ -241,7 +243,7 @@ err:
 	{
 		//TODO free it
 	}
-	return false;
+	return NULL;
 }
 
 /**
@@ -249,24 +251,33 @@ err:
  */
 void ke_run_first_user_process(void *data, int size, char *cmdline)
 {
+	char *first_space, first_exe_name[128] = {0};
 	struct ko_section *ks;
 	void *entry_address;
 	struct ko_exe *kee, *ke_tmp = kp_exe_create_temp();
 
+	first_space = strchr(cmdline, ' ');
+	if (!first_space)
+		goto err;
+	if (first_space - cmdline >= sizeof(first_exe_name) - sizeof(xchar))
+		goto err;
+	strncpy(first_exe_name, cmdline, first_space - cmdline);
+
 	/* Kernel file process, because early we cannot copy lv2 table of driver */
 	kernel_file_process = kp_create(KP_CPL0_FAKE, "操作系统文件进程");
-	
+	if (!kernel_file_process)
+		goto err;
 	printk("启动用户第一个可执行文件%x, size %d.\n", data, size);
 	
 	if (size == 0/*no file*/ || size == 1/*buffer error*/)
 		goto err;
 	if (elf_analyze(data, size, &entry_address, KO_EXE_TO_PRIVATE(ke_tmp)) == false)
 		goto err;
-	
+
 	ks = ks_create(kp_get_file_process(), KS_TYPE_PRIVATE, 0, size, KM_PROT_READ|KM_PROT_WRITE);
 	if (!ks)
 		goto err;
-	kee = kp_exe_create(ks, KO_EXE_TO_PRIVATE(ke_tmp));
+	kee = kp_exe_create_from_file(first_exe_name, ks, KO_EXE_TO_PRIVATE(ke_tmp), entry_address);		
 	if (!kee)
 		goto err;
 	
@@ -292,7 +303,7 @@ void ke_run_first_user_process(void *data, int size, char *cmdline)
 	} while(0);
 	
 	/* OK, create the process */
-	if (kp_run_user(kee, entry_address, cmdline) == false)
+	if (kp_run_user(kee, ++first_space/*Real application*/) == false)
 		goto err;
 	
 	return;

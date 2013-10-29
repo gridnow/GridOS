@@ -1,3 +1,4 @@
+DLL=yes
 include $(MY_BUILD_BASE)/config.mk
 
 ADD_INCLUDE +=-I../include $(CL_INCLUDE)

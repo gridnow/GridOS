@@ -19,7 +19,7 @@ static bool address_in_user(unsigned long address)
 	return false;
 }
 
-static void copy_kernel_to_user(struct km * mm_ctx, int base, int end)
+static void copy_kernel_to_user(struct km *mm_ctx, int base, int end)
 {
 	unsigned long *src, *dst;
 	int i;
@@ -53,8 +53,6 @@ asmregparm void do_page_fault(struct pt_regs * regs, long error_code)
 			goto die_cur;
 	}
 	
-	if (!in_user)
-		error_code |= PAGE_FAULT_IN_KERNEL;
 	current = kt_current();
 	if (unlikely(false == ks_exception(current, error_address, error_code)))
 		goto die_cur;
@@ -151,3 +149,10 @@ void km_arch_ctx_switch(struct km * pre_ctx, struct km * next_ctx)
 	}
 #endif
 }
+
+void km_arch_copy_kernel(struct km * mm_ctx, unsigned long address)
+{
+	int start = km_get_vid(ARCH_KM_TOP_MOST_LEVEL, address);
+	copy_kernel_to_user(mm_ctx, start, start + 1);
+}
+

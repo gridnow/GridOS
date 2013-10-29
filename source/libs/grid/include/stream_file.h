@@ -7,10 +7,11 @@
 	ZhaoYu,Yaosihai
  */
 
-#ifndef __STRING_FILE_H__
-#define __STRING_FILE_H__
+#ifndef __STREAM_FILE_H__
+#define __STREAM_FILE_H__
 
-struct stdio_file;
+#include "file.h"
+#include "posix.h"
 
 /* We are operating on the file exclusively */
 #define LOCK_FILE(F)
@@ -30,6 +31,7 @@ struct stdio_file;
 #define	BUF_BLOCK_ID(pos)		((pos) / (BUF_BLOCK_SIZE))
 #define BUF_BLOCK_OFFSET(pos)	((pos) % (BUF_BLOCK_SIZE))
 
+struct stdio_file;
 struct buffer_block
 {
 	int						valid_size;					/* 有效数据大小，最大不超过size*/
@@ -42,17 +44,13 @@ struct buffer_block
 
 struct stdio_file
 {
-	int								flags;
-	int								fd;					/* file descriptor */
-	uoffset							pos;				/* 与BUF_BLOCK_ID(pos)、BUF_BLOCK_OFFSET(pos)配合使用 */
-	uoffset							size;
+	int								flags;	
 	unsigned long					lock;
 	struct buffer_block				*block;
-	const struct file_operations	*ops;
 	void							*private_file;
 };
 
-void stream_file_init_ops(struct stdio_file *file);
+void stream_file_init_ops(struct file *filp);
 bool stream_file_buffer_init();
 
 #endif

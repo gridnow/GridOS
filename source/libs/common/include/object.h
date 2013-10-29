@@ -29,7 +29,7 @@ typedef void *real_object_t;
 struct cl_object_ops
 {
 	bool (*close)(real_object_t *object);
-	void (*init)(real_object_t *object);
+	bool (*init)(real_object_t *object);
 };
 
 enum cl_object_memory_type

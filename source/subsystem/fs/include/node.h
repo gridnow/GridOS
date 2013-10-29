@@ -11,6 +11,7 @@
 #include <kernel/ke_rwlock.h>
 #include <kernel/ke_critical.h>
 #include <ddk/vfs.h>
+#include "object.h"
 
 #include "cache.h"
 struct fss_volumn;
@@ -23,6 +24,8 @@ typedef enum
 
 struct fss_file
 {
+	struct cl_object obj;
+	
 	/* 目录链表，不太适合搜索，文件多搜索慢，TODO: 可以通过hash改进 */
 	struct list_head brother;
 	struct fss_file *parent;

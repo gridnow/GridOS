@@ -8,6 +8,8 @@
 
 #include <spinlock.h>
 
+struct ko_exe;
+
 /* Process privilege level */
 #define KP_CPL0						0
 #define KP_CPL0_FAKE				1
@@ -55,6 +57,11 @@ struct ko_process *kp_get_file_process();
 	@brief 创立一个空的进程对象
 */
 struct ko_process *kp_create(int cpl, xstring name);
+
+/**
+	@brief Run user process, the ke is dl.sys
+ */
+struct ko_process *kp_run_user(struct ko_exe *ke, char *cmdline);
 
 /**
 	@brief 启动第一个用户态进程

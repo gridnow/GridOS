@@ -1923,11 +1923,23 @@
 						Name="include"
 						>
 						<File
+							RelativePath="..\..\source\libs\grid\include\crt.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\include\file.h"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\grid\include\posix.h"
 							>
 						</File>
 						<File
 							RelativePath="..\..\source\libs\grid\include\std_console.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\include\stream_file.h"
 							>
 						</File>
 						<Filter
@@ -1987,7 +1999,35 @@
 						Name="stdio"
 						>
 						<File
+							RelativePath="..\..\source\libs\grid\stdio\fclose.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\stdio\fopen.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\stdio\fread.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\stdio\ftruncate.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\stdio\getch.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\stdio\Makefile"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\grid\stdio\printf.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\stdio\stream_file.c"
 							>
 						</File>
 					</Filter>
@@ -1995,8 +2035,38 @@
 						Name="sys"
 						>
 						<File
+							RelativePath="..\..\source\libs\grid\sys\fb.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\sys\file.c"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\grid\sys\Makefile"
 							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\sys\process.c"
+							>
+							<FileConfiguration
+								Name="Debug|Win32"
+								>
+								<Tool
+									Name="VCCLCompilerTool"
+									ObjectFile="$(IntDir)\$(InputName)1.obj"
+									XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+								/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Release|Win32"
+								>
+								<Tool
+									Name="VCCLCompilerTool"
+									ObjectFile="$(IntDir)\$(InputName)1.obj"
+									XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+								/>
+							</FileConfiguration>
 						</File>
 						<File
 							RelativePath="..\..\source\libs\grid\sys\stdio.c"
@@ -2031,6 +2101,46 @@
 							>
 						</File>
 					</Filter>
+				</Filter>
+				<Filter
+					Name="pthread"
+					>
+					<File
+						RelativePath="..\..\source\libs\pthread\create.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\libs\pthread\implement.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\libs\pthread\pthread.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\libs\pthread\pthread_spin_destroy.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\libs\pthread\pthread_spin_init.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\libs\pthread\pthread_spin_lock.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\libs\pthread\pthread_spin_trylock.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\libs\pthread\pthread_spin_unlock.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\source\libs\pthread\spin.c"
+						>
+					</File>
 				</Filter>
 			</Filter>
 			<Filter
@@ -2124,11 +2234,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\fcntl.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\limits.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\include\list.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\pthread.h"
 				>
 			</File>
 			<File
@@ -2144,11 +2262,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\stdlib.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\string.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\include\types.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\unistd.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\ystd.h"
 				>
 			</File>
 			<Filter

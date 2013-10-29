@@ -65,14 +65,14 @@ void ks_init();
 /**
 	@brief Init the section part for a process 
 */
-void ks_init_for_process(struct ko_process *who);
+bool ks_init_for_process(struct ko_process *who);
 
 /**
 	@brief Create a sub node on the current section
 
 	The sub-section is the additional description for the section
 */
-struct ko_section * ks_sub_create(struct ko_process * who, struct ko_section * where, unsigned long sub_address, unsigned long sub_size);
+struct ko_section *ks_sub_create(struct ko_process * who, struct ko_section * where, unsigned long sub_address, unsigned long sub_size);
 
 /**
 	@brief Locate sub

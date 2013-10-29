@@ -14,25 +14,28 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
+#include <ddk/debug.h>
 
 #include "sys/file_req.h"
-#include "file.h"
+#include "stream_file.h"
 
+//TODO ： 该变量需要加锁
 static struct buffer_block buffer_pool[BUF_BLOCK_NUM];
 
 /**
 	@brief Append a file by fd
  */
-static ssize_t append_stream_file(int fd, void *user_buffer, uoffset old_file_size, ssize_t append_bytes)
+static ssize_t append_stream_file(ke_handle handle, void *user_buffer, lsize_t old_file_size, ssize_t append_bytes)
 {
-	if (-1 != ftruncate(fd, old_file_size + append_bytes))
-	{
-		return sys_write(fd, user_buffer, old_file_size, append_bytes);
-	}
-	else
-	{
-		return -1;
-	}
+	ssize_t ret;
+	
+	//TODO, get fd
+#if 0
+	ret = ftruncate(fd, old_file_size + append_bytes);
+	if (ret)
+		return ret;
+#endif	
+	return sys_write(handle, user_buffer, old_file_size, append_bytes);
 }
 
 /**
@@ -44,36 +47,34 @@ static ssize_t append_stream_file(int fd, void *user_buffer, uoffset old_file_si
  */
 static bool update_dirty_buffer_block(struct stdio_file *file)
 {
-	bool ret = true;
-	int size = -1;
-	
-	if (!file) return false;
-	
-	if (file->block->flags & BUF_BLOCK_DIRTY_FLAG)
+	bool ret = false;
+	ssize_t size;
+	lsize_t fsize = file_get_from_detail(file)->size;
+	uoffset pos = file_get_from_detail(file)->pos;
+
+	if (!(file->block->flags & BUF_BLOCK_DIRTY_FLAG))
 	{
-		/*
+		ret = true;
+		goto end;
+	}
+	
+	/*
 		 情况1：O_APPEND模式下，任何写入的数据只能追加到文件尾部
 		 情况2：非fO_APPEND模式下，如果file->pos > file->size，写入数据超过文件大小部分追加到文件尾部
-		 */
-		if (file->flags & O_APPEND || file->pos > file->size)
-		{
-			size = append_stream_file(file->fd, file->block->base, file->size, file->pos - file->size);
-		}
-		else
-		{
-			/* 将buffer block的BUF_BLOCK_OFFSET(file->pos)字节写入file的file->pos-BUF_BLOCK_OFFSET(file->pos)开始处 */
-			size = sys_write(file->fd, file->block->base, file->pos - BUF_BLOCK_OFFSET(file->pos), BUF_BLOCK_OFFSET(file->pos));
-		}
-		size = BUF_BLOCK_OFFSET(file->pos);
-		
-		/* 只要不是磁盘IO出错都没问题 */
-		/*
-		 if (errno == EIO)
-		 {
-		 file->block->flags &= (~BUF_BLOCK_DIRTY_FLAG);
-		 ret = false;
-		 }*/
-	}
+	*/
+	if (file->flags & O_APPEND || pos > fsize)
+		size = append_stream_file(file_get_from_detail(file)->handle, file->block->base, fsize, pos - fsize);
+	else
+		/* 将buffer block的BUF_BLOCK_OFFSET(file->pos)字节写入file的file->pos-BUF_BLOCK_OFFSET(file->pos)开始处 */
+		size = sys_write(file_get_from_detail(file)->handle, file->block->base, pos - BUF_BLOCK_OFFSET(pos), BUF_BLOCK_OFFSET(pos));
+
+	if (size < 0)
+		goto end;
+	
+	/* 只要不是磁盘IO出错都没问题 */
+	file->block->flags &= (~BUF_BLOCK_DIRTY_FLAG);
+	ret = true;
+end:
 	return ret;
 }
 
@@ -86,10 +87,9 @@ static bool update_dirty_buffer_block(struct stdio_file *file)
  */
 static bool swap_out_buffer_block(struct buffer_block *block)
 {
-	bool ret = false;
+	bool ret;
 	
 	ret = update_dirty_buffer_block(block->file);
-	
 	if (true == ret)
 	{
 		/* 解除原file和该buffer block的关系，但不能影响到原file的其他属性 */
@@ -201,24 +201,19 @@ static void put_buffer_block(struct stdio_file *file)
 	file->block->flags &= (~BUF_BLOCK_BUSY_FLAG);	/* 取消BUF_BLOCK_BUSY_FLAG位 */
 }
 
-
-/**
-	@brief 为填充buffer block
-
-	@return 成功返回true，失败则返回false
-*/
 static bool make_valid_data(struct stdio_file *file)
 {
-	int size;
+	ssize_t size;
 	bool ret = true;
-	int pos;
+	uoffset pos;
+	uoffset fpos = file_get_from_detail(file)->pos;
 
 	/* buffer block满，也就是切换buffer block时检查脏数据更新 */
-	if (file->block->pre_id != BUF_BLOCK_ID(file->pos))
+	if (file->block->pre_id != BUF_BLOCK_ID(fpos))
 	{
 		update_dirty_buffer_block(file);
 		file->block->flags		&= (~BUF_BLOCK_VALID_FLAG);
-	}
+	} 
 
 	/* Disk to buffer block if buffer is not valid */
 	if (!(file->block->flags & BUF_BLOCK_VALID_FLAG))
@@ -231,9 +226,10 @@ static bool make_valid_data(struct stdio_file *file)
 			BUF_BLOCK_ID = 1，映射文件256~511
 			……
 		*/
-		pos = BUF_BLOCK_ID(file->pos) * BUF_BLOCK_SIZE;
+		pos = BUF_BLOCK_ID(fpos) * BUF_BLOCK_SIZE;
+
 		/* 从file的pos开始处，读取BUF_BLOCK_SIZE字节到buffer block中 */
-		size = sys_read(file->fd, file->block->base, pos, BUF_BLOCK_SIZE);
+		size = sys_read(file_get_from_detail(file), file->block->base, pos, BUF_BLOCK_SIZE);
 		if (size > 0)
 		{
 			file->block->valid_size	= size;
@@ -248,109 +244,86 @@ static bool make_valid_data(struct stdio_file *file)
 	return ret;
 }
 
-/**
-	@brief 读取数据
-
-	@return 正数表示实际读取的字节数，-1表示出错
-*/
-
-static ssize_t stdio_fread(void *ptr, void *buf, ssize_t n_bytes)
+static ssize_t stdio_fread(struct file *filp, void *buf, ssize_t n_bytes)
 {		
+	ssize_t ret = -1;
 	size_t start_pos, tmp_len, i;
-	struct stdio_file *file	= (struct stdio_file *)ptr;
+	struct stdio_file *file	= file_get_detail(filp);
 
-	/* 文件只允许写操作 */
 	if (file->flags & O_WRONLY)
 	{
 		set_errno(EPERM);
-		return -1;
-	}
-
-	/* 文件并无数据 */
-	if (0 == file->size)
+		goto end;
+	}		
+	if (0 == filp->size)	
 	{
-		return 0;
+		ret = 0;
+		goto end;	
 	}
 
 	LOCK_FILE(file);
 
-	/* 文件对象未分配buffer block时需要分配 */
 	if (!file->block)
 		get_buffer_block(file);	
-
-	/* 满足规范对type中'+'的限制，保证fread时脏数据被更新 */
-	update_dirty_buffer_block(file);
-
 	tmp_len		= i = 0;
-	start_pos	= file->pos;
+	start_pos	= filp->pos;
 
 	/* file->pos = (file->size - 1)表示file末字节 */
-	while (file->pos < file->size && n_bytes > 0)
-	{
-		/* make_valid_data失败则循环执行，直到成功 */
-		if (make_valid_data(file))
-		{
-			/* tmp_len不会小于0，因为file->pos小于file->size */
-			tmp_len = (file->block->valid_size - BUF_BLOCK_OFFSET(file->pos));
-			if (tmp_len > n_bytes)
-				tmp_len = n_bytes;
-			
-			/* 会存在tmp_len为0的情况吗 */
+	while (filp->pos < filp->size && n_bytes > 0)
+	{		
+		if (make_valid_data(file) == false)
+			goto end_grab;
+		//printf("pos = %d, size = %d, valid = %d.\n", (int)filp->pos, (int)filp->size, file->block->valid_size);
 
+		/* tmp_len不会<=0，因为file->pos小于file->size */
+		tmp_len = (file->block->valid_size - BUF_BLOCK_OFFSET(filp->pos));
+		if (tmp_len > n_bytes)
+			tmp_len = n_bytes;
+		memcpy(buf + i, file->block->base + BUF_BLOCK_OFFSET(filp->pos), tmp_len);
 
-			memcpy(buf + i, file->block->base + BUF_BLOCK_OFFSET(file->pos), tmp_len);
-	
-			file->block->pre_id = BUF_BLOCK_ID(file->pos);
-			n_bytes				-= tmp_len;
-			file->pos			+= tmp_len;
-			i					+= tmp_len;
-		}
-		else
-		{
-			/* seterrno */
-			
-			goto err;
-		}
+		file->block->pre_id = BUF_BLOCK_ID(filp->pos);
+		n_bytes				-= tmp_len;
+		filp->pos			+= tmp_len;
+		i					+= tmp_len;
 	}
 
-err:
+	ret = filp->pos - start_pos;
+
+end_grab:
 	put_buffer_block(file);
 
 	UNLOCK_FILE(file);
-
-	return file->pos - start_pos;
+end:
+	return ret;
 }
 
-/**
-	@brief 读取数据
-
-	@return 正数表示实际读取的字节数，0表示已到文件结尾，-1表示出错
-*/
-static ssize_t stdio_fwrite(void *ptr, void *buf, ssize_t n_bytes)
+static ssize_t stdio_fwrite(struct file *filp, void *buf, ssize_t n_bytes)
 {
-	size_t start_pos, tmp_len, i;
-	struct stdio_file *file	= (struct stdio_file *)ptr;
+	ssize_t ret = -1;
 
+	size_t start_pos, tmp_len, i;
+	struct stdio_file *file	= file_get_detail(filp);
+	
 	/* 文件只允许读操作 */
 	if((file->flags & O_WRONLY) == 0 && (file->flags & O_RDWR) == 0)
 	{
-		return 0;	
+		ret = 0;
+		goto end;			
 	}
 
 	LOCK_FILE(file);
 
-	/* 文件对象未分配buffer block时需要分配 */
 	if (!file->block)
 		get_buffer_block(file);
 
 	/* posix标准O_APPEND模式下，stdio_fwrite不会受file->pos影响，始终从file->size处追加数据 */
 	if(file->flags & O_APPEND)
 	{
-		file->pos = file->size;
+		filp->pos = filp->size;
 	}
 
 	tmp_len		= i = 0;
-	start_pos	= file->pos;
+	start_pos	= filp->pos;
 
 	while (n_bytes > 0)
 	{
@@ -358,55 +331,52 @@ static ssize_t stdio_fwrite(void *ptr, void *buf, ssize_t n_bytes)
 			我们只关心“磁盘IO错误的errno”，如果“没有数据的errno”则认为是file->pos >= file->size时的情况，
 			此时将扩展文件大小
 		*/
-		if(make_valid_data(file) == EIO)
+		if(make_valid_data(file) == false && get_errno() == EIO)
 		{
-			goto err;
+			goto end_grab;
 		}
 
 		/* 
 			make_valid_data(file)成功
 			file->pos >= file->size时都执行下面的代码	
 		*/	
-		tmp_len = (BUF_BLOCK_SIZE - BUF_BLOCK_OFFSET(file->pos));
+		tmp_len = (BUF_BLOCK_SIZE - BUF_BLOCK_OFFSET(filp->pos));
 		if (tmp_len > n_bytes)
 			tmp_len = n_bytes;
 
 		/* user buffer数据覆盖buffer block中的数据 */
-		memcpy(file->block->base + BUF_BLOCK_OFFSET(file->pos), buf + i, tmp_len);
+		memcpy(file->block->base + BUF_BLOCK_OFFSET(filp->pos), buf + i, tmp_len);
 
-		file->block->pre_id = BUF_BLOCK_ID(file->pos);
+		file->block->pre_id = BUF_BLOCK_ID(filp->pos);
 
 		n_bytes		-= tmp_len;
-		file->pos	+= tmp_len;
+		filp->pos	+= tmp_len;
 		i			+= tmp_len;
 
 		file->block->flags |= BUF_BLOCK_DIRTY_FLAG;
 	}
-err:
+	ret = filp->pos - start_pos;
+
+end_grab:
 	put_buffer_block(file);
 
 	UNLOCK_FILE(file);
-	
-	return file->pos - start_pos;
+end:
+	return ret;	
 }
 
-/**
-	@brief 定位流
-
-	@return 成功返回0，失败则返回-1
-*/
-static int stdio_fseek(void *ptr, loff_t offset, int whence)
+static int stdio_fseek(struct file *filp, loff_t offset, int whence)
 {	
 	long tmp_pos;
 	int ret = 0;
-	struct stdio_file *file	= (struct stdio_file *)ptr;
+	struct stdio_file *file;
 
+	file = file_get_detail(filp);
+	
 	LOCK_FILE(file);
 	
 	if (file->block)
-	{
 		update_dirty_buffer_block(file);
-	}
 
 	switch (whence)
 	{
@@ -415,11 +385,11 @@ static int stdio_fseek(void *ptr, loff_t offset, int whence)
 		break;
 
 	case SEEK_CUR:
-		tmp_pos = file->pos + offset;
+		tmp_pos = filp->pos + offset;
 		break;
 
 	case SEEK_END:
-		tmp_pos = file->size + offset;
+		tmp_pos = filp->size + offset;
 		break;
 
 	default:
@@ -432,39 +402,33 @@ static int stdio_fseek(void *ptr, loff_t offset, int whence)
 		goto err;	
 	}
 
-	file->pos = tmp_pos;
+	filp->pos = tmp_pos;
 
 err:
 	UNLOCK_FILE(file);
 	return ret;
 }
 
-/**
-	@brief 关闭流
-
-	@return 成功返回0，失败则返回EOF
-*/
-static ssize_t stdio_fclose(void *ptr)
+static int stdio_fclose(struct file *filp)
 {
 	int ret = 0;
-	struct stdio_file *file	= (struct stdio_file *)ptr;
-	if (!file) return -1;
+	struct stdio_file *file;
+	
+	file = file_get_detail(filp);
 
+	/* Private rollback */
 	LOCK_FILE(file);
 	if (file->block)
 	{
 		swap_out_buffer_block(file->block);
 		file->block = NULL;
 	}
-	sys_close(file->fd);
-
 	UNLOCK_FILE(file);
 
-	free(file);
-
+	file_delete(filp);
+	
 	return ret;
 }
-
 
 static const struct file_operations stdio_functions = {
 	.read		= stdio_fread,
@@ -473,9 +437,9 @@ static const struct file_operations stdio_functions = {
 	.close		= stdio_fclose
 };
 
-void stream_file_init_ops(struct stdio_file *file)
+void stream_file_init_ops(struct file *filp)
 {
-	file->ops = &stdio_functions;
+	filp->ops = &stdio_functions;
 }
 
 bool stream_file_buffer_init()

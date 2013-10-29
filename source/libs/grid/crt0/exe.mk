@@ -1,4 +1,4 @@
-DLL=yes
+NORMAL_APP=yes
 include $(MY_BUILD_BASE)/config.mk
 
 OBJS					= head_exe.o

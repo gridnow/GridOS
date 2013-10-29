@@ -18,8 +18,6 @@
 #define PAGE_FAULT_W				(1<<1)
 #define PAGE_FAULT_U				(1<<2)
 #define PAGE_FAULT_RESERVED			(1<<3)
-/*Self define */
-#define PAGE_FAULT_IN_KERNEL		(1<<4)
 
 /**
 	@brief Define the entry flags in Hardware
@@ -40,6 +38,8 @@
 /* Self define */
 #define PAGE_FLAG_FROM_OTHER		(1 << 9)
 
+/* Walk */
+#define ARCH_KM_TOP_MOST_LEVEL		2
 
 static inline void km_write_sub_table(unsigned long *table, int sub_id, unsigned long phyiscal)
 {

@@ -16,16 +16,15 @@
 
 #include "string.h"
 #include "object.h"
-static struct ko_process *init_process, *kernel_file_process;
 
 static bool object_close(real_object_t *obj)
 {
-
+	return true;
 }
 
-static void object_init(real_object_t *obj)
+static bool object_init(real_object_t *obj)
 {
-
+	return true;
 }
 
 static struct cl_object_ops object_ops = {
@@ -82,7 +81,7 @@ struct ko_exe *kp_exe_create(struct ko_section *backend, void *ctx)
 	if (!p) goto err;
 	
 	cl_object_inc_ref(backend);
-	p->backend = backend;
+	p->backend	= backend;
 	memcpy(KO_EXE_TO_PRIVATE(p), ctx, kp_exe_get_context_size());
 	
 	return p;
@@ -101,11 +100,12 @@ struct ko_exe *kp_exe_create_temp()
 }
 
 #include <elf2/elf.h>
-bool kp_exe_bind(struct ko_process *who, struct ko_exe *what)
+unsigned long kp_exe_bind(struct ko_process *who, struct ko_exe *what)
 {
 	int i;
 	struct ko_section *ks, *sub;
 	unsigned long base, size;
+	unsigned long need_base;
 	
 	base = elf_get_mapping_base(KO_EXE_TO_PRIVATE(what), &size, NULL);
 	ks = ks_create(who, KS_TYPE_EXE, base, size, KM_PROT_READ);
@@ -117,13 +117,17 @@ bool kp_exe_bind(struct ko_process *who, struct ko_exe *what)
 	cl_object_inc_ref(what);
 	ks->priv.exe.exe_object = what;
 	
+	if (base)
+		need_base = 0;
+	else
+		need_base = ks->node.start;
 	for (i = 0; ; i++)
 	{
 		struct elf_segment seg;
 
 		if (elf_read_segment(KO_EXE_TO_PRIVATE(what), &seg, i) == false)
 			break;
-		sub = ks_sub_create(who, ks, seg.vstart, seg.vsize);
+		sub = ks_sub_create(who, ks, seg.vstart + need_base, seg.vsize);
 		if (!sub)
 			goto err;
 
@@ -132,19 +136,22 @@ bool kp_exe_bind(struct ko_process *who, struct ko_exe *what)
 			sub->prot |= KM_PROT_WRITE;
 		sub->priv.share.size = seg.fsize;
 		sub->priv.share.offset = seg.foffset;
-		//printk("sub is = %x, start %x, size = %x.\n", sub, seg.log_start, seg.size_in_log);
+		//printk("sub is = %x, start %x, size = %x.\n", sub, seg.vstart, seg.vsize);
 	}
 	if (i == 0)
 		goto err;
 
-	return true;
+	if (base)
+		return base;
+	return need_base;
+	
 err:
 	if (ks)
 	{
 		TODO("É¾³ýÎ´ÓÃ¶ÔÏó");
 	}
 
-	return false;
+	return NULL;
 }
 
 bool kp_exe_share(struct ko_process *where, struct ko_section *ks_dst, unsigned long to, struct ko_exe *ke_src)
@@ -155,6 +162,9 @@ bool kp_exe_share(struct ko_process *where, struct ko_section *ks_dst, unsigned 
 
 	source = ke_src->backend->node.start + ks_dst->priv.share.offset;	/* Base + section offset*/
 	source += to - ks_dst->node.start;									// Offset of the to Current process
+
+	//printk("source = %p, to = %p, ke_src->backend->node.start = %p, ks_dst->priv.share.offset = %p\n", source, to,
+	//	ke_src->backend->node.start, ks_dst->priv.share.offset);
 
 share_again:
 	dst_mem = kp_get_mem(where);
@@ -194,7 +204,7 @@ bool kp_exe_copy_private(struct ko_exe *ke, void *dst_ctx, int dst_size)
 	return true;
 }
 
-struct ko_exe *kp_exe_create_from_file(xstring name, struct ko_section *ks, void *ctx)
+struct ko_exe *kp_exe_create_from_file(xstring name, struct ko_section *ks, void *ctx, void *entry_address)
 {
 	struct ko_exe *p;
 	
@@ -203,7 +213,7 @@ struct ko_exe *kp_exe_create_from_file(xstring name, struct ko_section *ks, void
 		goto err;
 	if (cl_object_set_name(p, name) == NULL)
 		goto err;
-	
+	p->entry = entry_address;
 	return p;
 	
 err:
@@ -214,16 +224,22 @@ err:
 	return NULL;
 }
 
-struct ko_exe *kp_exe_open_by_name(struct ko_process *who, xstring name)
+struct ko_exe *kp_exe_search_by_name(xstring name)
 {
 	struct ko_exe *ke;
 
 	/* Search will get reference count */
 	ke = cl_object_search_name(&exe_type, name);
-	if (!ke)
-		goto err;
+	return ke;
+}
 
-	if (kp_exe_bind(who, ke) == false)
+struct ko_exe *kp_exe_open_by_name(struct ko_process *who, xstring name, unsigned long *__out map_base)
+{
+	struct ko_exe *ke;
+
+	if ((ke = kp_exe_search_by_name(name)) == NULL)
+		goto err;
+	if ((*map_base = kp_exe_bind(who, ke)) == NULL)
 		goto err;
 
 	return ke;

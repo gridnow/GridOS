@@ -22,6 +22,11 @@ DLLEXPORT int printf(const char *fmt, ...)
 	return printed;
 }
 
+void printk(const char *fmt)
+{
+	printf(fmt);
+}
+
 DLLEXPORT int puts(const char *s)
 {
 	return printf(s);

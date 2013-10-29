@@ -115,6 +115,8 @@ struct fss_cache
 	struct ke_spinlock dirty_list_lock;
 };
 
+#define FSS_DBD_LOCK(DBD) 
+#define FSS_DBD_UNLOCK(DBD) 
 #define FSS_DBD_LEVEL_EXCHANGE_MASK	(127)								/* Access count & this == 0时，和上一级比对是否交换位置 */
 #define FSS_DBD_DEGRADE_COUNT(DBD)	((DBD)->access_counter > FSS_DBD_LEVEL_EXCHANGE_MASK ? \
 	(DBD)->access_counter - FSS_DBD_LEVEL_EXCHANGE_MASK : (DBD)->access_counter = 0)

@@ -50,10 +50,23 @@ again:
 	cl_atomic_dec(&object->ref);
 	
 	if (type->ops->init)
-		type->ops->init((real_object_t*)(object + 1));
+	{
+		if (type->ops->init((real_object_t*)(object + 1)) == false)
+		{
+			goto err;
+		}
+	}
 
 end:
 	return object + 1;
+
+err:
+	if (object)
+	{
+		//TODO:
+	}
+
+	return NULL;
 }
 
 /**

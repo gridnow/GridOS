@@ -21,5 +21,6 @@ void *crt_zalloc(int size);
 /* Error number part                                                    */
 /************************************************************************/
 void set_errno(int posix_errno);
+int get_errno();
 
 #endif

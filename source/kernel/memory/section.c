@@ -17,13 +17,15 @@
 
 static bool object_close(real_object_t *obj)
 {
-	
+	return true;
 }
 
-static void object_init(real_object_t *obj)
+static bool object_init(real_object_t *obj)
 {
 	struct ko_section *p = (void*)obj;
 	INIT_LIST_HEAD(&p->node.subsection_head);
+
+	return true;
 }
 
 static struct cl_object_ops section_object_ops = {
@@ -73,7 +75,6 @@ struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsig
 {
 	struct ko_section *p;
 	
-	if (size == 0) goto err;	
 	p = cl_object_create(&section_type);
 	if (!p)	goto err;	
 
@@ -81,7 +82,7 @@ struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsig
 	p->node.size 	= size;
 	p->node.start 	= base;
 	p->prot			= prot;
-	if (km_vm_create(where, &p->node) == false)
+	if (km_vm_create(where, &p->node, type == KS_TYPE_KERNEL) == false)
 		goto err1;
 	
 	return p;
@@ -100,9 +101,9 @@ void ks_close(struct ko_section *ks)
 /**
 	@brief Create a sub node on the current section
 */
-struct ko_section * ks_sub_create(struct ko_process * who, struct ko_section * where, unsigned long sub_address, unsigned long sub_size)
+struct ko_section *ks_sub_create(struct ko_process * who, struct ko_section * where, unsigned long sub_address, unsigned long sub_size)
 {
-	struct ko_section * sub;
+	struct ko_section *sub;
 
 	/* Create the sub-section and type is set to normal */
 	sub = cl_object_create(&section_type);
@@ -159,10 +160,22 @@ void ks_sub_close(struct ko_process * who, struct ko_section * which)
 	}
 }
 
-void ks_init_for_process(struct ko_process *who)
+bool ks_init_for_process(struct ko_process *who)
 {
 	INIT_LIST_HEAD(&who->vm_list);
 	ke_spin_init(&who->vm_list_lock);
+
+	/* If is non CPL0, we need a big shared section for kernel space */
+	if (who->cpl != KP_CPL0)
+	{
+		if (!ks_create(who, KS_TYPE_KERNEL, 0, 0, 0))
+			goto err;
+	}
+
+	return true;
+
+err:
+	return false;
 }
 
 void __init ks_init()

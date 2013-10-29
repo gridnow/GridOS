@@ -29,8 +29,7 @@ static ke_handle create_thread(void *entry, void * arg, bool run)
 	req.entry		= entry;
 	req.para		= (unsigned long)arg;
 	req.run			= run;
-	system_call(&req);
-	return req.thread; 
+	return (ke_handle)system_call(&req);	
 }
 
 /**

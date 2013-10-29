@@ -52,7 +52,7 @@ struct fss_file *fss_open(struct fss_file *current_dir, char *name);
 
 /**
  */
-ssize_t fss_get_size(struct fss_file *who);
+lsize_t fss_get_size(struct fss_file *who);
 
 /**
  */

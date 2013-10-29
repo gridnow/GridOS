@@ -12,6 +12,9 @@ ADD_INCLUDE				+=-I$(NES_SRC)
 
 all: subs_parts $(OBJS)
 	$(LD) $(LDFLAGS) -o $(TARGET) $(ADD_LDFLAGS) $(DEPENDS) *.o $(ARCH_LD_FLAGS)
+	$(CP) $(TARGET) $(SYSTEM_DIR)
+	$(CP) *.nes $(SYSTEM_DIR)
+	
 	#because make clean not work for NES_SRC
 	rm -f $(NES_SRC)/*.o
 

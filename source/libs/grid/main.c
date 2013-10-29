@@ -16,7 +16,7 @@
 #include "sys/ke_req.h"
 
 #include "malloc/malloc.h"
-#include "file.h"
+#include "stream_file.h"
 
 static bool init_libc()
 {
@@ -47,6 +47,12 @@ DLLEXPORT void set_errno(int value)
 {
 
 }
+
+DLLEXPORT int get_errno()
+{
+
+}
+
 
 /************test**************/
 __weak void exefmt_load()

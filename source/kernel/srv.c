@@ -12,6 +12,7 @@
 #include <process.h>
 #include <sync.h>
 #include <exe.h>
+#include <thread.h>
 #include <handle.h>
 
 #include "string.h"
@@ -52,10 +53,35 @@ end:
 /************************************************************************/
 /* Process                                                              */
 /************************************************************************/
+
+static ke_handle process_create(struct sysreq_process_create * req)
+{
+	void *entry_address = 0;
+	struct ko_process *process;
+	struct ko_exe *ke_ld;
+	ke_handle handle;
+
+	if ((ke_ld = kp_exe_search_by_name("/os/i386/dl.sys")) == NULL)
+		goto err1;
+	if ((process = kp_run_user(ke_ld, req->cmdline)) == NULL)
+		goto err2;
+	if ((handle = ke_handle_create(KP_CURRENT())) == KE_INVALID_HANDLE)
+		goto err3;
+	
+	return handle;
+
+err3:
+	//TODO: delete the process
+err2:
+	//TODO: close the object
+err1:
+	return KE_INVALID_HANDLE;
+}
+
 /**
- @brief New process send a startup signal
+	@brief New process send a startup signal
  
- We copy the startup cmdline to the process
+	We copy the startup cmdline to the process
  */
 static void process_startup(struct sysreq_process_startup * req)
 {
@@ -106,10 +132,8 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 			if (ke_validate_user_buffer(module_name, strlen(module_name), false) == false)
 				goto ld_0_err;
 			if (ke_validate_user_buffer(&req->map_base, sizeof(req->map_base), true) == false)
-				goto ld_0_err;
-			
-			image = kp_exe_open_by_name(KP_CURRENT(), module_name);
-			if (!image)
+				goto ld_0_err;			
+			if ((image = kp_exe_open_by_name(KP_CURRENT(), module_name, &req->map_base)) == NULL)			
 				goto ld_0_err;
 			if (kp_exe_copy_private(image, req->context, req->context_length) == false)
 				goto ld_0_err1;
@@ -135,7 +159,7 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 			module_name = req->name;
 			
 			if (ke_validate_user_buffer(module_name, strlen(module_name), false) == false)
-				goto map_0_err;
+				goto map_0_err;				
 			file_section = map_file(KP_CURRENT(), module_name, KM_PROT_READ, &req->context_length);
 			if (file_section == NULL)
 				goto map_0_err;
@@ -175,7 +199,7 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 				goto ld_3_err;
 			if ((file_section = map_file(kp_get_file_process(), module_name, KM_PROT_READ, &size)) == NULL)
 				goto ld_3_err;
-			if (kp_exe_create_from_file(module_name, file_section, ctx) == NULL)
+			if (kp_exe_create_from_file(module_name, file_section, ctx, NULL) == NULL)
 				goto ld_3_err;
 			
 			return true;
@@ -190,9 +214,50 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 	return 0;
 }
 
+/**
+	@brief Create a new user thread
+*/
+static ke_handle thread_create(struct sysreq_thread_create * req)
+{
+	ke_handle h;
+	struct ko_thread *t;
+	struct kt_thread_creating_context ctx = {0};
+
+	ctx.thread_entry	= req->entry;
+	ctx.fate_entry		= req->wrapper;	
+	ctx.para			= req->para;
+	ctx.flags			= req->run?KT_CREATE_RUN:0;
+	if ((t = kt_create(KP_CURRENT(), &ctx)) == NULL)
+		goto err;
+	if (KE_INVALID_HANDLE == (h = ke_handle_create((void*)t)))
+		goto err;
+	
+	return h;
+
+err:
+	if (t)
+	{
+		//TODO:
+	}
+	return KE_INVALID_HANDLE; 
+}
+
 /************************************************************************/
 /* MISC                                                                 */
 /************************************************************************/
+static void misc_draw_screen(struct sysreq_misc_draw_screen * req)
+{
+	extern void video_draw_pixel(int x, int y, unsigned int clr);
+	extern void video_draw_bitmap(int x, int y, int width, int height, int bpp, void * user_bitmap);
+	extern void video_get_screen_resolution(int * width, int * height, int *bpp);
+
+	if (req->type == SYSREQ_MISC_DRAW_SCREEN_BITMAP)
+		video_draw_bitmap(req->x, req->y, req->bitmap.width, req->bitmap.height, req->bitmap.bpp, req->bitmap.buffer);
+	else if (req->type == SYSREQ_MISC_DRAW_SCREEN_PIXEL)
+		video_draw_pixel(req->x, req->y, req->pixel.clr);
+	else if (req->type == SYSREQ_MISC_DRAW_GET_RESOLUTION)
+		video_get_screen_resolution(&req->resolution.width, &req->resolution.height, &req->resolution.bpp);
+}
 
 /**
 */
@@ -279,7 +344,7 @@ asmregparm unsigned long arch_system_call(unsigned long * req)
 	//TODO
 
 	return ret;
-}
+} 
 
 bool ke_srv_register(const struct ke_srv_info * info)
 {
@@ -302,9 +367,9 @@ err1:
 
 void ke_srv_init()
 {
-//	kernel_entry[SYS_REQ_KERNEL_THREAD_CREATE - SYS_REQ_KERNEL_BASE]	= (void*) thread_create;
-	///kernel_entry[SYS_REQ_KERNEL_THREAD_WAIT - SYS_REQ_KERNEL_BASE]		= (void*) thread_wait;
-	//kernel_entry[SYS_REQ_KERNEL_PROCESS_CREATE - SYS_REQ_KERNEL_BASE]	= (void*) process_create;
+	kernel_entry[SYS_REQ_KERNEL_THREAD_CREATE - SYS_REQ_KERNEL_BASE]	= (void*) thread_create;
+	//kernel_entry[SYS_REQ_KERNEL_THREAD_WAIT - SYS_REQ_KERNEL_BASE]		= (void*) thread_wait;
+	kernel_entry[SYS_REQ_KERNEL_PROCESS_CREATE - SYS_REQ_KERNEL_BASE]	= (void*) process_create;
 	kernel_entry[SYS_REQ_KERNEL_PROCESS_STARTUP - SYS_REQ_KERNEL_BASE]		= (void*) process_startup;
 	kernel_entry[SYS_REQ_KERNEL_PROCESS_HANDLE_EXE - SYS_REQ_KERNEL_BASE]	= (void*) process_ld;
 	//kernel_entry[SYS_REQ_KERNEL_WAIT - SYS_REQ_KERNEL_BASE]				= (void*) process_wait;
@@ -312,7 +377,7 @@ void ke_srv_init()
 
 	/* Misc */
 	kernel_entry[SYS_REQ_KERNEL_PRINTF - SYS_REQ_KERNEL_BASE]			= (void*) kernel_printf;
-	//kernel_entry[SYS_REQ_KERNEL_MISC_DRAW_SCREEN - SYS_REQ_KERNEL_BASE] = (void*) misc_draw_screen;
+	kernel_entry[SYS_REQ_KERNEL_MISC_DRAW_SCREEN - SYS_REQ_KERNEL_BASE] = (void*) misc_draw_screen;
 
 	/* Memory part */
 	kernel_entry[SYS_REQ_KERNEL_VIRTUAL_ALLOC - SYS_REQ_KERNEL_BASE]	= (void*) memory_virtual_alloc;

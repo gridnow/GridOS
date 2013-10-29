@@ -21,17 +21,7 @@
 */
 DLLEXPORT int ftruncate(int fd, off_t length)
 {
-	int ret;
-	
-	ret = sys_ftruncate(fd, length);
-	if (0 == ret)
-	{
-#if 0
-		struct stdio_file * file = mltt_entry_locate(get_libc_mltt(), fd);
-		file->size = length;
-#endif
-		//TODO
-	}
+	int ret = -1;
 	
 	return ret;
 }

@@ -133,8 +133,8 @@ static bool insert_virtual_space(struct list_head * list, struct km_vm_node * wh
 	return inserted;
 }
 
-void km_get_vm_range(int process_cpl, unsigned long *start, unsigned long *size)
-{
+void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, unsigned long *desired_start, unsigned long *desired_size, bool is_type_kernel)
+{	
 	switch (process_cpl)
 	{
 		case KP_CPL0:
@@ -154,10 +154,22 @@ void km_get_vm_range(int process_cpl, unsigned long *start, unsigned long *size)
 			{
 #if defined(__i386__) || defined (__arm__)
 				*size = HAL_GET_BASIC_KADDRESS(0) - user_start;
+				if (is_type_kernel)
+				{
+					*desired_size = *size;
+					*desired_start = HAL_GET_BASIC_KADDRESS(0);
+					*start = *desired_start;
+				}
 #elif defined(__mips64__)
 				*size = 1024 * 1024 * 1024 * 1024;
+				if (is_type_kernel)
+				{
+					*desired_size = *size;
+					*desired_start = HAL_GET_BASIC_KADDRESS(0);
+					*start = *desired_start;
+				}
 #else
-#error "Platform must be defined for km_get_vm_range"
+#error "Platform must be defined for get_vm_range"
 #endif
 			}
 			break;
@@ -165,42 +177,39 @@ void km_get_vm_range(int process_cpl, unsigned long *start, unsigned long *size)
 		default:
 			BUG();
 	}
+	
+	*desired_size = ALIGN(*desired_size, PAGE_SIZE);
 }
 
-bool km_vm_create(struct ko_process *where, struct km_vm_node *node)
+bool km_vm_create(struct ko_process *where, struct km_vm_node *node, int is_type_kernel)
 {
+	bool r = false;
 	unsigned long range_start, range_len;
-	unsigned long start = NULL;
-	unsigned long size = ALIGN(node->size, PAGE_SIZE);
 
-	km_get_vm_range(where->cpl, &range_start, &range_len);
+	get_vm_range(where->cpl, &range_start, &range_len, &node->start, &node->size, is_type_kernel);
 
 	KP_LOCK_PROCESS_SECTION_LIST(where);
-	start = alloc_virtual_space(&where->vm_list, range_start, range_len, node->start, size);
-	if (start == NULL) 
+	
+	if ((node->start = alloc_virtual_space(&where->vm_list, range_start, range_len, node->start, node->size)) == NULL)
 	{
-		//printk("km_vm_create error: base %x, range_start %x, range_len %x, len %x.\n",
-		//	node->start, range_start, range_len, node->size);
-		goto end;
+	//	printk("node start = %x, node size = %x.\n", node->start, node->size);
+		goto end1;
 	}
-	node->start = start;
-	node->size = size;
 	
 	/* Actually insertion will not fail, or the alloc_virtual_space has BUG */
 	if (insert_virtual_space(&where->vm_list, node, false) == false)
 	{
-		//printf("Insert error.\n");
-		start = NULL;
-		goto end;
+	//	printk("insert error.\n");
+		goto end2;
 	}
-
-end:
+	
+	r = true;
+	
+end2:
+	//TODO delete the virtual space already allocated
+end1:
 	KP_UNLOCK_PROCESS_SECTION_LIST(where);
-	
-	if (start == NULL)
-		return false;
-	
-	return true;
+	return r;
 }
 
 /**
@@ -224,7 +233,7 @@ unsigned long km_vm_create_sub(struct ko_process *where, struct km_vm_node *pare
 	if (!base) goto end;
 
 	/* Set the information to the object */
-	sub_node->size  = size;
+	sub_node->size  = size; 
 	sub_node->start = base;
 
 	/* Insert to the thread list */
