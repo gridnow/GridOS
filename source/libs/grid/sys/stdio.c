@@ -16,7 +16,7 @@
 /**
 	@brief Read a key
 */
-int stdin_read(unsigned long * key)
+int stdin_read(unsigned long *key)
 {
 	struct sysreq_session_stdio req;
 	int ret;
@@ -31,10 +31,10 @@ int stdin_read(unsigned long * key)
 	return ret;
 }
 
-int stdout_write(unsigned char * buf, size_t size)
+int stdout_write(char *buf, size_t size)
 {
-	struct sysreq_process_printf req = {0};
+	struct sysreq_process_printf req;
 	req.base.req_id = SYS_REQ_KERNEL_PRINTF;
 	req.string = buf;
-	system_call(&req);
+	return system_call(&req);
 }

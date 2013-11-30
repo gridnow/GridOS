@@ -75,4 +75,8 @@ static inline void km_arch_flush_page(unsigned long virtual_address)
 	__flush_tlb_one(virtual_address);
 }
 
+static inline void km_arch_flush_pages(unsigned long start, unsigned long size)
+{
+	__flush_tlb();
+}
 #endif

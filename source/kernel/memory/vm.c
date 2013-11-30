@@ -189,17 +189,16 @@ bool km_vm_create(struct ko_process *where, struct km_vm_node *node, int is_type
 	get_vm_range(where->cpl, &range_start, &range_len, &node->start, &node->size, is_type_kernel);
 
 	KP_LOCK_PROCESS_SECTION_LIST(where);
-	
 	if ((node->start = alloc_virtual_space(&where->vm_list, range_start, range_len, node->start, node->size)) == NULL)
 	{
-	//	printk("node start = %x, node size = %x.\n", node->start, node->size);
+		//printk("node start = %x, node size = %dkb.\n", node->start, node->size/1024);
 		goto end1;
 	}
 	
 	/* Actually insertion will not fail, or the alloc_virtual_space has BUG */
 	if (insert_virtual_space(&where->vm_list, node, false) == false)
 	{
-	//	printk("insert error.\n");
+		//printk("insert error.\n");
 		goto end2;
 	}
 	
@@ -210,6 +209,13 @@ end2:
 end1:
 	KP_UNLOCK_PROCESS_SECTION_LIST(where);
 	return r;
+}
+
+void km_vm_delete(struct ko_process *where, struct km_vm_node *what)
+{
+	KP_LOCK_PROCESS_SECTION_LIST(where);
+	list_del(&what->node);
+	KP_UNLOCK_PROCESS_SECTION_LIST(where);
 }
 
 /**
@@ -271,7 +277,7 @@ void *km_map_physical(unsigned long physical, unsigned long size, unsigned long 
 	return (void*)ks->node.start;
 	
 err1:
-	ks_close(ks);
+	ks_close(kp_get_system(), ks);
 err:
 	return NULL;
 }

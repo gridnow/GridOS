@@ -49,8 +49,8 @@ struct fss_cache_recaller
 struct dbmr
 {
 	struct list_head list;												/* 一个DB可能被多个进程共享，因此有列表 */
-	void * process;														/* 本映射属于哪个进程 */
-	void * base;														/* 本映射的基础地址 */
+	void *process;														/* 本映射属于哪个进程 */
+	void *base;															/* 本映射的基础地址 */
 };
 
 /**
@@ -73,7 +73,7 @@ struct dbd
 	/*
 		映射信息
 	*/
-	void * map_lock;													/* 映射描述链表的LOCK */
+	struct ke_spinlock map_lock;										/* 映射描述链表的LOCK */
 	struct list_head map_list;											/* 本DB的映射描述体 */
 
 	/*

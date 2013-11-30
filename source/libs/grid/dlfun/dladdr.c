@@ -10,8 +10,10 @@
 #include <types.h>
 #include <dlfcn.h>
 #include <errno.h>
+
 #include <ddk/debug.h>
 
+#include "posix.h"
 #include "dlfcn.h"
 
 int dladdr(void * address, Dl_info * info)

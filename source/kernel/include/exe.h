@@ -66,6 +66,16 @@ struct ko_exe *kp_exe_create_temp();
 struct ko_exe *kp_exe_search_by_name(xstring name);
 
 /**
+	@brief 取消对对象的引用
+ */
+void kp_exe_put(struct ko_exe *ke);
+
+/**
+	@brief Close the exe object
+*/
+void kp_exe_close(struct ko_process *who, struct ko_exe *ke);
+
+/**
 	@brief Open the exe object
 */
 struct ko_exe *kp_exe_open_by_name(struct ko_process *who, xstring name, unsigned long *__out map_base);

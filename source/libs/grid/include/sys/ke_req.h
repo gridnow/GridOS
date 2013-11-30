@@ -83,6 +83,7 @@ struct sysreq_process_ld
 #define SYSREQ_PROCESS_MAP_EXE_FILE		1
 #define SYSREQ_PROCESS_UNMAP_EXE_FILE	2
 #define SYSREQ_PROCESS_ENJECT_EXE		3
+#define SYSREQ_PROCESS_CLOSE_EXE		SYSREQ_PROCESS_UNMAP_EXE_FILE				// Actually we kill section will trigger exe close
 };
 
 /************************************************************************/
@@ -140,7 +141,7 @@ struct sysreq_process_printf
 {
 	/* INPUT */
 	struct sysreq_common base;
-	void * string;
+	void *string;
 };
 
 #endif

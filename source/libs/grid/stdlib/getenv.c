@@ -10,9 +10,10 @@
 	Wuxin (82828068@qq.com)
  */
 
+#include <types.h>
 
 char *getenv(const char * name)
 {
-	
+	return NULL;	
 }
 

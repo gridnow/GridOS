@@ -35,7 +35,8 @@ static ssize_t append_stream_file(ke_handle handle, void *user_buffer, lsize_t o
 	if (ret)
 		return ret;
 #endif	
-	return sys_write(handle, user_buffer, old_file_size, append_bytes);
+	ret = sys_write(handle, user_buffer, old_file_size, append_bytes);
+	return ret;
 }
 
 /**
@@ -112,7 +113,7 @@ static bool swap_out_buffer_block(struct buffer_block *block)
 static struct buffer_block *get_rebirth_buffer_block()
 {
 	int i, mix_access_count, mix_index;
-	struct buffer_block *rebirth_buffer_block;
+	struct buffer_block *rebirth_buffer_block = NULL;
 	
 	/* 查找访问计数最小的buffer block */
 	mix_access_count	= buffer_pool[0].access_count;
@@ -150,8 +151,8 @@ static struct buffer_block *get_rebirth_buffer_block()
  */
 static struct buffer_block *get_free_buffer_block()
 {
-	int i, index;
-	struct buffer_block *block;
+	int i;
+	struct buffer_block *block = NULL;
 	
 	// TODO lock buffer_pool
 	for (i = 0; i < BUF_BLOCK_NUM; i++)
@@ -173,24 +174,18 @@ static struct buffer_block *get_free_buffer_block()
  */
 static void get_buffer_block(struct stdio_file *file)
 {
-	int i, index;
-	struct buffer_block *block;
+	do
+	{
+		/* 从buffer pool中分配空闲buffer block */
+		file->block = get_free_buffer_block();
+		if (NULL != file->block) 
+			break;
+				
+		file->block = get_rebirth_buffer_block();
+		if (NULL != file->block) 
+			break;
+	} while (1);
 	
-start:
-	/* 从buffer pool中分配空闲buffer block */
-	file->block = get_free_buffer_block();
-	if (NULL != file->block) goto end;
-	
-	/*
-	 说明buffer pool中没有空闲buffer block
-	 从buffer pool选择一个合适的buffer block作为空闲buffer block换出
-	 */
-	file->block = get_rebirth_buffer_block();
-	if (NULL != file->block) goto end;
-	
-	goto start;
-	
-end:
 	file->block->file = file;
 	file->block->flags |= BUF_BLOCK_BUSY_FLAG;
 	file->block->access_count++;
@@ -367,7 +362,7 @@ end:
 
 static int stdio_fseek(struct file *filp, loff_t offset, int whence)
 {	
-	long tmp_pos;
+	uoffset tmp_pos;
 	int ret = 0;
 	struct stdio_file *file;
 
@@ -393,7 +388,8 @@ static int stdio_fseek(struct file *filp, loff_t offset, int whence)
 		break;
 
 	default:
-		ret = -1;
+		tmp_pos = POSIX_FAILED;
+		set_errno(EINVAL);
 	}
 
 	if(tmp_pos < 0) 
@@ -446,8 +442,7 @@ bool stream_file_buffer_init()
 {
 	int	i, j, index, buf_block_size;
 	void *pool;
-	struct buffer_block *block;
-	
+		
 	buf_block_size = sizeof(struct buffer_block);
 	pool = malloc(BUF_SIZE);
 	if (!pool)

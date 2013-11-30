@@ -99,6 +99,7 @@ static inline unsigned long km_get_vid(unsigned long level, unsigned long va)
 	
 	return va;
 }
+
 #endif
 
 #ifndef ARCH_HAS_PTE_T
@@ -152,7 +153,7 @@ static inline pte_t km_pte_read(struct km_walk_ctx *ctx)
 	pte_t *entry  = &(ctx->table_base[1][ctx->hirarch_id[1]]);
 	return *entry;
 }
-	
+
 static inline bool km_pte_write_and_next(struct km_walk_ctx *ctx, pte_t what)
 {
 	km_pte_write(ctx, what);
@@ -164,5 +165,59 @@ static inline bool km_pte_read_and_next(struct km_walk_ctx *ctx, pte_t *pte)
 	*pte = km_pte_read(ctx);
 	return km_pte_next(ctx);
 }
+
+static inline void km_pte_clean(struct km_walk_ctx * ctx)
+{
+	km_pte_write_force(ctx, NULL);
+}
+
+static inline int km_get_level_entry_count(int id)
+{
+	/* Get the 2nd level count */
+	if (id == 1)
+		return ARCH_KM_LV2_COUNT;	
+
+#if (KM_WALK_MAX_LEVEL != 2)
+#error "level-3 support"
+#endif
+	return 0;
+}
+
+/**
+	@brief Get the size of each level
+*/
+static inline int km_get_sub_level_size(int id)
+{
+	if (id == 1/*第1级每项的尺寸*/)
+		return ARCH_KM_LV1_COUNT * PAGE_SIZE;
+#if (KM_WALK_MAX_LEVEL != 2)
+#error "level-3 support"
+#endif
+	return 0;
+}
+
+/**
+	@brief 跳跃到下一个表表示的地址
+
+	@return 跳跃了多少字节
+*/
+static inline unsigned long km_walk_jump(struct km_walk_ctx *ctx)
+{
+	unsigned long old = ctx->current_virtual_address;
+	int level_size = km_get_sub_level_size(ctx->level_id);
+
+	/* Round to level size aligned */
+	ctx->current_virtual_address |= (level_size - 1);
+	ctx->current_virtual_address++;
+
+	return ctx->current_virtual_address - old;
+}
+
+/************************************************************************/
+/*                                                                      */
+/************************************************************************/
+void km_walk_loop(struct km_walk_ctx *ctx, unsigned long start, unsigned long size,
+				  void (*meet_action)(struct km_walk_ctx *ctx, pte_t pte));
+
 
 #endif

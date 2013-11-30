@@ -42,6 +42,7 @@ static struct ko_section *map_file(struct ko_process *to, xstring name, page_pro
 	if (!ks_file)
 		goto err1;
 	ks_file->priv.file.file = fp;
+	
 	return ks_file;
 	
 err1:
@@ -50,13 +51,28 @@ end:
 	return NULL;
 }
 
+static bool unmap_file(struct ko_process *where, void *address_in_module)
+{
+	struct ko_section *ks;
+
+	ks = ks_get_by_vaddress(where, (unsigned long)address_in_module);
+	if (!ks)
+		return false;
+	ks_close(where, ks);
+
+	return true;
+}
+/************************************************************************/
+/* 访问其他模块的接口                                                      */
+/************************************************************************/
+
+
 /************************************************************************/
 /* Process                                                              */
 /************************************************************************/
 
 static ke_handle process_create(struct sysreq_process_create * req)
 {
-	void *entry_address = 0;
 	struct ko_process *process;
 	struct ko_exe *ke_ld;
 	ke_handle handle;
@@ -67,6 +83,7 @@ static ke_handle process_create(struct sysreq_process_create * req)
 		goto err2;
 	if ((handle = ke_handle_create(KP_CURRENT())) == KE_INVALID_HANDLE)
 		goto err3;
+	kp_exe_put(ke_ld);
 	
 	return handle;
 
@@ -94,14 +111,14 @@ static void process_startup(struct sysreq_process_startup * req)
 			return;
 		memcpy(cmdline, (void*)(kt_arch_get_sp0(kt_current()) - KT_ARCH_THREAD_CP0_STACK_SIZE),
 			   SYSREQ_PROCESS_STARTUP_MAX_SIZE);
-		printk("cmdline is %s.\n", cmdline);
+		//printk("cmdline is %s.\n", cmdline);
 	}
 	else if (req->func == SYSREQ_PROCESS_STARTUP_FUNC_SET_PATH)
 	{
 		/* The user buffer can be written ? */
 		if (ke_validate_user_buffer(cmdline, SYSREQ_PROCESS_STARTUP_MAX_SIZE, false) == false)
 			return;
-		printk("current dir = %s.\n", cmdline);
+		//printk("current dir = %s.\n", cmdline);
 		kt_current()->current_dir = fss_open(NULL, cmdline);
 	}
 	else if (req->func == SYSREQ_PROCESS_STARTUP_FUNC_END)
@@ -114,7 +131,7 @@ static void process_startup(struct sysreq_process_startup * req)
 /**
 	@brief dynamic linker ops
  */
-static ke_handle process_ld(struct sysreq_process_ld * req)
+static ke_handle process_ld(struct sysreq_process_ld *req)
 {
 	ke_handle handle;
 	xstring module_name;
@@ -157,31 +174,37 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 			struct ko_section *file_section;
 			
 			module_name = req->name;
-			
+			//printk("mapping exe file %s at user.\n", module_name);
 			if (ke_validate_user_buffer(module_name, strlen(module_name), false) == false)
 				goto map_0_err;				
 			file_section = map_file(KP_CURRENT(), module_name, KM_PROT_READ, &req->context_length);
 			if (file_section == NULL)
 				goto map_0_err;
 			
+			/* We are preparing to use this section for EXE file ananlyzing, so no real handle is needed */
+			//printk("map ok\n");
 			return (ke_handle)file_section->node.start;
 			
 		map_0_err:
 			return 0;
 		}
 		
-		/* 删除本地map的文件 */
+		/* 
+			Unamp file or module in current process space,
+			req->handle is the module handle(if not by address of req->name)
+			req->name is map base, return bool
+		*/
 		case SYSREQ_PROCESS_UNMAP_EXE_FILE:
 		{
-			void *base = req->name;
-			TRACE_UNIMPLEMENTED("");
+			if (req->name)
+				return unmap_file(KP_CURRENT(), req->name);
+			//TODO handle
 		}
 		break;
 		
 		/* Add a new exe object, return bool */
 		case SYSREQ_PROCESS_ENJECT_EXE:
 		{
-			struct ko_exe *image;
 			void *ctx;
 			int ctx_size;
 			unsigned long size;
@@ -190,7 +213,7 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 			ctx_size		= req->context_length;
 			ctx				= req->context;
 			module_name		= req->name;
-			
+
 			if (ke_validate_user_buffer(ctx, ctx_size, false) == false)
 				goto ld_3_err;
 			if (ke_validate_user_buffer(module_name, strlen(module_name), false) == false)
@@ -201,12 +224,13 @@ static ke_handle process_ld(struct sysreq_process_ld * req)
 				goto ld_3_err;
 			if (kp_exe_create_from_file(module_name, file_section, ctx, NULL) == NULL)
 				goto ld_3_err;
-			
+
 			return true;
 			
 		ld_3_err:
 			return false;
 		}
+		
 		default:
 			break;
 	}
@@ -337,9 +361,10 @@ asmregparm unsigned long arch_system_call(unsigned long * req)
 		printk("syscall at class %d, req id %d: 没有注册对应的服务处理接口。\n", clasz, KE_SRV_GET_FID(req_id));
 		return -1;
 	}
+	
 	func = ke_interface_v2[clasz]->request_enqueue;
 	ret	= ka_call_dynamic_module_entry(func, KE_SRV_GET_FID(req_id), req);
-
+ 
 	/* But is a dead thread? */
 	//TODO
 
@@ -359,10 +384,6 @@ bool ke_srv_register(const struct ke_srv_info * info)
 	ke_interface_v2[id] = info;
 
 	return true;
-
-err1:
-	ke_interface_v2[id] = NULL;
-	return false;
 }
 
 void ke_srv_init()

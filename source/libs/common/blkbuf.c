@@ -15,7 +15,7 @@ struct block_instance
 {
 	struct block_instance *pre, *next;
 	struct cl_bitmap bitmap;
-	int		block_size;
+	int		this_size;/*this instance size*/
 	int		node_count;
 	int		free_count;
 
@@ -36,6 +36,35 @@ struct block_instance
 		}																	\
 		where = where->DIRECTION;											\
 	}																		\
+
+#define BLKBUF_DEALLOCATE(DIRECTION, bkb)										\
+	while (where != NULL)														\
+	{																		\
+		if ((unsigned long)p >= (unsigned long)GET_DATA_AREA(bkb, where) /*after the start*/		\
+			&& (unsigned long)p < (unsigned long)where/*manager info is at end*/)				\
+		{																	\
+			dealloc(bkb, where, p);											\
+			goto got;														\
+		}																	\
+		/* We do not need lock when we are reading a pointer */				\
+		where = where->DIRECTION;													\
+	}																		\
+
+static void delete_node(struct cl_bkb *bkb, struct block_instance *node)
+{
+	//TODO: Delete this node
+}
+
+static void dealloc(struct cl_bkb *bkb, struct block_instance *node, void *p)
+{
+	cl_bitmap_dealloc_bit(&node->bitmap, ((unsigned long)p -  GET_DATA_AREA(bkb, node)) / bkb->node_size);
+	node->free_count++;
+
+	//printk("bkb %s, has free %d, total %d.\n", bkb->name, node->free_count, node->node_count);
+	/* If is last one, we may delete this block */
+	if (node->free_count == node->node_count)
+		delete_node(bkb, node);
+}
 
 /************************************************************************
 	导出接口
@@ -92,7 +121,7 @@ void cl_bkb_extend(struct cl_bkb *bkb, void *base, size_t size, cl_bkb_free_hand
 	buf->free_handler	= handler;
 	buf->free_count		=
 		buf->node_count	= cur_count;	
-	buf->block_size		= size;
+	buf->this_size		= size;
 	cl_bitmap_init(&buf->bitmap, (unsigned long*)(buf + 1)/*bitmap area*/, cur_count);
 
 	/* Insert to the instance list after the prefer node*/
@@ -111,8 +140,8 @@ void cl_bkb_extend(struct cl_bkb *bkb, void *base, size_t size, cl_bkb_free_hand
 
 void *cl_bkb_alloc(struct cl_bkb *bkb)
 {
-	struct block_instance *where;
 	void *p;
+	struct block_instance *where;
 
 	/* Try all node of next */
 	where = bkb->prefer;
@@ -127,6 +156,27 @@ void *cl_bkb_alloc(struct cl_bkb *bkb)
 	}
 
 	return NULL;
+got:
+	where->free_count--;
+	return p;
+}
+
+void *cl_bkb_dealloc(struct cl_bkb *bkb, void *p)
+{		
+	struct block_instance *where;
+
+	where = bkb->prefer;
+	BLKBUF_DEALLOCATE(next, bkb);	
+
+	/* Try all node of pre */
+	where = bkb->prefer;
+	if (where)
+	{
+		where = where->pre;
+		BLKBUF_DEALLOCATE(pre, bkb);
+	}
+	return NULL;
+
 got:
 	return p;
 }

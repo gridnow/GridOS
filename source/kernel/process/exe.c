@@ -17,8 +17,11 @@
 #include "string.h"
 #include "object.h"
 
-static bool object_close(real_object_t *obj)
+static bool object_close(void *by, real_object_t *obj)
 {
+	struct ko_exe *ke = (struct ko_exe*)obj;
+	printk("You are closing exe object %p, ref = %d, name = %s.\n", ke, cl_object_get_ref_counter(ke), TO_CL_OBJECT(ke)->name);
+ 
 	return true;
 }
 
@@ -71,7 +74,7 @@ static struct cl_object_type exe_type = {
 };
 
 /**
-	@brief 创立一个空的进
+	@brief 创立一个空的EXE
 */
 struct ko_exe *kp_exe_create(struct ko_section *backend, void *ctx)
 {
@@ -86,8 +89,6 @@ struct ko_exe *kp_exe_create(struct ko_section *backend, void *ctx)
 	
 	return p;
 	
-err1:
-	cl_object_close(p);
 err:
 	return NULL;
 }
@@ -100,7 +101,7 @@ struct ko_exe *kp_exe_create_temp()
 }
 
 #include <elf2/elf.h>
-unsigned long kp_exe_bind(struct ko_process *who, struct ko_exe *what)
+unsigned long kp_exe_bind(struct ko_process *where, struct ko_exe *what)
 {
 	int i;
 	struct ko_section *ks, *sub;
@@ -108,15 +109,19 @@ unsigned long kp_exe_bind(struct ko_process *who, struct ko_exe *what)
 	unsigned long need_base;
 	
 	base = elf_get_mapping_base(KO_EXE_TO_PRIVATE(what), &size, NULL);
-	ks = ks_create(who, KS_TYPE_EXE, base, size, KM_PROT_READ);
+	ks = ks_create(where, KS_TYPE_EXE, base, size, KM_PROT_READ);
 	if (!ks)
 	{
 		TODO("");
+		printk("exe %s bind error, desired base is %x.\n", TO_CL_OBJECT(what)->name, base);
 		goto err;
 	}
 	cl_object_inc_ref(what);
 	ks->priv.exe.exe_object = what;
 	
+	/* TODO:Open the ks will map to where */
+	ks_open_by(where, ks);
+
 	if (base)
 		need_base = 0;
 	else
@@ -127,7 +132,7 @@ unsigned long kp_exe_bind(struct ko_process *who, struct ko_exe *what)
 
 		if (elf_read_segment(KO_EXE_TO_PRIVATE(what), &seg, i) == false)
 			break;
-		sub = ks_sub_create(who, ks, seg.vstart + need_base, seg.vsize);
+		sub = ks_sub_create(where, ks, seg.vstart + need_base, seg.vsize);
 		if (!sub)
 			goto err;
 
@@ -214,6 +219,14 @@ struct ko_exe *kp_exe_create_from_file(xstring name, struct ko_section *ks, void
 	if (cl_object_set_name(p, name) == NULL)
 		goto err;
 	p->entry = entry_address;
+	
+	if (0)
+	{
+		unsigned long size;
+		unsigned long base = elf_get_mapping_base(KO_EXE_TO_PRIVATE(p), &size, NULL);
+	
+		printk("New exe from file %s , base virtual = %p.\n", name, base);
+	}
 	return p;
 	
 err:
@@ -233,6 +246,16 @@ struct ko_exe *kp_exe_search_by_name(xstring name)
 	return ke;
 }
 
+void kp_exe_put(struct ko_exe *ke)
+{
+	cl_object_dec_ref(ke);
+}
+
+void kp_exe_close(struct ko_process *who, struct ko_exe *ke)
+{
+	cl_object_close(who, ke);
+}
+
 struct ko_exe *kp_exe_open_by_name(struct ko_process *who, xstring name, unsigned long *__out map_base)
 {
 	struct ko_exe *ke;
@@ -241,12 +264,13 @@ struct ko_exe *kp_exe_open_by_name(struct ko_process *who, xstring name, unsigne
 		goto err;
 	if ((*map_base = kp_exe_bind(who, ke)) == NULL)
 		goto err;
-
+	kp_exe_put(ke);
+	
 	return ke;
 
 err:
 	if (ke)
-		cl_object_close(ke);
+		cl_object_close(who, ke);
 	
 	return NULL;
 }

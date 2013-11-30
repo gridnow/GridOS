@@ -16,24 +16,31 @@
 #include "sys/ke_req.h"
 
 #include "malloc/malloc.h"
+#include "dlfun/dlfcn.h"
 #include "stream_file.h"
 
 static bool init_libc()
 {
 	if (init_malloc() == false)
 		goto err;
+	if (init_module() == false)
+		goto err;
 	if (stream_file_buffer_init() == false)
 		goto err;
-
+	
 	return true;
 
 err:
 	return false;
 }
 
-void dll_main()
+void dll_preinit(void *dl_base)
 {
-//	printf("%s %s %d.\n", __FILE__, __FUNCTION__, __LINE__);
+	dl_handle_over(dl_base);
+}
+
+void dll_main()
+{	
 	if (init_libc() == false)
 		goto err;
 	
@@ -50,15 +57,12 @@ DLLEXPORT void set_errno(int value)
 
 DLLEXPORT int get_errno()
 {
-
+	return 0;
 }
 
 
 /************test**************/
-__weak void exefmt_load()
-{
-	
-}
+
 
 __weak void printk()
 {

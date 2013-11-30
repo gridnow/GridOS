@@ -30,7 +30,7 @@ static asmregparm __noreturn void kernel_thread_fate_entry(unsigned long (*threa
 	kt_delete_current();
 }
 
-static bool object_close(real_object_t *obj)
+static bool object_close(void *by, real_object_t *obj)
 {
 	return true;
 }

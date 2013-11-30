@@ -14,9 +14,48 @@
 #include "memory.h"
 #include "process.h"
 #include "section.h"
+#include "page.h"
+#include "exe.h"
 
-static bool object_close(real_object_t *obj)
+static void remove_from_space(struct ko_process *who, struct ko_section *p)
 {
+	struct km *mem;
+
+	km_vm_delete(who, &p->node);
+	mem = kp_get_mem(who);
+	km_page_dealloc_range(mem, p->node.start, p->node.size);
+	kp_put_mem(mem);
+}
+
+static bool object_close(void *by, real_object_t *obj)
+{
+	struct ko_section *p = (void*)obj;
+	struct ko_process *who = by;
+
+	//printk("You are closing section %p, ref = %d, %s.\n", p, cl_object_get_ref_counter(p), TO_CL_OBJECT(p)->name);
+
+	switch (p->type & KS_TYPE_MASK)
+	{
+		case KS_TYPE_EXE:
+		{
+			struct ko_exe *ke= p->priv.exe.exe_object;
+
+			remove_from_space(who, p);
+			kp_exe_close(who, ke);
+
+			break;
+		}
+		case KS_TYPE_FILE:
+		{
+			void *file = p->priv.file.file;
+						
+			remove_from_space(who, p);
+
+			/* Close the file by FSS */
+			//TODO
+		}
+			
+	}
 	return true;
 }
 
@@ -88,27 +127,32 @@ struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsig
 	return p;
 	
 err1:
-	cl_object_close(p);
+	cl_object_close(where, p);
 err:
 	return NULL;
 }
 
-void ks_close(struct ko_section *ks)
+void ks_close(struct ko_process *who, struct ko_section *ks)
 {
-	cl_object_close(ks);
+	cl_object_close(who, ks);
+}
+
+void ks_open_by(struct ko_process *who, struct ko_section *ks)
+{
+	cl_object_open(who, ks);
 }
 
 /**
 	@brief Create a sub node on the current section
 */
-struct ko_section *ks_sub_create(struct ko_process * who, struct ko_section * where, unsigned long sub_address, unsigned long sub_size)
+struct ko_section *ks_sub_create(struct ko_process *who, struct ko_section *where, unsigned long sub_address, unsigned long sub_size)
 {
 	struct ko_section *sub;
 
 	/* Create the sub-section and type is set to normal */
 	sub = cl_object_create(&section_type);
 	if (!sub) goto err1;
-	sub->type = KS_TYPE_PRIVATE;
+	sub->type = KS_TYPE_PRIVATE | KS_TYPE_ADD_SUB;
 	sub->prot = KM_PROT_READ;
 
 	/* Create the base */
@@ -118,7 +162,7 @@ struct ko_section *ks_sub_create(struct ko_process * who, struct ko_section * wh
 	return sub;
 
 err2:
-	ks_close(sub);
+	ks_close(who, sub);
 err1:
 	return NULL;
 }
@@ -147,7 +191,7 @@ struct ko_section *ks_sub_locate(struct ko_section * where, unsigned long addres
 /**
 	@brief Close the subsection of a section
 */
-void ks_sub_close(struct ko_process * who, struct ko_section * which)
+void ks_sub_close(struct ko_process *who, struct ko_section * which)
 {
 	struct list_head * list, * n;
 	struct km_vm_node *node = &which->node, *sub;
@@ -156,7 +200,7 @@ void ks_sub_close(struct ko_process * who, struct ko_section * which)
 	{
 		sub = list_entry(list, struct km_vm_node, subsection_link);
 		list_del_init(&sub->node);
-		ks_close(KM_VM_NODE_TO_SECTION(sub));
+		ks_close(who, KM_VM_NODE_TO_SECTION(sub));
 	}
 }
 

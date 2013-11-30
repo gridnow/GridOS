@@ -9,39 +9,28 @@
 
 #include <types.h>
 #include <dlfcn.h>
+#include <list.h>
 
-#include "crt.h"
+#include "posix.h"
 
 #include "dlfcn.h"
 
-void *dlopen(const char *file, int mode)
-{
-	Dl_info * info = NULL;
+#if 0
+#ifndef __mips__
+/* Set lazy linker */
+elf_set_lazy_linker(&obj->exe_desc, so_lazy_link, &obj->user_ctx);
+#endif
+#endif
 
+bool init_module()
+{
+	return true;
+}
+
+DLLEXPORT void *dlopen(const char *file, int mode)
+{
 	if (!file)
 		return GLOBAL_HANDLE;
 
-	info = crt_zalloc(sizeof(Dl_info));
-	if (!info)
-		goto dlopen_error;
-	
-	info->dli_fbase	= exefmt_load(file);
-	info->dli_fname	= NULL;/*TODO: point to the image file name */
-	if(!info->dli_fbase) goto dlopen_error;
-	if(!info->dli_fname) goto dlopen_error;
-	
-	return info;
-
-dlopen_error:
-	if (info)
-	{
-		if (info->dli_fbase)
-		{
-
-		}
-
-		crt_free(info);
-	}
-
-	return NULL;
+	return dl_open(file, mode);
 }

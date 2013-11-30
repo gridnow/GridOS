@@ -84,6 +84,7 @@ struct dbd* fss_dbd_malloc(struct fss_file * who)
 
 		/* No map */
 		INIT_LIST_HEAD(&ret->map_list);
+		ke_spin_init(&ret->map_lock);
 		ret->who = who;
 	}
 

@@ -33,10 +33,10 @@ static bool check_repeat(const char *str)
 	while (*str != '\0')
 	{
 		/* 字符ASCII码对应的数组元素加1 */
-		ascii_array[*str]++;
+		ascii_array[(int)*str]++;
 		
 		/* 同一字符ASCII码对应的数组元素如果大于等于2，说明有重复 */
-		if (ascii_array[*str] >= 2) return true;
+		if (ascii_array[(int)*str] >= 2) return true;
 		str++;
 	}
 	
@@ -64,7 +64,7 @@ static bool check_repeat(const char *str)
 static bool set_file_flags(struct stdio_file *file, const char *type)
 {
 	bool ret = true;
-	int	access_modes, status_flags, count;
+	int	access_modes, status_flags;
 	
 	if (strlen(type) > FLAG_LENGTH) return false;
 	

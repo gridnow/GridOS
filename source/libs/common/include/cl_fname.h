@@ -1,18 +1,14 @@
 /**
  *   See the readme.txt at the root directory of this project for the idea and originality of this operating system.
  *   See the license.txt at the root directory of this project for the copyright information about this file and project.
+ *
+ *   wuxin
+ *   
  */
 
-/**
-	The Grid Core Library
- 
-	Posix environment API
-	Wuxin (82828068@qq.com)
- */
+#ifndef CL_FNAME_H
+#define CL_FNAME_H
 
+const char *cl_locate_pure_file_name(const char *fname);
 
-int setenv(const char * name,const char * value, int overwrite)
-{
-	return 0;	
-}
-
+#endif

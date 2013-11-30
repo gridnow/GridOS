@@ -11,22 +11,16 @@
 #include <dlfcn.h>
 #include <errno.h>
 
-#include "crt.h"
 #include "posix.h"
 
 #include "dlfcn.h"
 
-int dlclose(void * handle)
+DLLEXPORT int dlclose(void *handle)
 {
-	Dl_info * info = handle;
-
-	if (info == GLOBAL_HANDLE)
+	if (handle == GLOBAL_HANDLE)
 		return POSIX_FAILED;
 	
-	if (info->dli_fbase)
-		;//TODO
-
-	crt_free(info);
-
+	dl_close(handle);
+	
 	return POSIX_SUCCESS;
 }

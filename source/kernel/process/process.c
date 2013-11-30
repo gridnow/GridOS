@@ -38,7 +38,7 @@ static void file_thread(void *para)
 	
 }
 
-static bool object_close(real_object_t *obj)
+static bool object_close(void *by, real_object_t *obj)
 {
 	return true;
 }
@@ -141,7 +141,7 @@ struct ko_process *kp_create(int cpl, xstring name)
 	return p;
 	
 err1:
-	cl_object_close(p);
+	cl_object_close(NULL, p);
 err:
 	return NULL;
 }
@@ -305,6 +305,9 @@ void ke_run_first_user_process(void *data, int size, char *cmdline)
 	/* OK, create the process */
 	if (kp_run_user(kee, ++first_space/*Real application*/) == false)
 		goto err;
+
+	/* Then, we always hold this image, because it's the loader */
+	cl_object_inc_ref(kee);
 	
 	return;
 err:

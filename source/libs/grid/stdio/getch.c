@@ -12,5 +12,5 @@
 
 DLLEXPORT int getch()
 {
-	
+	return 0;
 }

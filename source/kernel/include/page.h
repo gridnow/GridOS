@@ -38,6 +38,10 @@ int km_page_share(struct km *dst, unsigned long dst_addr, struct km *src, unsign
  */
 void km_page_share_kernel(struct km* mem_dst, unsigned long virtual_address);
 
+/**
+*/
+void km_page_dealloc_range(struct km *mem_dst, unsigned long start, unsigned long size);
+
 /* Default physical address in entry is at high part and is the high significant bits */
 #ifndef ARCH_KM_ENTRY_PHYSICAL_MASK
 #define ARCH_KM_ENTRY_PHYSICAL_MASK (~(PAGE_SIZE - 1))
@@ -45,6 +49,7 @@ void km_page_share_kernel(struct km* mem_dst, unsigned long virtual_address);
 
 #define KE_PAGE_INVALID_PTE(pte) (!pte || !(pte & PAGE_FLAG_VALID))
 #define KE_PAGE_PHY_FROM_PTE(pte) ((pte) & ARCH_KM_ENTRY_PHYSICAL_MASK)
+#define KE_PAGE_IS_SHARED_FROM(pte) ((pte) & PAGE_FLAG_FROM_OTHER)
 
 /* Result only used for sharing page ops */
 #define KM_PAGE_SHARE_RESULT_OK				0

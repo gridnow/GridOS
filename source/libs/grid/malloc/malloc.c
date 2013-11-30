@@ -67,6 +67,7 @@ DLLEXPORT void free(void * p)
 void *crt_free(void *p)
 {
 	free(p);
+	return p;
 }
 
 void *crt_alloc(int size)

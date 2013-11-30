@@ -53,9 +53,9 @@ static struct ko_section *ks_get_by_vaddress_unlock(struct ko_process *where, un
 	return ks;
 }
 
-static struct ko_section * ks_get_by_vaddress(struct ko_process * where, unsigned long address)
+ struct ko_section *ks_get_by_vaddress(struct ko_process *where, unsigned long address)
 {
-	struct ko_section * ks;
+	struct ko_section *ks;
 	
 	KP_LOCK_PROCESS_SECTION_LIST(where);
 	ks = ks_get_by_vaddress_unlock(where, address);
@@ -130,6 +130,7 @@ static bool refill_exe(struct ko_thread *current, struct ko_section *where, unsi
 		/* 由于是缺页异常，那么经过page写入就可以立即访问该页了，无需刷新TLB */
 		if (r == true)
 			memset((void*)KM_PAGE_ROUND_ALIGN(address), 0, PAGE_SIZE);	
+		//printk("EXE: write zero page %x\n", address);
 	}
 	else
 	{

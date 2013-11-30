@@ -24,6 +24,7 @@ struct ko_exe;
 #define KS_TYPE_KERNEL	8
 #define KS_TYPE_MAX		9
 #define KS_TYPE_MASK	0xffff
+#define KS_TYPE_ADD_SUB (1<<16)
 
 #define KM_VM_NODE_TO_SECTION(node) (struct ko_section*)(node)
 struct ko_section
@@ -59,7 +60,8 @@ struct ko_section
 };
 
 struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsigned long base, unsigned long size, page_prot_t prot);
-void ks_close(struct ko_section *ks);
+void ks_close(struct ko_process *who, struct ko_section *ks);
+void ks_open_by(struct ko_process *who, struct ko_section *ks);
 void ks_init();
 
 /**
@@ -93,6 +95,7 @@ void ks_sub_close(struct ko_process * who, struct ko_section * which);
 //exp.c
 bool ks_exception_init();
 bool ks_exception(struct ko_thread *thread, unsigned long error_address, unsigned long code);
+struct ko_section *ks_get_by_vaddress(struct ko_process *where, unsigned long address);
 
 /**
 	@brief Resotore the section contents

@@ -19,6 +19,7 @@ struct km_vm_node
 };
 
 bool km_vm_create(struct ko_process *where, struct km_vm_node *node, int is_type_kernel);
+void km_vm_delete(struct ko_process *where, struct km_vm_node *what);
 
 /**
 	@brief Allocate space in a section

@@ -28,7 +28,7 @@ typedef void *real_object_t;
 
 struct cl_object_ops
 {
-	bool (*close)(real_object_t *object);
+	bool (*close)(void *by, real_object_t *object);
 	bool (*init)(real_object_t *object);
 };
 
@@ -77,8 +77,10 @@ void *cl_object_create(struct cl_object_type *type);
 /**
 	@brief 关闭对对象的使用
 */
-void cl_object_close(void *object);
-
+void cl_object_delete(void *object);
+void cl_object_close(void *by, void *object);
+void cl_object_open(void *by, void *object);
+int cl_object_get_ref_counter(void *object);
 void cl_object_dec_ref(void *object);
 void cl_object_inc_ref(void *object);
 

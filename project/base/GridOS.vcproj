@@ -958,6 +958,10 @@
 										>
 									</File>
 									<File
+										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\tlbflush.h"
+										>
+									</File>
+									<File
 										RelativePath="..\..\source\drivers\hal\include\arch\x86\asm\traps.h"
 										>
 									</File>
@@ -1857,6 +1861,10 @@
 						Name="dlfun"
 						>
 						<File
+							RelativePath="..\..\source\libs\grid\dlfun\dl_crt.c"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\grid\dlfun\dladdr.c"
 							>
 						</File>
@@ -1951,6 +1959,10 @@
 							</File>
 							<File
 								RelativePath="..\..\source\libs\grid\include\sys\ke_req.h"
+								>
+							</File>
+							<File
+								RelativePath="..\..\source\libs\grid\include\sys\session_req.h"
 								>
 							</File>
 							<File
@@ -2098,6 +2110,26 @@
 						</File>
 						<File
 							RelativePath="..\..\source\libs\grid\crt0\so.mk"
+							>
+						</File>
+					</Filter>
+					<Filter
+						Name="stdlib"
+						>
+						<File
+							RelativePath="..\..\source\libs\grid\stdlib\exit.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\stdlib\getenv.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\stdlib\Makefile"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\stdlib\setenv.c"
 							>
 						</File>
 					</Filter>
