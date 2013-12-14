@@ -22,12 +22,19 @@ DLLEXPORT int printf(const char *fmt, ...)
 	return printed;
 }
 
-void printk(const char *fmt)
-{
-	printf(fmt);
-}
-
 DLLEXPORT int puts(const char *s)
 {
 	return printf(s);
+}
+
+DLLEXPORT int fputc(int s, FILE *stream)
+{
+	TODO("");
+	return 0;
+}
+
+DLLEXPORT int fprintf(FILE *file, const char *format, ...)
+{
+	TODO("");
+	return 0;
 }

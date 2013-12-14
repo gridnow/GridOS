@@ -109,6 +109,7 @@ unsigned long kp_exe_bind(struct ko_process *where, struct ko_exe *what)
 	unsigned long need_base;
 	
 	base = elf_get_mapping_base(KO_EXE_TO_PRIVATE(what), &size, NULL);
+//	printf("base = %x, size = %d.\n", base, size);
 	ks = ks_create(where, KS_TYPE_EXE, base, size, KM_PROT_READ);
 	if (!ks)
 	{
@@ -219,6 +220,9 @@ struct ko_exe *kp_exe_create_from_file(xstring name, struct ko_section *ks, void
 	if (cl_object_set_name(p, name) == NULL)
 		goto err;
 	p->entry = entry_address;
+
+	/* 系统对其有使用权，否则用户一旦关闭一个只有它自己使用的对象，那么该对象将被彻底销毁 */
+	cl_object_inc_ref(p);
 	
 	if (0)
 	{
@@ -260,6 +264,7 @@ struct ko_exe *kp_exe_open_by_name(struct ko_process *who, xstring name, unsigne
 {
 	struct ko_exe *ke;
 
+	/* Already opened */
 	if ((ke = kp_exe_search_by_name(name)) == NULL)
 		goto err;
 	if ((*map_base = kp_exe_bind(who, ke)) == NULL)
@@ -269,8 +274,9 @@ struct ko_exe *kp_exe_open_by_name(struct ko_process *who, xstring name, unsigne
 	return ke;
 
 err:
+	/* 即便是bind失败，那么也不是close，而是对该对象无引用 */
 	if (ke)
-		cl_object_close(who, ke);
+		cl_object_dec_ref(who);
 	
 	return NULL;
 }

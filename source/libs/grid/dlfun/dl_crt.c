@@ -1,10 +1,33 @@
+#define SET_LAZY 1
+
 #include "../../../programs/dl/main.c"
 
-#include "cl_fname.h"
+#include <unistd.h>
+#include <stdio.h>
 
 /******************************************************
  For CRT
  ******************************************************/
+#define LIBC_START_MAIN __libc_start_main
+
+DLLEXPORT __attribute__ ((noreturn))  int LIBC_START_MAIN (int (*main) (int, char **, char **),
+							int argc,
+							char **argv,
+							__typeof (main) init,
+							void (*fini) (void),
+							void (*rtld_fini) (void),
+							void *stack_end)
+{
+	int r;
+TODO("");
+	printf("LIBC main:%p, argc = %d(%p), init = %p, fini = %p, rtld_fini = %p, stacn_end = %p",
+		   main, argc, argv, init, fini, rtld_fini, stack_end);
+
+	r = main(argc, argv, 0);
+
+	exit(r);	
+}
+
 static void lock_image_list()
 {
 	//TODO
@@ -13,12 +36,6 @@ static void lock_image_list()
 static void unlock_image_list()
 {
 	//TODO
-}
-
-static bool check_image_precicely(struct image *image, const char *fname)
-{
-	//TODO
-	return true;
 }
 
 static void relink_dep(struct dl_structure *old_dl, struct image *old_image, struct image *new_image)
@@ -71,42 +88,20 @@ void dl_handle_over(void *old_dl)
 
 void *dl_open(const char *name, int mode)
 {
-	struct image *image, *got = NULL;
-	const char *pure_src_name, *pure_dst_name;
+	struct image *got;
 	
-	pure_src_name = cl_locate_pure_file_name(name);
-	
-	/*
-		找到如此匹配的名字，然后去文件系统验证到底是不是对的。
-		以此解决各种变态路径问题，只有文件系统能确定路径问题。
-	*/
 	lock_image_list();
-	list_for_each_entry(image, &dl.image_list_head, linear_list)
-	{
-		/* 一些变态的动态库中还是有"../../abc.so"这样的依赖 */
-		pure_dst_name = cl_locate_pure_file_name(image->name);
-		if (!strcmp(pure_dst_name, pure_src_name))
-		{
-			/* ok，在这里，我们只能过滤到这个地步，精确匹配交给文件系统 */
-			if (check_image_precicely(image, name) == true)
-			{
-				got = image;
-				got->ref++;
-				break;
-			}
-		}
-	}
-
-	if (got)
-		goto end;;
-
-	got = load_image((xstring)name);
-	if (!got)
+	if ((got = _get_obj_from_linear_list((char*)name)) != NULL)
 		goto end;
+
+	/* Itself and its dependencies */
+	if (!(got = load_image((xstring)name)))
+		goto end;
+	load_dependencies();
 	
 	got->mode = mode;
-	relocate(got);
-	
+	relocation();
+
 end:
 	unlock_image_list();
 	return got;
@@ -133,3 +128,15 @@ void *dl_sym(void *handle, const char *name)
 	
 	return NULL;
 }
+
+void *dl_entry(void *handle)
+{
+	struct image *image = handle;
+	unsigned long entry;
+
+	if (elf_get_startup(&image->exe_desc, &image->user_ctx, &entry, NULL, NULL) == false)
+		return NULL;
+
+	return (void*)entry;
+}
+

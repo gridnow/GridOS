@@ -12,9 +12,7 @@
 
 #include "stream_file.h"
 
-DLLEXPORT int fclose(FILE *file)
+DLLEXPORT size_t fwrite(void *ptr, size_t size, size_t nmemb, FILE *file)
 {
-	struct file *filp = file_get_from_detail(file);
-
-	return filp->ops->close(filp);
+	printf("%s", ptr);
 }

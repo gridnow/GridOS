@@ -42,21 +42,22 @@ struct i2p_node
 	void ** array;
 };
 
+#if 0
 void print_i2p_node(struct i2p_node * i2pt)
 {
 	if(!i2pt)
 		return;
 
-	printk("i2p node: %p\n",i2pt);
-	printk("  count:  %d",i2pt->count);
-	printk("  start_index:  %d",i2pt->start_index);
-	printk("  end_index:  %d\n",i2pt->end_index);
-	printk("  pre:  %p",i2pt->pre);
-	printk("  next:  %p",i2pt->next);
-	printk("  head:  %p",i2pt->head);
-	printk("  array:  %p\n",i2pt->array);
-	printk("  bitmap.last_bi:  %p\n",i2pt->arr_bitmap.last_bit);
-	printk("  bitmap.mask_count:  %p\n",i2pt->arr_bitmap.mask_count);
+	printf("i2p node: %p\n",i2pt);
+	printf("  count:  %d",i2pt->count);
+	printf("  start_index:  %ld",i2pt->start_index);
+	printf("  end_index:  %ld\n",i2pt->end_index);
+	printf("  pre:  %p",i2pt->pre);
+	printf("  next:  %p",i2pt->next);
+	printf("  head:  %p",i2pt->head);
+	printf("  array:  %p\n",i2pt->array);
+	printf("  bitmap.last_bi:  %ld\n",i2pt->arr_bitmap.last_bit);
+	printf("  bitmap.mask_count:  %ld\n",i2pt->arr_bitmap.mask_count);
 
 	return;
 }
@@ -66,10 +67,10 @@ void print_i2p(struct i2p * i2pt_head)
 	if(!i2pt_head)
 		return;
 
-	printk("i2p head: %p\n",i2pt_head);
-	printk("  first:  %p",i2pt_head->first);
-	printk("  last:  %p",i2pt_head->last);
-	printk("  node num:  %d\n",i2pt_head->node_num);
+	printf("i2p head: %p\n",i2pt_head);
+	printf("  first:  %p",i2pt_head->first);
+	printf("  last:  %p",i2pt_head->last);
+	printf("  node num:  %d\n",i2pt_head->node_num);
 	printk("  used_index:  %d",i2pt_head->used_index);
 	printk("  total_index:  %d\n",i2pt_head->total_index);
 	printk("  max_index_per_node:  %d",i2pt_head->max_index_per_node);
@@ -77,7 +78,7 @@ void print_i2p(struct i2p * i2pt_head)
 
 	return;
 }
-
+#endif
 
 static struct i2p_node *i2p_node_create(struct i2p *i2pt_head)
 {
@@ -257,8 +258,8 @@ void *i2p_find(struct i2p *i2pt_head, i2p_handle index)
 
 unsigned long i2p_loop(struct i2p *i2p_list, void(*action)(void *process, i2p_handle handle), void *process)
 {
-	int ret = 0;
-	i2p_handle offset;
+	int ret;
+	i2p_handle offset = 0;
 	struct i2p_node *i2pt;
 
 	i2pt = i2p_list->first;
@@ -288,10 +289,8 @@ unsigned long i2p_loop(struct i2p *i2p_list, void(*action)(void *process, i2p_ha
 
 void i2p_delete(struct i2p *i2pt_head)
 {
-	bool ret;
 	struct i2p_node *i2pt;
 
-	//  hal_spin_lock(i2pt->spin_lock);
 	i2pt = i2pt_head->first;
 	while (i2pt)
 	{
@@ -299,10 +298,7 @@ void i2p_delete(struct i2p *i2pt_head)
 		i2pt_head->free_handle(i2pt);
 		i2pt = i2pt_head->first;
 	}
-	//	hal_spin_unlock(i2pt->spin_lock);
 	i2pt_head->free_handle(i2pt_head);
-
-	return ;
 }
 
 i2p_handle i2p_alloc(struct i2p *i2pt_head, void *ptr)
@@ -314,7 +310,6 @@ struct i2p *i2p_create(i2p_malloc malloc_handle, i2p_free free_handle)
 {
 	struct i2p_node *i2pt;
 	struct i2p *i2pt_head;
-	void *bitmap_buf;
 
 	i2pt_head = malloc_handle(sizeof(struct i2p));
 	if (!i2pt_head)

@@ -19,12 +19,14 @@
 #include "dlfun/dlfcn.h"
 #include "stream_file.h"
 
+DLLEXPORT FILE stdout =(FILE)1, stdin = (FILE)2, stderr = (FILE)3;
+
 static bool init_libc()
 {
 	if (init_malloc() == false)
 		goto err;
 	if (init_module() == false)
-		goto err;
+		goto err;	
 	if (stream_file_buffer_init() == false)
 		goto err;
 	
@@ -58,13 +60,4 @@ DLLEXPORT void set_errno(int value)
 DLLEXPORT int get_errno()
 {
 	return 0;
-}
-
-
-/************test**************/
-
-
-__weak void printk()
-{
-	
 }

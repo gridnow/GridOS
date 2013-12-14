@@ -110,5 +110,9 @@ char *dlerror (void);
 */
 int dladdr(void * address, Dl_info * info);
 
+/* Extended */
+void dlcall_posix_entry(void *entry, int argc, char *argv[]);
+void *dlentry(void *__restrict handle);
+
 #endif
 /** @} */

@@ -1889,6 +1889,10 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\source\libs\grid\dlfun\lazy.S"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\grid\dlfun\Makefile"
 							>
 						</File>
@@ -2027,6 +2031,10 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\source\libs\grid\stdio\fwrite.c"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\grid\stdio\getch.c"
 							>
 						</File>
@@ -2125,6 +2133,10 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\source\libs\grid\stdlib\getopt.c"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\grid\stdlib\Makefile"
 							>
 						</File>
@@ -2181,10 +2193,6 @@
 				<Filter
 					Name="dl"
 					>
-					<File
-						RelativePath="..\..\source\programs\dl\lazy.S"
-						>
-					</File>
 					<File
 						RelativePath="..\..\source\programs\dl\main.c"
 						>

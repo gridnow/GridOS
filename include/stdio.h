@@ -251,6 +251,12 @@ int getch();
 #define SEEK_CUR	1
 #define SEEK_END	2
 
+/*
+	For debug only
+*/
+#define PRINT printf
+#include "ddk/debug.h"
+
 END_C_DECLS;
 
 #endif

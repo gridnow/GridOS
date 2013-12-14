@@ -36,7 +36,7 @@ static unsigned long alloc_virtual_space(struct list_head * usage_list,
 	list_for_each(section_list, usage_list)
 	{
 		pS = list_entry(section_list, struct km_vm_node, node);
-		//printk("ps->Start = %x, start = %x \n", pS->start, start);
+		//printk("ps->Start = %x(%dkb), start = %x, desired size = %dkb \n", pS->start, pS->size / 1024, start, size / 1024);
 		/* 指定地址的情况下，PS 与 PP 之间应该是新地址所在的地方，判断是否有足够的空隙 */
 		if (pS->start > start)												 				// pS 是新地址右边的节点
 		{
@@ -147,7 +147,7 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 		case KP_CPL0_FAKE:
 		case KP_USER:
 		{
-			unsigned long user_start = 0x200000;
+			unsigned long user_start = 0x400000;
 			if (start)
 				*start = user_start;
 			if (size)
@@ -214,7 +214,8 @@ end1:
 void km_vm_delete(struct ko_process *where, struct km_vm_node *what)
 {
 	KP_LOCK_PROCESS_SECTION_LIST(where);
-	list_del(&what->node);
+	/* INIT 后上层知道地址是不是被从地址空间中撤走 */
+	list_del_init(&what->node);
 	KP_UNLOCK_PROCESS_SECTION_LIST(where);
 }
 

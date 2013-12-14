@@ -23,4 +23,10 @@ void *crt_zalloc(int size);
 void set_errno(int posix_errno);
 int get_errno();
 
+/************************************************************************/
+/* Misc                                                                 */
+/************************************************************************/
+#define CRT_SPIN_LOCK(L)
+#define CRT_SPIN_UNLOCK(L)
+typedef long crt_lock_t;
 #endif

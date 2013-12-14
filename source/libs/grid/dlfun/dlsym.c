@@ -16,6 +16,11 @@
 #include "posix.h"
 #include "dlfcn.h"
 
+DLLEXPORT void *dlentry(void *__restrict handle)
+{
+	return dl_entry(handle);
+}
+
 DLLEXPORT void *dlsym(void *__restrict handle, __const char *__restrict name)
 {
 	void *p = NULL;

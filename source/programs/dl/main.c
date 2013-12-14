@@ -16,7 +16,7 @@
 #include <kernel/ke_srv.h>
 
 #include "sys/ke_req.h"
-
+#include "cl_fname.h"
 #include "../../libs/elf2/elf.h"
 
 /************************************************************************/
@@ -26,6 +26,7 @@
 
 /* 启动时，我们最多能装载这么多的image，因为我们还没有分配器 */
 #define DL_MAX_STATIC_IMAGE 512
+#define DL_ALIAS_NAME_LENGTH 128/* TODO 以后最好能动态分配*/
 #define DL_RUNTIME_LIBRARY_NAME "grid.so"
 
 /* 依赖表，用于串联对象的直接依赖 */
@@ -52,7 +53,7 @@ struct image
 	/* status */
 	int ref;
 	int mode;
-	int relocated;
+	char relocated, dependency_loaded;
 };
 #define DBG_PREFIX "DL装载器："
 
@@ -188,27 +189,41 @@ static struct dependency_list *_allocate_static_d_list()
 	return NULL;
 }
 
+static bool check_image_precicely(struct image *image, const char *fname)
+{
+	/*
+	 找到如此匹配的名字，然后去文件系统验证到底是不是对的。
+	 以此解决各种变态路径问题，只有文件系统能确定路径问题。
+	 */
+	//TODO
+	return true;
+}
+
 /**
 	@brief get image from linear_list
 */
-static struct image *_get_obj_from_linear_list(char * name)
+static struct image *_get_obj_from_linear_list(char *name)
 {
-	struct image * obj;
-	struct list_head *node;
-
-	/* search linear list  */
-	list_for_each(node, &dl.image_list_head)
+	struct image *image;
+	const char *pure_dst_name, *pure_src_name;
+	
+	pure_src_name = cl_locate_pure_file_name(name);
+	list_for_each_entry(image, &dl.image_list_head, linear_list)
 	{
-		obj = list_entry(node, struct image, linear_list);
-
-		/* 查看得到的image对象是否是需要的 */
-		if (!strcmp(obj->name, name))
-			break;
-		else
-			obj = NULL;
+		/* 一些变态的动态库中还是有"../../abc.so"这样的依赖 */
+		pure_dst_name = cl_locate_pure_file_name(image->name);
+		if (!strcmp(pure_dst_name, pure_src_name))
+		{
+			/* ok，在这里，我们只能过滤到这个地步，精确匹配交给文件系统 */
+			if (check_image_precicely(image, name) == true)
+			{
+				image->ref++;
+				return image;
+			}
+		}
 	}
-
-	return obj;
+	
+	return NULL;
 }
 
 /**
@@ -230,11 +245,12 @@ static struct dependency_list *add_obj_to_dependency_list(struct image *dependen
 	@note
 		name 必须是文件的绝对路径
 */
-static ke_handle load(xstring name, struct image * obj)
+static ke_handle load(xstring name, struct image *obj, struct image **aliased)
 {
 	struct sysreq_process_ld req;
 	ke_handle image_handle;
 	int new_loaded = 0;
+	char alias_name[DL_ALIAS_NAME_LENGTH];
 	
 open_again:
 	req.base.req_id		= SYS_REQ_KERNEL_PROCESS_HANDLE_EXE;
@@ -244,21 +260,47 @@ open_again:
 	req.function_type	= SYSREQ_PROCESS_OPEN_EXE;
 	image_handle = system_call(&req);
 	obj->user_ctx.base = req.map_base;
-
+	
 	if (image_handle != KE_INVALID_HANDLE)
 	{
-		//early_print("Exe object open success.\n");
 	}
 	else if (new_loaded == 0)
 	{
 		int file_size;
-		void *file;
+		char *file;
 
 		file = _map_exe_file(name, &file_size);
 		if (!file)
 			goto err;
 		if (elf_analyze(file, file_size, NULL, &obj->exe_desc) == false)
+		{
+			/* Alias? */
+			if (file[0] == 'a' && file[1] == 'l' && file[2] == 'i' && file[3] == 'a')
+			{
+				char *end_pos;
+				
+				if ((name = strchr(file, ' ')) == NULL)
+					goto end1;
+				name++;
+				if ((end_pos = strchr(name, ' ')) == NULL)
+					goto end1;
+					
+				if (end_pos - name < DL_ALIAS_NAME_LENGTH)
+				{
+					memcpy(alias_name, name, end_pos - name);
+					alias_name[end_pos - name] = 0;
+					name = alias_name;
+							
+					/* May already in the list */
+					if ((*aliased = _get_obj_from_linear_list(name)) != NULL)
+						return KE_INVALID_HANDLE;
+							
+					goto open_again;
+				}
+			}
+			
 			goto end1;
+		}
 		if (_inject_exe_object(name, &obj->exe_desc, elf_get_private_size()) == false)
 			goto end1;
 		
@@ -279,7 +321,7 @@ err:
 
 static struct image *load_image(xstring name)
 {
-	struct image *p;
+	struct image *p, *aliesed = NULL;
 
 	p = _allocate_static_exe();
 	if (!p)
@@ -288,8 +330,9 @@ static struct image *load_image(xstring name)
 	//TODO allocate dynamic exe
 
 	/* Load from disk */
-	p->handle = load(name, p);
-	if (p->handle == KE_INVALID_HANDLE) goto err;
+	p->handle = load(name, p, &aliesed);
+	if (p->handle == KE_INVALID_HANDLE)
+		goto err;
 
 	/* 如果打开失败，可以尝试动态库列表中的路径去打开可执行文件 */
 	//TODO
@@ -308,6 +351,8 @@ err:
 		//TODO: DELETE P;
 	}
 	
+	if (aliesed)
+		return aliesed;
 	return NULL;
 }
 
@@ -340,27 +385,27 @@ static int load_dependency(struct image *p, int id)
 	int real_load;
 	struct image *obj;
 	xstring name;
-
-//	char str[32];
+	//char str[32];
 
 	/* Get the name of this id */
 	name = elf_get_needed(&p->exe_desc, id, &p->user_ctx);
 	if (!name)
 		goto end;
-//	str[h2c(str, name)] = 0;
-//	early_print("load_dependency ");early_print(str); early_print(name); early_print(".\n");
+	//str[h2c(str, name)] = 0;
+	//early_print("load_dependency ");early_print(str); early_print(name); early_print(".\n");
 
 	/* 如果对象已存在于linear list中，就没必要再执行load_image获取 */
 	real_load = 0;
 	obj = _get_obj_from_linear_list(name);
 	if (!obj)
 	{
-		real_load = 1;
-//		early_print("LOading from disk... ");
+		//early_print("LOading from disk... ");
 		obj = load_image(name);
-//		early_print("OK\n");
 		if (!obj)
 			goto err;
+		real_load = 1;
+	//	early_print("OK\n");
+
 	}
 	if (add_obj_to_dependency_list(obj, p) == NULL)
 		goto err;
@@ -388,6 +433,8 @@ static int load_dependencies()
 	{	
 		/* 从linear list中取出image，linear list头结点代表first image */
 		obj = list_entry(node, struct image , linear_list);
+		if (obj->dependency_loaded)
+			continue;
 // 		early_print("Loading dep for ");early_print(obj->name);early_print(".\n");
 
 		/* 查找image的依赖 */
@@ -399,7 +446,9 @@ static int load_dependencies()
 			if (ret < 0)
 			{
 #if 1
-				char * dep = elf_get_needed(&obj->exe_desc, id, &obj->user_ctx);
+				char *dep;
+				
+				dep = elf_get_needed(&obj->exe_desc, id, &obj->user_ctx);
 				early_print("Loading dep ");
 				early_print(dep);
 
@@ -410,6 +459,7 @@ static int load_dependencies()
 			/* End */
 			else if (ret == 0)
 			{
+				obj->dependency_loaded = 1;
 				break;
 			}
 		}
@@ -451,6 +501,8 @@ unsigned long lazy_get_symbole_by_id(unsigned long mode_base, int relocate_id)
 static void handle_bss(struct image *exe)
 {
 	int i;
+	
+	unsigned long base = 0;
 	struct elf_segment seg;
 	volatile unsigned char *last_byte;
 
@@ -460,26 +512,20 @@ static void handle_bss(struct image *exe)
 			break;
 		if (seg.fsize == seg.vsize)
 			continue;
+	
+		/* 自动地址吗？ */
+		if (elf_get_mapping_base(&exe->exe_desc, NULL, NULL) == NULL)
+			base = exe->user_ctx.base;
 
 		/* Get the address of the last byte of valid file mapping */
-		last_byte = (unsigned char*)(seg.fsize - 1 + seg.vstart);
+		last_byte = (unsigned char*)(seg.fsize - 1 + seg.vstart) + base;
 
 		/* Reading the last byte cause exe refill exception of sharing, writing cause cow */
 		*last_byte = *last_byte;
 
-		/* Set the space after valid_size to zero to clean the "topmost" bss part */
+		/* Set the space after valid_size to zero to clean the "topmost" BSS part */
 		memset((void*)last_byte + 1, 0, seg.align - ((unsigned long)(last_byte + 1) & (seg.align - 1)));
 	}
-}
-
-static void relocate(struct image *image)
-{
-	if (image->relocated)
-		return;
-	
-	image->relocated = 1;
-	handle_bss(image);
-	elf_relocation(&image->exe_desc, &image->exe_desc, &image->user_ctx);
 }
 
 /**
@@ -487,15 +533,29 @@ static void relocate(struct image *image)
 */
 static int relocation()
 {
-	struct image *obj;
+	struct image *image;
 	struct list_head *node;
 	
 	/* 第一次循环时，node代表的first image */
 	list_for_each(node, &dl.image_list_head)
 	{	
 		/* 从linear list中取出image，linear list头结点代表first image */
-		obj = list_entry(node, struct image , linear_list);
-		relocate(obj);
+		image = list_entry(node, struct image , linear_list);
+		if (image->relocated)
+			continue;
+		image->relocated = 1;
+		handle_bss(image);
+		elf_relocation(&image->exe_desc, &image->exe_desc, &image->user_ctx);
+
+#ifdef SET_LAZY
+#ifndef __mips__
+		/* Set lazy linker */
+		elf_set_lazy_linker(&image->exe_desc, so_lazy_link, &image->user_ctx);
+#else
+#warning "lazy linker not set"
+#endif
+#endif
+
 	}
 
 	return 0;
@@ -582,6 +642,7 @@ static int dl_build_image_context(xstring first_name)
 	return startup();
 }
 
+#include <dlfcn.h>
 /**
 	@brief get a symbol
 */
@@ -594,16 +655,32 @@ bool __weak ki_get_symbol(struct elf_context * elf, const char *name, unsigned l
 	if (search_other == true)
 	{	
 		struct dependency_list *node;
+		struct image *every_one;
 
-		list_for_each_entry(node, &what->dep_list, list)
+		if (what->mode == RTLD_GLOBAL)
 		{
-//  		early_print("Finding symbol ");
-//  		early_print(name);
-//  		early_print(" at ");
-//  		early_print(node->obj->name);
-			ret = elf_resolve_symbol_by_name(&node->obj->exe_desc, &node->obj->user_ctx, name, address);
-			if (ret == true) break;	
-//			early_print("failed\n");
+			list_for_each_entry(every_one, &dl.image_list_head, linear_list)
+			{
+				if (every_one == what)
+					continue;
+				ret = elf_resolve_symbol_by_name(&every_one->exe_desc,
+												 &every_one->user_ctx,
+												 name, address);
+				if (ret == true) break;
+			}
+		}
+		else
+		{
+			list_for_each_entry(node, &what->dep_list, list)
+			{
+				//  		early_print("Finding symbol ");
+				//  		early_print(name);
+				//  		early_print(" at ");
+				//  		early_print(node->obj->name);
+				ret = elf_resolve_symbol_by_name(&node->obj->exe_desc, &node->obj->user_ctx, name, address);
+				if (ret == true) break;
+				//			early_print("failed\n");
+			}
 		}
 	}
 	else

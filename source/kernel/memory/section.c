@@ -21,6 +21,9 @@ static void remove_from_space(struct ko_process *who, struct ko_section *p)
 {
 	struct km *mem;
 
+	/* 还没来得急在地址空间中 */
+	if (list_empty(&p->node.node))
+		return;
 	km_vm_delete(who, &p->node);
 	mem = kp_get_mem(who);
 	km_page_dealloc_range(mem, p->node.start, p->node.size);
@@ -38,10 +41,13 @@ static bool object_close(void *by, real_object_t *obj)
 	{
 		case KS_TYPE_EXE:
 		{
-			struct ko_exe *ke= p->priv.exe.exe_object;
-
-			remove_from_space(who, p);
-			kp_exe_close(who, ke);
+			struct ko_exe *ke = p->priv.exe.exe_object;
+		
+			remove_from_space(who, p);			
+			if (ke)
+			{				
+				kp_exe_close(who, ke);
+			}
 
 			break;
 		}
@@ -56,6 +62,7 @@ static bool object_close(void *by, real_object_t *obj)
 		}
 			
 	}
+end:
 	return true;
 }
 
@@ -64,6 +71,8 @@ static bool object_init(real_object_t *obj)
 	struct ko_section *p = (void*)obj;
 	INIT_LIST_HEAD(&p->node.subsection_head);
 
+	/* 用以判断地址是否被插入到了地址空间中 */
+	INIT_LIST_HEAD(&p->node.node);
 	return true;
 }
 

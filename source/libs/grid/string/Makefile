@@ -4,7 +4,7 @@ include $(MY_BUILD_BASE)/config.mk
 ADD_INCLUDE += $(CL_INCLUDE)
 
 #要编译的文件列表
-OBJS = memcpy.o strcpy.o strncpy.o strlen.o strcmp.o strnlen.o memcmp.o strrchr.o strchr.o
+OBJS = memcpy.o strcpy.o strncmp.o strncpy.o strlen.o strcmp.o strnlen.o memcmp.o strrchr.o strchr.o
 
 
 all:$(OBJS)

@@ -16,7 +16,7 @@
 #include "memalloc.h"
 #include "cl_string.h"
 
-#define GLOBAL_BLOCK_SIZE 1024*1024*128
+#define GLOBAL_BLOCK_SIZE (1024*1024*32)
 #define LOCK_MALLOC()
 #define UNLOCK_MALLOC()
 static void *global_block;

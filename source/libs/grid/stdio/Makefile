@@ -4,7 +4,7 @@ include $(MY_BUILD_BASE)/config.mk
 #要编译的文件列表
 OBJS = printf.o 
 OBJS += fopen.o stream_file.o
-OBJS += ftruncate.o fread.o fclose.o
+OBJS += ftruncate.o fread.o fclose.o fwrite.o
 OBJS += getch.o
 
 ADD_INCLUDE +=-I../include
