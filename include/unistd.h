@@ -38,21 +38,27 @@ unsigned int sleep(unsigned int seconds);
 int chdir(const char *path);
 
 /**
- * [setenv 设置环境变量]
- * @param  name      [环境变量名]
- * @param  value     [环境变量对应值]
- * @param  overwrite [变量已经存在时是否覆盖：1覆盖，0不覆盖（如已经存在，则返回失败-1）]
- * @return           [0成功，其它失败]
+ 	setenv 设置环境变量
+ 	@param  name      环境变量名
+ 	@param  value     环境变量对应值
+ 	@param  overwrite 变量已经存在时是否覆盖：1覆盖，0不覆盖（如已经存在，则返回失败-1）
+ 	@return           0成功，其它失败
  */
 int setenv(const char * name, const char * value, int overwrite);
 
 /**
- * [getenv 获取环境变量值]
- * @param  name [环境变量名]
- * @return      [指向字符串首地址的指针]
+	getenv 获取环境变量值
+	@param  name 环境变量名
+ 	@return      指向字符串首地址的指针
  */
 char *getenv(const char * name);
 
+/**
+	@brief 退出当前进程
+
+	The exit() function causes normal process termination and the value of status & 0377 is returned to the parent (see wait(2)).
+*/
+void exit(int status);
 END_C_DECLS;
 
 #endif

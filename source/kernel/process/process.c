@@ -305,9 +305,6 @@ void ke_run_first_user_process(void *data, int size, char *cmdline)
 	/* OK, create the process */
 	if (kp_run_user(kee, ++first_space/*Real application*/) == false)
 		goto err;
-
-	/* Then, we always hold this image, because it's the loader */
-	cl_object_inc_ref(kee);
 	
 	return;
 err:

@@ -145,5 +145,6 @@ ke_handle file_open(struct file *filp, const char *path, int oflags)
 err:
 	if (KE_INVALID_HANDLE != file_handle)
 		sys_close(file_handle);
+
 	return KE_INVALID_HANDLE;
 }

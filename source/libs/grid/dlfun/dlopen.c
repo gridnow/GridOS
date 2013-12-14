@@ -15,13 +15,6 @@
 
 #include "dlfcn.h"
 
-#if 0
-#ifndef __mips__
-/* Set lazy linker */
-elf_set_lazy_linker(&obj->exe_desc, so_lazy_link, &obj->user_ctx);
-#endif
-#endif
-
 bool init_module()
 {
 	return true;
@@ -33,4 +26,9 @@ DLLEXPORT void *dlopen(const char *file, int mode)
 		return GLOBAL_HANDLE;
 
 	return dl_open(file, mode);
+}
+
+DLLEXPORT void dlcall_posix_entry(void *entry, int argc, char *argv[])
+{
+	dl_call_posix_entry(entry, argc, argv);	
 }

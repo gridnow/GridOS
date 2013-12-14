@@ -2,7 +2,7 @@ DLL=yes
 include $(MY_BUILD_BASE)/config.mk
 
 #要编译的文件列表
-OBJS = setenv.o getenv.o exit.o
+OBJS = setenv.o getenv.o exit.o getopt.o
 ADD_INCLUDE +=-I../include
 ADD_INCLUDE += $(CL_INCLUDE)
 

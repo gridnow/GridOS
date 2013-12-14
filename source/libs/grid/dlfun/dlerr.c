@@ -7,10 +7,8 @@
 	Yaosihai
 */
 
-#include <types.h>
+#include <stdio.h>
 #include <dlfcn.h>
-
-#include <ddk/debug.h>
 
 #include "dlfcn.h"
 

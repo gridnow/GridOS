@@ -43,7 +43,7 @@ again:
 		object = NULL;
 		goto err;
 	}
-	memset(object, 0, type->size);	
+	memset(object, 0, type->size + sizeof(struct cl_object));	
 	object->type = type;
 	list_add_tail(&object->list, &type->unname_objects);
 	
