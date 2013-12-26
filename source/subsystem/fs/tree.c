@@ -19,6 +19,20 @@ static void tree_thread(struct fss_volumn *v)
 
 
 /**
+	@brief Volumn of Unix mounting point
+
+	Get the unix root
+
+	@return The volumn descriptor of Unix mounting point
+*/
+struct fss_volumn *get_unix()
+{
+	//TODO 
+	return fss_volumn_search("0:");
+}
+
+
+/**
 	@brief 导入目录下的文件
 
 	如果目录是完整的则根本不导入，如果不是完整的，那么导入时本函数将判断是否重复，因此效率要差一些。
@@ -221,7 +235,7 @@ struct fss_file * fss_loop_file(struct fss_file * current_path, xstring path_str
 			那么，确实是UNIX根
 		*/
 must_be_unix:
-		fs = fss_get_unix();
+		fs = get_unix();
 		if (fs == NULL)
 			goto error;
 		i = 1/*去掉 '/' */;

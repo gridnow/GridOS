@@ -34,15 +34,6 @@ struct fss_volumn
 };
 
 /**
-	@brief Volumn of Unix mounting point
-
-	Get the unix root
-
-	@return The volumn descriptor of Unix mounting point
-*/
-struct fss_volumn *fss_get_unix();
-
-/**
 	@brief Create a volumn
 
 	@return the volumn descriptor on success or NULL on failure

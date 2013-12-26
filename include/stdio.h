@@ -229,6 +229,18 @@ int fseek(FILE *file, long offset, int whence);
 long ftell(FILE *file);
 
 /**
+	@brief 刷掉一个流的缓冲
+
+	强制刷掉文件在用户态的缓冲数据，如果没有指定具体是哪个流(入口参数是NULL)，则刷新所有打开的文件流。
+
+	@param[in]	stream	文件,NULL 表示对所有打开的文件流操作
+
+	@return 成功返回0，否则EOF 表示错误。
+*/	
+int fflush(FILE *stream);
+
+
+/**
 	@brief 从标准输入上获取一个按键
 
 	一般一个键是1个字节，在用户按下键盘时该函数返回一个字节，但是

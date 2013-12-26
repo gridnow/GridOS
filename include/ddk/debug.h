@@ -132,7 +132,7 @@ extern void hal_do_panic();
 #define dev_info(dev, format, arg...) PRINT("dev_inf："format, ##arg)
 #define dev_dbg dev_info
 #define dev_warn dev_info
-#define dev_PRINT(level, dev, format, arg...) PRINT("设备信息："format, ##arg)
+#define dev_printk(level, dev, format, arg...) PRINT("设备信息："format, ##arg)
 #define dev_err dev_info
 #define dev_trace(format, arg...) PRINT("设备跟踪："format, ##arg)
 #define dev_WARN(dev, format, arg...) PRINT("设备警告(%s.%d):"format"\n", __FUNCTION__, __LINE__, ##arg)

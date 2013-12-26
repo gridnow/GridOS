@@ -130,7 +130,7 @@ struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsig
 	p->node.size 	= size;
 	p->node.start 	= base;
 	p->prot			= prot;
-	if (km_vm_create(where, &p->node, type == KS_TYPE_KERNEL) == false)
+	if (km_vm_create(where, &p->node, type) == false)
 		goto err1;
 	
 	return p;

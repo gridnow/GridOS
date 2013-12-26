@@ -14,7 +14,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-#include <DDK/debug.h>
+#include <ddk/debug.h>
 #include "stream_file.h"
 
 #define FLAG_LENGTH 3

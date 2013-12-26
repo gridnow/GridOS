@@ -32,7 +32,8 @@ static unsigned long alloc_virtual_space(struct list_head * usage_list,
 		start = desired;
 	else
 		start = range_start;
-	
+
+	//printk("start %x, desired %x, range start %x.\n", start, desired, range_start);
 	list_for_each(section_list, usage_list)
 	{
 		pS = list_entry(section_list, struct km_vm_node, node);
@@ -154,6 +155,7 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 			{
 #if defined(__i386__) || defined (__arm__)
 				*size = HAL_GET_BASIC_KADDRESS(0) - user_start;
+				/* For big kernel sharing creation */
 				if (is_type_kernel)
 				{
 					*desired_size = *size;
@@ -181,17 +183,19 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 	*desired_size = ALIGN(*desired_size, PAGE_SIZE);
 }
 
-bool km_vm_create(struct ko_process *where, struct km_vm_node *node, int is_type_kernel)
+bool km_vm_create(struct ko_process *where, struct km_vm_node *node, unsigned long type)
 {
 	bool r = false;
 	unsigned long range_start, range_len;
-
+	int is_type_kernel = type == KS_TYPE_KERNEL || type == KS_TYPE_DEVICE;
+	
 	get_vm_range(where->cpl, &range_start, &range_len, &node->start, &node->size, is_type_kernel);
 
 	KP_LOCK_PROCESS_SECTION_LIST(where);
 	if ((node->start = alloc_virtual_space(&where->vm_list, range_start, range_len, node->start, node->size)) == NULL)
 	{
-		//printk("node start = %x, node size = %dkb.\n", node->start, node->size/1024);
+		//printk("node start = %x, node size = %dkb, RANGE start = %x, size = %dkb.\n", node->start, node->size/1024,
+		//	range_start, range_len / 1024);
 		goto end1;
 	}
 	
@@ -267,10 +271,8 @@ void *km_map_physical(unsigned long physical, unsigned long size, unsigned long 
 	if (flags & KM_MAP_PHYSICAL_FLAG_NORMAL_CACHE)
 		map_flags = KM_PROT_READ | KM_PROT_WRITE;
 
-	ks = ks_create(kp_get_system(), KS_TYPE_DEVICE, base, size, map_flags);
-	if (!ks)
+	if ((ks = ks_create(kp_get_system(), KS_TYPE_DEVICE, base, size, map_flags)) == NULL)
 		goto err;	
-	
 	if (km_page_map_range(&kp_get_system()->mem_ctx, ks->node.start,
 						  ks->node.size, physical >> PAGE_SHIFT, map_flags) == false)
 		goto err1;

@@ -31,7 +31,9 @@ struct fss_volumn *fss_volumn_create_simple()
 	if (v)
 	{
 		memset(v, 0, sizeof(*v));
+		ke_rwlock_write_lock(&fss.vol_list_lock);
 		list_add_tail(&v->list, &fss.vol_list);
+		ke_rwlock_write_unlock(&fss.vol_list_lock);
 	}
 	
 	return v;
@@ -62,7 +64,8 @@ DLLEXPORT void fss_vfs_register(struct fss_vfs_driver *driver)
 {
 	void *private;
 	struct fss_volumn *v = NULL;
-	
+
+	//TODO 支持更多
 	printk("注册文件系统 %s...\n", driver->name);
 	list_add_tail(&driver->list, &fss.drv_list);
 	
@@ -266,7 +269,6 @@ void fss_main()
 
 	fss_db_init();
 	fss_map_init();
-
 	ke_srv_register(&ke_srv_fss);
 }
 

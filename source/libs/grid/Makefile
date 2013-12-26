@@ -8,7 +8,7 @@ DEPENDS					= -lhead_so.o
 DEPENDS					+= ../../libs/common/*.o $(SYSTEM_BUILD_TMP)/libs/elf2/$(ARCH_DIR)/elf.o
 ADD_INCLUDE				+=-I./include $(CL_INCLUDE)
 LDFLAGS					+=-Ttext-segment=0x70000000 -init dll_preinit
-PARTS					= crt0 dlfun malloc string stdlib stdio sys
+PARTS					= crt0 dlfun malloc string stdlib stdio socket sys
 
 all: subs_parts $(OBJS)
 	$(LD) $(LDFLAGS) -o $(TARGET) $(ADD_LDFLAGS) $(DEPENDS) *.o $(ADD_LIBS) $(ARCH_LD_FLAGS)
