@@ -39,7 +39,7 @@ struct elf_user_ctx
 	@note
 		本函数只是读取描述符，不操作文件影射内存
 */
-unsigned long elf_get_mapping_base(void * elf, unsigned long * mem_size, unsigned long * mapping_base);
+unsigned long elf_get_mapping_base(void *elf, unsigned long *mem_size, unsigned long *mapping_base);
 
 /**
 	@brief 遍历所有装载段
@@ -63,30 +63,30 @@ int elf_read_segment(void *elf, struct elf_segment *seg, int id);
 	@return
 		bool
 */
-int elf_analyze(void * file, int size, void **entry_address, void * ctx);
+int elf_analyze(void *file, int size, void **entry_address, void *ctx);
 
 /**
 	@brief Get the needed module name
 
 	We use this name to loaded the required module of a given module
 */
-char* elf_get_needed(void * elf, int id, void * user_ctx);
+char *elf_get_needed(void *elf, int id, void *user_ctx);
 
 /**
 	@brief User want to relocate an ELF
 
 	The user process can do relocation on it process
 */
-void * elf_relocation(void * elf, void * manager_elf, void * user_ctx);
+void elf_relocation(void *elf, void *manager_elf, void *user_ctx);
 
 /**
 	@brief Set user lazy linker
 
 	The user may set a function to be called when a symbol is undefined (or unlinked) during the running.
 */
-void elf_set_lazy_linker(void * elf, void * func, void * user_ctx);
+void elf_set_lazy_linker(void *elf, void *func, void *user_ctx);
 
-unsigned long elf_relocate_by_id(void *elf, int rel_id, struct elf_user_ctx * user_ctx);
+bool elf_relocate_by_id(void *elf, int rel_id, struct elf_user_ctx *user_ctx);
 
 /**
 	@brief Resolve the symbol value in current elf
@@ -99,14 +99,14 @@ unsigned long elf_relocate_by_id(void *elf, int rel_id, struct elf_user_ctx * us
 		The address the symbol points to.
 		true on success false on failure.
 */
-bool elf_resolve_symbol_by_name(void * elf, void * user_ctx, const char * name, unsigned long * address);
+bool elf_resolve_symbol_by_name(void *elf, void *user_ctx, const char *name, unsigned long *address);
 
 /**
 	@brief Get the module entry point
 	
 	模块的入口、出口、构造和析构
 */
-bool elf_get_startup(void * elf, void * user_ctx, unsigned long * entry);
+bool elf_get_startup(void *elf, void *user_ctx, unsigned long *entry, unsigned long *init, unsigned long *fini);
 
 /**
 	@brief Get the private structure size of the image

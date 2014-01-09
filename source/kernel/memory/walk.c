@@ -252,3 +252,128 @@ bool km_walk_init(struct km *mem)
 err:
 	return false;
 }
+
+void km_walk_loop(struct km_walk_ctx *ctx, unsigned long start, unsigned long size,
+				   void (*meet_action)(struct km_walk_ctx *ctx, pte_t pte))
+{
+	unsigned long s = 0;
+	bool jump = false;
+	pte_t pte;
+	
+	/* Loop type of walking do not create the missing table */
+	ctx->miss_action = NULL;
+
+	/* Locate to the specific PTE */
+	if (km_walk_to(ctx, start) != true)
+		jump = true;
+	
+	/* Loop each pte */
+	do
+	{		
+		if (jump == true)
+		{
+			unsigned long jump_size = km_walk_jump(ctx);
+			
+			s += jump_size;			
+			if (s >= size)
+				break;
+			if (km_walk_to(ctx, ctx->current_virtual_address) != true)
+			{
+				jump = true;
+				continue;
+			}			
+		}
+	
+		do 
+		{			
+			pte = km_pte_read(ctx);
+			meet_action(ctx, pte);	
+			s += PAGE_SIZE;					
+		} while (s < size && km_pte_next(ctx) == true);
+
+		/* 如果上面的出来了，表示km_pte_next失败，或者地址已经完成。我们先认为pte_next失败吧 */
+		jump = true;
+	} while (s < size);
+}
+#if 0
+static bool loop_this_manage(struct kmm * mem, struct kmm_walk_ctx * ctx)
+{
+	int i = ctx->level_id;
+	int sub_id = ctx->temp_id[i];
+	unsigned long *table = ctx->table_base[i];
+	unsigned long *subtable;
+	
+	/* But level 0 has no subtable */
+	if (i == 0) 
+	{
+// 		printk("Meet level 0 table of %x, virtual %x.\n", table, ctx->virtual_address);
+		goto stop;
+	}
+
+	/* Get table to see if has free entry, if has free entry we escape */
+	while (ctx->virtual_address < ARCH_USER_SPACE_START + ctx->length)
+	{
+		subtable = kmm_get_sub_table(table, sub_id);
+		if (subtable)	
+		{
+			int next_sub_id;
+
+			/* Try this subtable */
+			next_sub_id = kmm_get_vid(i - 1/*goto sub*/ + 1/*to level number*/, ctx->virtual_address);
+			ctx->level_id = i - 1;
+			ctx->temp_id[ctx->level_id] = next_sub_id;
+			ctx->table_base[ctx->level_id] = subtable;
+			loop_this_manage(mem, ctx);
+			ctx->level_id = i;
+
+			/* Do what you want */
+			ctx->meet_manage_action(mem, ctx, subtable);
+
+		}
+
+		/* To next slot */
+		kmm_walk_jump(ctx);
+		sub_id = kmm_get_vid(i + 1, ctx->virtual_address);
+		ctx->temp_id[i] = sub_id;
+	
+		//printk("jump to %x ", ctx->virtual_address);
+		//printk(" sub id %d sub table %x\n", sub_id, kmm_get_sub_table(table, sub_id));
+	}
+
+	return true;
+
+stop:
+	return false;
+}
+
+/**
+	@brief walk to a given virtual address for table
+
+	@note
+		The kmm should be locked
+*/
+void kmm_walk_manage(struct kmm * mem, struct kmm_walk_ctx * ctx,
+					 void (*meet_action)(struct kmm * mem, struct kmm_walk_ctx * ctx, unsigned long * subtable))
+{
+	unsigned long *table = mem->translation_table;
+	int i = KMM_MAX_LEVEL - 1/*to id*/;
+	int sub_id;
+
+	/* The root table must be there */ 
+	if (!table) goto end;
+
+	ctx->virtual_address = ARCH_USER_SPACE_START;
+	ctx->length = ARCH_USER_SPACE_SIZE;
+	ctx->meet_manage_action = meet_action;
+
+	/* Get the sub table's ID and record it(or to be created) */
+	sub_id = kmm_get_vid(i + 1, ctx->virtual_address);
+	ctx->temp_id[i]		= sub_id;
+	ctx->table_base[i]	= table;
+	ctx->level_id		= i;
+
+	loop_this_manage(mem, ctx);
+end:
+	;
+}
+#endif

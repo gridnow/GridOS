@@ -8,7 +8,7 @@ TARGET					= startup
 DEPENDS					+=-lgrid.so -lhead_exe.o
 
 all: subs_parts $(OBJS)
-	$(LD) $(LDFLAGS) -o $(TARGET) $(ADD_LDFLAGS) $(DEPENDS) *.o $(ADD_LIBS) $(ARCH_LD_FLAGS)
+	$(LD) $(LDFLAGS) -o $(TARGET) $(ADD_LDFLAGS) $(DEPENDS) -Ttext-segment=0x800000 *.o $(ADD_LIBS) $(ARCH_LD_FLAGS)
 	$(CP) $(TARGET) $(SYSTEM_DIR)
 
 include $(MY_BUILD_BASE)/cc.mk

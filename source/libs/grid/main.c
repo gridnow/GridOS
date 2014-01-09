@@ -1,5 +1,12 @@
 /**
+ *   See the readme.txt at the root directory of this project for the idea and originality of this operating system.
+ *   See the license.txt at the root directory of this project for the copyright information about this file and project.
+ */
+
+/**
 	The Grid Core Library
+ 
+	Wuxin (82828068@qq.com)
 */
 
 #include <compiler.h>
@@ -9,25 +16,33 @@
 #include "sys/ke_req.h"
 
 #include "malloc/malloc.h"
+#include "dlfun/dlfcn.h"
+#include "stream_file.h"
+
+DLLEXPORT FILE stdout =(FILE)1, stdin = (FILE)2, stderr = (FILE)3;
 
 static bool init_libc()
 {
-	bool r;
-	printf("%s %s %d.\n", __FILE__, __FUNCTION__, __LINE__);
-	r = init_malloc();
-	printf("%s %s %d.\n", __FILE__, __FUNCTION__, __LINE__);
-	if (r == false)
+	if (init_malloc() == false)
 		goto err;
-
+	if (init_module() == false)
+		goto err;	
+	if (stream_file_buffer_init() == false)
+		goto err;
+	
 	return true;
 
 err:
 	return false;
 }
 
-void dll_main()
+void dll_preinit(void *dl_base)
 {
-	printf("%s %s %d.\n", __FILE__, __FUNCTION__, __LINE__);
+	dl_handle_over(dl_base);
+}
+
+void dll_main()
+{	
 	if (init_libc() == false)
 		goto err;
 	
@@ -42,13 +57,7 @@ DLLEXPORT void set_errno(int value)
 
 }
 
-/************test**************/
-__weak void exefmt_load()
+DLLEXPORT int get_errno()
 {
-	
-}
-
-__weak void printk()
-{
-	
+	return 0;
 }

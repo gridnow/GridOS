@@ -71,6 +71,7 @@ typedef s64			off_t;
 #endif
 typedef s64			loff_t;
 typedef u64			uoffset;
+typedef u64			lsize_t;
 
 /* Œª¿‡–Õ */
 #define BITS_PER_BYTE              8

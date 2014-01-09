@@ -65,7 +65,7 @@ int snprintf(char *__restrict buffer, __const size_t size, const char *format, .
 	@return
 		输出的字符串字节长度。
 */
-int vprintf(const char * format, va_list arg);
+int vprintf(const char *format, va_list arg);
 
 /**
 	@brief 把格式化的数据写入某个文件
@@ -78,7 +78,7 @@ int vprintf(const char * format, va_list arg);
 	@return
 		输出的字符串字节长度。
 */
-int	fprintf(FILE * file, const char * format, ...);
+int	fprintf(FILE *file, const char *format, ...);
 
 /**
 	@brief 通过标准输出设备输出一组数据
@@ -90,7 +90,7 @@ int	fprintf(FILE * file, const char * format, ...);
 	@return
 		输出的字符串字节长度。
 */
-int printf(const char * format, ...);
+int printf(const char *format, ...);
 
 /**
 	@brief 通过标准输出设备输出一个字符串
@@ -100,7 +100,7 @@ int printf(const char * format, ...);
 	@return
 		输出的字符串字节长度。
 */
-int puts(const char * str);
+int puts(const char *str);
 
 /**
 	@brief 通过标准输出设备输出一个字符
@@ -166,7 +166,7 @@ int vsnprintf(char *__restrict buffer, size_t size, const char *__restrict forma
 
 	@return	文件打开成功返回执行该文件的文件指针，失败则返回NULL，并设置errno值。
 */
-FILE * fopen(const char *name, const char *mode);
+FILE *fopen(const char *name, const char *mode);
 
 /**
 	@brief	读取文件数据
@@ -229,6 +229,18 @@ int fseek(FILE *file, long offset, int whence);
 long ftell(FILE *file);
 
 /**
+	@brief 刷掉一个流的缓冲
+
+	强制刷掉文件在用户态的缓冲数据，如果没有指定具体是哪个流(入口参数是NULL)，则刷新所有打开的文件流。
+
+	@param[in]	stream	文件,NULL 表示对所有打开的文件流操作
+
+	@return 成功返回0，否则EOF 表示错误。
+*/	
+int fflush(FILE *stream);
+
+
+/**
 	@brief 从标准输入上获取一个按键
 
 	一般一个键是1个字节，在用户按下键盘时该函数返回一个字节，但是
@@ -250,6 +262,12 @@ int getch();
 #define SEEK_SET	0
 #define SEEK_CUR	1
 #define SEEK_END	2
+
+/*
+	For debug only
+*/
+#define PRINT printf
+#include "ddk/debug.h"
 
 END_C_DECLS;
 

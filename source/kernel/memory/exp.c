@@ -24,6 +24,46 @@
 typedef bool (*refill_handler)(struct ko_thread *current, struct ko_section *where, unsigned long address, unsigned long code);
 static refill_handler exception_handler[KS_TYPE_MAX];
 
+static struct ko_section *ks_get_by_vaddress_unlock(struct ko_process *where, unsigned long address)
+{
+	struct ko_section *ks = NULL;
+	struct km_vm_node *p;
+	struct list_head *t;
+	
+	//TODO:REFINE: 红黑树优化
+	
+	/* Loop each section */
+	list_for_each(t, &where->vm_list)
+	{
+		p = list_entry(t, struct km_vm_node, node);
+		//printk("address = %x, start %x, size %x.\n", address, p->start, p->size);
+		
+		if (p->start <= address && address < p->start + p->size)
+		{
+			//printk("address = %x, start %x, size %x.\n", address, p->start, p->size);
+			ks = (struct ko_section*)p;
+			
+			break;
+		}
+		
+		if (p->start > address)
+			break;
+	}
+	
+	return ks;
+}
+
+ struct ko_section *ks_get_by_vaddress(struct ko_process *where, unsigned long address)
+{
+	struct ko_section *ks;
+	
+	KP_LOCK_PROCESS_SECTION_LIST(where);
+	ks = ks_get_by_vaddress_unlock(where, address);
+	KP_UNLOCK_PROCESS_SECTION_LIST(where);
+	
+	return ks;
+}
+
 static bool restore_file(struct ko_process *who, struct ko_section *where, unsigned long address)
 {
 	void *db_addr;
@@ -38,6 +78,7 @@ static bool restore_file(struct ko_process *who, struct ko_section *where, unsig
 
 	mem_dst = kp_get_mem(who);
 	mem_src = kp_get_mem(kp_get_system());
+
 	if (km_page_share(mem_dst, address, mem_src, (unsigned long)db_addr, KM_PROT_READ) != KM_PAGE_SHARE_RESULT_OK)
 		goto end1;
 
@@ -66,7 +107,7 @@ static bool refill_exe(struct ko_thread *current, struct ko_section *where, unsi
 	detailed = ks_sub_locate(where, address);
 	if (unlikely(!detailed))
 		goto end;
-	
+
 	/*
 		But the address may exceed the shared range, it must be a BSS like segment. 
 		The first BSS page may have some valid data from merged data&bss page, but it is handled at image relocating, so this will not meet this condition.
@@ -75,7 +116,7 @@ static bool refill_exe(struct ko_thread *current, struct ko_section *where, unsi
 	{
 		unsigned long phy;
 
-		printk("    BSS like segment virtual base %p ", detailed->node.start);
+		//printk("    BSS like segment virtual base %p, address %p \n", detailed->node.start, address);
 
 		/* 
 			TODO: Optimize: If just read, a common zero page from system can be mapped until the page is written.
@@ -89,6 +130,7 @@ static bool refill_exe(struct ko_thread *current, struct ko_section *where, unsi
 		/* 由于是缺页异常，那么经过page写入就可以立即访问该页了，无需刷新TLB */
 		if (r == true)
 			memset((void*)KM_PAGE_ROUND_ALIGN(address), 0, PAGE_SIZE);	
+		//printk("EXE: write zero page %x\n", address);
 	}
 	else
 	{
@@ -111,11 +153,12 @@ static bool refill_exe(struct ko_thread *current, struct ko_section *where, unsi
 			if (code & PAGE_FAULT_P)
 				cow = true;
 		}
-		
+
 		if (cow == false)
 			r = kp_exe_share(KT_GET_KP(current), detailed, address, where->priv.exe.exe_object);
 		else
 		{
+		//	printk("Cow at %p.\n", address);
 			mem = kp_get_mem(KT_GET_KP(current));
 			r = km_page_create_cow(mem, address);
 			kp_put_mem(mem);
@@ -177,44 +220,27 @@ end:
 	return r;
 }
 
-struct ko_section *ks_get_by_vaddress_unlock(struct ko_process *where, unsigned long address)
+static bool refill_kernel(struct ko_thread *current, struct ko_section *where, unsigned long address, unsigned long code)
 {
-	struct ko_section *ks = NULL;
-	struct km_vm_node *p;
-	struct list_head *t;
+	struct km *cur_mem;
+	struct ko_section *ks;
 	
-	//REFINE: 红黑树优化
-
-	/* Loop each section */
-	list_for_each(t, &where->vm_list)
-	{
-		p = list_entry(t, struct km_vm_node, node);
-		//printk("address = %x, start %x, size %x.\n", address, p->start, p->size);
-		
-		if (p->start <= address && address < p->start + p->size)
-		{
-			//printk("address = %x, start %x, size %x.\n", address, p->start, p->size);
-			ks = (struct ko_section*)p;
-
-			break;
-		}
-				
-		if (p->start > address)
-			break;
-	}
+	if ((ks = ks_get_by_vaddress(kp_get_system(), address)) == NULL)
+		goto err;
+	if (exception_handler[ks->type & KS_TYPE_MASK](current, ks, address, 0) == false)
+		goto err;
+#if 0
+	if (ks_restore(kp_get_system(), ks, address) == false)
+		goto err;
+#endif
+	cur_mem = kp_get_mem(KT_GET_KP(current));
+	km_page_share_kernel(cur_mem, address);
+	kp_put_mem(cur_mem);
 	
-	return ks;
-}
-
-struct ko_section * ks_get_by_vaddress(struct ko_process * where, unsigned long address)
-{
-	struct ko_section * ks;
+	return true;
 	
-	KP_LOCK_PROCESS_SECTION_LIST(where);
-	ks = ks_get_by_vaddress_unlock(where, address);
-	KP_UNLOCK_PROCESS_SECTION_LIST(where);
-	
-	return ks;
+err:
+	return false;
 }
 
 /**
@@ -222,19 +248,17 @@ struct ko_section * ks_get_by_vaddress(struct ko_process * where, unsigned long 
 */
 bool ks_exception(struct ko_thread *thread, unsigned long error_address, unsigned long code)
 {
+	bool ret;
 	struct ko_section *ks;
-	struct ko_process *where;
-	struct ko_thread *current = thread;
+	struct ko_process *where = KT_GET_KP(thread);
 	
-	if (code & PAGE_FAULT_IN_KERNEL)
-		where = kp_get_system();
-	else
-		where = KT_GET_KP(current);
 	ks = ks_get_by_vaddress(where, error_address);
 	if (ks)
-		return exception_handler[ks->type & KS_TYPE_MASK](current, ks, error_address, code);
-
-	return false;
+		ret = exception_handler[ks->type & KS_TYPE_MASK](thread, ks, error_address, code);
+	else
+		ret = false;
+	
+	return ret;
 }
 
 bool ks_restore(struct ko_process *who, struct ko_section *where, unsigned long address)
@@ -267,7 +291,7 @@ bool __init ks_exception_init()
 	exception_handler[KS_TYPE_STACK]	= refill_private;
 	exception_handler[KS_TYPE_FILE]		= refill_file;
 //	exception_handler[KS_TYPE_SHARE]	= refill_share;
-//	exception_handler[KS_TYPE_KERNEL]	= refill_kernel;
+	exception_handler[KS_TYPE_KERNEL]	= refill_kernel;
 
 	return true;
 }

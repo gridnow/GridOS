@@ -1,8 +1,9 @@
 #include <types.h>
 #include <string.h>
 #include <errno.h>
+#include <compiler.h>
 
-static int crt0_split_cmdline(char * cmdline, int max_size, int *argc, int max_argc, char **argv)
+int crt0_split_cmdline(char *cmdline, int max_size, int *argc, int max_argc, char **argv)
 {
 	char * cur;
 	int i = 0;
@@ -38,12 +39,12 @@ static int crt0_split_cmdline(char * cmdline, int max_size, int *argc, int max_a
 	* argc = count;
 	return 0;
 }
-
+extern void *crt_ld_unload_bootstrap(void *old_cmdline);
 extern int main(int argc, char ** argv);
 #if defined(__i386__) || defined(__arm__)
-int _start(unsigned long para)
+__noreturn int _start(void *cmdline)
 #elif defined(__mips__)
-int __start(unsigned long para)
+__noreturn int __start(void *cmdline)
 #endif
 {
 #define MAX_ARGV 64
@@ -51,11 +52,13 @@ int __start(unsigned long para)
 	int argc;
 	char *argv[MAX_ARGV];
 	
+	cmdline = crt_ld_unload_bootstrap((void*)cmdline);
+
 	/* Handle argc argv */
-	r = crt0_split_cmdline((char*)para, strlen((char*)para), &argc, MAX_ARGV, argv);
-	if (r) return;
+	r = crt0_split_cmdline((char*)cmdline, strlen(cmdline), &argc, MAX_ARGV, argv);
+	if (r) goto end;
 	
 	r = main(argc, argv);
-	
-	return r;
+end:
+	exit(r);
 }

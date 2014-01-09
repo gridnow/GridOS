@@ -12,6 +12,25 @@
 #include <memory.h>
 
 #include "cl_string.h"
+
+static void delete_page(struct km_walk_ctx *ctx, pte_t pte)
+{	
+	unsigned long phy = KE_PAGE_PHY_FROM_PTE(pte);		
+	if (KE_PAGE_INVALID_PTE(pte) == 0)
+	{
+		if (KE_PAGE_IS_SHARED_FROM(pte) == 0)
+		{
+			//printk("Delete page for virtual %x, pte %x, level_id %x.\n", ctx->virtual_address, pte, ctx->level_id);
+			km_page_dealloc(phy);		
+			//printk("deallcated phy = %p\n", phy);
+		}
+		km_pte_clean(ctx); 
+	}
+
+	/* If the manager table is empty, delete the table too */
+	//TODO
+}
+
 bool km_page_map_range(struct km *mem_dst, unsigned long start_va, unsigned long size, unsigned long physical_pfn, page_prot_t prot)
 {
 	long i;
@@ -29,7 +48,6 @@ bool km_page_map_range(struct km *mem_dst, unsigned long start_va, unsigned long
 	} 
 	
 	/* 不需要flush tlb，因为新映射的page不在tlb中 */
-end:
 	return true;
 	
 err:
@@ -50,7 +68,7 @@ bool km_page_create(struct km *mem_dst, unsigned long address, page_prot_t prot)
 
 	/* Create 模式应该看不到任何内容，否则可以理解被别人刚刚处理成功 */
 	if (km_pte_read(&dst_ctx))
-		goto end;
+		goto err;
 	page = km_page_alloc();
 	if (!page)
 		goto err;
@@ -58,7 +76,6 @@ bool km_page_create(struct km *mem_dst, unsigned long address, page_prot_t prot)
 	km_pte_write(&dst_ctx, entry);
 	
 	/* 不需要flush tlb，因为新的page在tlb中是不存在的 */
-end:
 	return true;
 
 err:
@@ -78,7 +95,7 @@ bool km_page_create_cow(struct km *mem_dst, unsigned long address)
 	if (unlikely(km_walk_to(&dst_ctx, address) == false))
 		goto err;
 	
-	/* Create 模式应该看不到任何内容，否则可以理解被别人刚刚处理成功 */
+	/* 必须有内容，否则就不应该Cow */
 	if (!km_pte_read(&dst_ctx))
 		goto err;
 	page = km_page_alloc();
@@ -92,9 +109,10 @@ bool km_page_create_cow(struct km *mem_dst, unsigned long address)
 	
 	entry = page | km_arch_get_flags(KM_PROT_READ | KM_PROT_WRITE);
 	km_pte_write_force(&dst_ctx, entry);
-	
+
+	/* Must flush, because we are changing the entry */
 	km_arch_flush_page(address);
-end:
+
 	return true;
 	
 err:
@@ -108,7 +126,7 @@ int km_page_share(struct km *dst, unsigned long dst_addr, struct km *src, unsign
 	unsigned long i, src_end = src_addr + PAGE_SIZE;
 	int r = KM_PAGE_SHARE_RESULT_ERR;
 	unsigned long old;		
-	unsigned long va_dst;
+	
 	struct km_walk_ctx dst_ctx, src_ctx;
 	
 	/* Walk to it */
@@ -121,7 +139,7 @@ int km_page_share(struct km *dst, unsigned long dst_addr, struct km *src, unsign
 	old = km_pte_read(&dst_ctx);
 	if (unlikely(old))
 	{
-		r = KM_PAGE_SHARE_RESULT_OK;
+	//	r = KM_PAGE_SHARE_RESULT_OK;
 		goto end;		
 	}
 
@@ -153,4 +171,23 @@ int km_page_share(struct km *dst, unsigned long dst_addr, struct km *src, unsign
 	
 end:
 	return r;
+}
+
+void km_page_share_kernel(struct km* mem_dst, unsigned long virtual_address)
+{
+	/* Call arch to copy it */
+	km_arch_copy_kernel(mem_dst, virtual_address);
+	
+	/* 不需要flush tlb，因为share的page在tlb以前是不存在的。*/
+}
+
+void km_page_dealloc_range(struct km *mem_dst, unsigned long start, unsigned long size)
+{
+	struct km_walk_ctx dst_ctx;
+
+	KM_WALK_INIT(mem_dst, &dst_ctx);	
+	km_walk_loop(&dst_ctx, start, size, delete_page);
+
+	/* Flush the TLB */
+	km_arch_flush_pages(start, size);
 }

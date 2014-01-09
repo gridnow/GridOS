@@ -17,6 +17,8 @@
 #ifndef KE_SRV_H
 #define KE_SRV_H
 
+#include <types.h>
+
 #define KE_SRV_MAX 16
 #define KE_SRV_GET_FID(ID)				((ID) & 0xffffff)
 #define KE_SRV_GET_CLASZ(ID)			((unsigned)(ID) >> 24)
@@ -41,5 +43,16 @@ struct sysreq_common
 {
 	unsigned long req_id;
 };
+
+bool ke_srv_register(const struct ke_srv_info *info);
+
+/**
+	@brief Handler part
+*/
+int ke_handle_put(ke_handle handle, void *kobject);
+void *ke_handle_translate(ke_handle handle);
+bool ke_handle_delete(ke_handle handle);
+ke_handle ke_handle_create(void *kobject);
+
 #endif
 /** @} */

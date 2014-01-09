@@ -14,6 +14,7 @@
 #include <ddk/debug.h>
 #include <ddk/irq.h>
 #include <ddk/vfs.h>
+#include <ddk/input.h>
 #include <ddk/ddk_for_linux.h>
 
 /* HAL internal interface */
@@ -27,6 +28,15 @@
 #include <process.h>
 #include <cpu.h>
 
+static void input_event(struct ddk_input_handle *handle, unsigned int event_type,
+						unsigned int event_code, int value)
+{
+	printk("type = %x.\n", event_type);
+}
+
+/************************************************************************/
+/*                                                                      */
+/************************************************************************/
 static int ddk_printk(const char *fmt, ...)
 {
 	return 0;
@@ -158,8 +168,18 @@ static int fss_ops_wait()
 	return 0;
 }
 
+static void *input_register_handle(void *drv_input_handle)
+{
+	struct ddk_input_handle *handle = km_valloc(sizeof(*handle));
+	if (!handle)
+		return NULL;
+
+	handle->drv_handle	= drv_input_handle;
+	handle->event		= input_event;
+}
+
 struct ddk_for_linux ddk = {
-	.printk					= /* printk */ddk_printk,
+	.printk					= /*printk*/ddk_printk,
 	.allocate_physical_bulk = allocate_physical_bulk,
 	
 	.setup_irq_handler		= setup_irq_handler,
@@ -181,6 +201,9 @@ struct ddk_for_linux ddk = {
 	/* DSS's File Operation */
 	.fss_vfs_register		= fss_vfs_register,
 	.fss_ops_wait			= fss_ops_wait,
+
+	/* INPUT */
+	.input_register_handle	= input_register_handle,
 
 	/* MISC */
 	.run_first_user_process = ke_run_first_user_process,

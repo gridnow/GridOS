@@ -1,10 +1,11 @@
 #include <types.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <compiler.h>
 
 #include "std_console.h"
 
-int printf(const char *fmt, ...)
+DLLEXPORT int printf(const char *fmt, ...)
 {
 	char printf_buf[1024];
 	va_list args;
@@ -19,4 +20,21 @@ int printf(const char *fmt, ...)
 	stdout_write(printf_buf, sizeof(printf_buf));
 
 	return printed;
+}
+
+DLLEXPORT int puts(const char *s)
+{
+	return printf(s);
+}
+
+DLLEXPORT int fputc(int s, FILE *stream)
+{
+	TODO("");
+	return 0;
+}
+
+DLLEXPORT int fprintf(FILE *file, const char *format, ...)
+{
+	TODO("");
+	return 0;
 }

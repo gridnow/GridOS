@@ -9,39 +9,26 @@
 
 #include <types.h>
 #include <dlfcn.h>
+#include <list.h>
 
-#include "crt.h"
+#include "posix.h"
 
 #include "dlfcn.h"
 
-void *dlopen(const char *file, int mode)
+bool init_module()
 {
-	Dl_info * info = NULL;
+	return true;
+}
 
+DLLEXPORT void *dlopen(const char *file, int mode)
+{
 	if (!file)
 		return GLOBAL_HANDLE;
 
-	info = crt_zalloc(sizeof(Dl_info));
-	if (!info)
-		goto dlopen_error;
-	
-	info->dli_fbase	= exefmt_load(file);
-	info->dli_fname	= NULL;/*TODO: point to the image file name */
-	if(!info->dli_fbase) goto dlopen_error;
-	if(!info->dli_fname) goto dlopen_error;
-	
-	return info;
+	return dl_open(file, mode);
+}
 
-dlopen_error:
-	if (info)
-	{
-		if (info->dli_fbase)
-		{
-
-		}
-
-		crt_free(info);
-	}
-
-	return NULL;
+DLLEXPORT void dlcall_posix_entry(void *entry, int argc, char *argv[])
+{
+	dl_call_posix_entry(entry, argc, argv);	
 }

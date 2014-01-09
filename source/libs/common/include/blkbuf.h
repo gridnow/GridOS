@@ -34,8 +34,11 @@ void *cl_bkb_alloc(struct cl_bkb *bkb);
 
 	@param[in] bkb the address of the block buffer descriptor
 	@param[in] node the address of the block
+
+	@return
+		The address of the buffer in block if success, or NULL is returned
 */
-void cl_bkb_dealloc(struct cl_bkb *bkb, void *node);
+void *cl_bkb_dealloc(struct cl_bkb *bkb, void *p);
 
 /**
 	@brief ¶¯Ì¬À©Õ¹block buffer

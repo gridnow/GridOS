@@ -8,6 +8,7 @@
 */
 #include <compiler.h>
 #include <sys/mman.h>
+#include "sys/ke_req.h"
 
 static void *mmap64(void *addr, size_t len, int prot, int flags, int fd, loff_t offset)
 {

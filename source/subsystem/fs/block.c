@@ -45,10 +45,14 @@ void* fss_db_malloc(void)
 	}
 	ke_spin_unlock(&cache_desc()->db_stack_lock);
 
+	/* Really need to set to zero ? */
+#if 0
 	if (ret != NULL)
 	{
 		memset(ret, 0, FSS_CACHE_DB_SIZE);
 	}
+
+#endif
 	return ret;
 } 
 
@@ -80,6 +84,7 @@ struct dbd* fss_dbd_malloc(struct fss_file * who)
 
 		/* No map */
 		INIT_LIST_HEAD(&ret->map_list);
+		ke_spin_init(&ret->map_lock);
 		ret->who = who;
 	}
 

@@ -13,25 +13,29 @@
 #include <stdio.h>
 #include <ddk/debug.h>
 
+#include "posix.h"
 #include "dlfcn.h"
 
-void *dlsym(void *__restrict handle, __const char *__restrict name)
+DLLEXPORT void *dlentry(void *__restrict handle)
+{
+	return dl_entry(handle);
+}
+
+DLLEXPORT void *dlsym(void *__restrict handle, __const char *__restrict name)
 {
 	void *p = NULL;
-	Dl_info * info = handle;
-
-	if (info == GLOBAL_HANDLE)
+	
+	if (handle == GLOBAL_HANDLE)
 	{		
 		set_errno(ENOSYS);
 		goto dlsym_end;
 	}
 
-	/* TODO: to find symbol */
-	
+	p = dl_sym(handle, name);
 	
 dlsym_end:	
-	if(!p)	
-		printf("dlsym 没有找到符号 %s.return addr %h.", name, __builtin_return_address(0));
+//	if(!p)
+//		printf("dlsym 没有找到符号 %s.return addr %p.", name, __builtin_return_address(0));
 
 	return p;
 }

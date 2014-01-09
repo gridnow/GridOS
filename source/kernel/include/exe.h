@@ -10,6 +10,8 @@ struct ko_process;
 struct ko_exe
 {
 	struct ko_section *backend;
+
+	void *entry/*User space independent address*/;
 };
 
 #define KO_EXE_TO_PRIVATE(EXE) ((EXE) + 1/*Just after the object*/)
@@ -25,15 +27,15 @@ struct ko_exe *kp_exe_create(struct ko_section *backend, void *ctx);
 /**
 	@brief 一般从文件创立exe对象
 */
-struct ko_exe *kp_exe_create_from_file(xstring name, struct ko_section *ks, void *ctx);
+struct ko_exe *kp_exe_create_from_file(xstring name, struct ko_section *ks, void *ctx, void *entry_address);
 
 /**
 	@brief Bind an EXE object to process
 
 	@return
-		由于内存不足可能绑定不成功
+		绑定地址，也就是该可执行对象的影射地址
 */
-bool kp_exe_bind(struct ko_process *who, struct ko_exe *what);
+unsigned long kp_exe_bind(struct ko_process *who, struct ko_exe *what);
 
 /**
 	@brief 把EXE共享到本地
@@ -59,9 +61,24 @@ bool kp_exe_copy_private(struct ko_exe *ke, void *dst_ctx, int dst_size);
 struct ko_exe *kp_exe_create_temp();
 
 /**
+	@brief 搜索，如果搜索到增加其引用计数器
+*/
+struct ko_exe *kp_exe_search_by_name(xstring name);
+
+/**
+	@brief 取消对对象的引用
+ */
+void kp_exe_put(struct ko_exe *ke);
+
+/**
+	@brief Close the exe object
+*/
+void kp_exe_close(struct ko_process *who, struct ko_exe *ke);
+
+/**
 	@brief Open the exe object
 */
-struct ko_exe *kp_exe_open_by_name(struct ko_process *who, xstring name);
+struct ko_exe *kp_exe_open_by_name(struct ko_process *who, xstring name, unsigned long *__out map_base);
 
 /**
 	@brief Init the EXE module

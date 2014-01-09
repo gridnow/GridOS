@@ -49,8 +49,8 @@ struct fss_cache_recaller
 struct dbmr
 {
 	struct list_head list;												/* 一个DB可能被多个进程共享，因此有列表 */
-	void * process;														/* 本映射属于哪个进程 */
-	void * base;														/* 本映射的基础地址 */
+	void *process;														/* 本映射属于哪个进程 */
+	void *base;															/* 本映射的基础地址 */
 };
 
 /**
@@ -73,7 +73,7 @@ struct dbd
 	/*
 		映射信息
 	*/
-	void * map_lock;													/* 映射描述链表的LOCK */
+	struct ke_spinlock map_lock;										/* 映射描述链表的LOCK */
 	struct list_head map_list;											/* 本DB的映射描述体 */
 
 	/*
@@ -115,6 +115,8 @@ struct fss_cache
 	struct ke_spinlock dirty_list_lock;
 };
 
+#define FSS_DBD_LOCK(DBD) 
+#define FSS_DBD_UNLOCK(DBD) 
 #define FSS_DBD_LEVEL_EXCHANGE_MASK	(127)								/* Access count & this == 0时，和上一级比对是否交换位置 */
 #define FSS_DBD_DEGRADE_COUNT(DBD)	((DBD)->access_counter > FSS_DBD_LEVEL_EXCHANGE_MASK ? \
 	(DBD)->access_counter - FSS_DBD_LEVEL_EXCHANGE_MASK : (DBD)->access_counter = 0)

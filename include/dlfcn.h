@@ -35,16 +35,16 @@ typedef struct
 /**
 	@brief 打开共享动态库
 
-	@param[in] file 有效动态库名
+	@param[in] file 有效动态库名, NULL 表示获取全局对象句柄
 	@param[in] mode 动态库打开模式
 	
 	@return 
 		NULL 失败，正确为动态库对象指针
 
 	@note
-		If the value of file is 0, dlopen() shall provide a handle on a global symbol object.
+		Posix: If the value of file is NULL, dlopen() shall provide a handle on a global symbol object.
 */
-void *dlopen (const char *file, int mode);
+void *dlopen(const char *file, int mode);
 
 /**	
 	@brief 关闭动态
@@ -109,6 +109,10 @@ char *dlerror (void);
 		If failed,the info->sname and info->sname will be set to NULL
 */
 int dladdr(void * address, Dl_info * info);
+
+/* Extended */
+void dlcall_posix_entry(void *entry, int argc, char *argv[]);
+void *dlentry(void *__restrict handle);
 
 #endif
 /** @} */

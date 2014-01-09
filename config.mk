@@ -30,7 +30,7 @@ CFGAGS_MIPS64      = -c -O2 -mabi=64 -mips3 -EL -G0
 CFGAGS_MIPS32      = -c -O2 -mabi=32 -mips2 -EL -G0 
 CL_INCLUDE         = -I$(MY_BUILD_BASE)/source/libs/common/include -I$(MY_BUILD_BASE)/source/libs/common/include/arch/$(ARCH_DIR)
 STD_INCLUDE        = -I$(MY_BUILD_BASE)/include -I$(MY_BUILD_BASE)/include/arch/$(ARCH_DIR)
-COMMON_CC_FLAGS    += -Wimplicit-function-declaration
+COMMON_CC_FLAGS    += -Wimplicit-function-declaration -Wall
 COMMON_CC_FLAGS    += -fvisibility=hidden
 
 #
@@ -39,6 +39,7 @@ COMMON_CC_FLAGS    += -fvisibility=hidden
 LDFLAGS				= -L$(SYSTEM_DIR)
 ifeq ($(DLL),yes)
 LDFLAGS    			+= -shared --entry=_start
+COMMON_CC_FLAGS   		+= -fPIC
 endif
 
 #

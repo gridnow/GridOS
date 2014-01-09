@@ -1,7 +1,16 @@
+/**
+ *   See the readme.txt at the root directory of this project for the idea and originality of this operating system.
+ *   See the license.txt at the root directory of this project for the copyright information about this file and project.
+ *
+ *   Wuxin (82828068@qq.com)
+ *	 系统请求信息数据
+ */
+
 #ifndef KE_SYS_REQ
 #define KE_SYS_REQ
 
 #include <types.h>
+#include <kernel/ke_memory.h>
 #include "syscall.h"
 
 /************************************************************************/
@@ -15,9 +24,6 @@ struct sysreq_thread_create
 	void * wrapper, * entry;
 	unsigned long para;
 	bool run;
-
-	/* Output */
-	ke_handle thread;
 };
 
 struct sysreq_thread_delete
@@ -41,7 +47,7 @@ struct sysreq_process_create
 {
 	/* Input */
 	struct sysreq_common base;
-	xstring name, image;
+	xstring name, cmdline;
 
 	/* Output */
 	ke_handle process;
@@ -77,6 +83,7 @@ struct sysreq_process_ld
 #define SYSREQ_PROCESS_MAP_EXE_FILE		1
 #define SYSREQ_PROCESS_UNMAP_EXE_FILE	2
 #define SYSREQ_PROCESS_ENJECT_EXE		3
+#define SYSREQ_PROCESS_CLOSE_EXE		SYSREQ_PROCESS_UNMAP_EXE_FILE				// Actually we kill section will trigger exe close
 };
 
 /************************************************************************/
@@ -89,29 +96,52 @@ struct sysreq_memory_virtual_alloc
 	xstring					name;													// The segment name
 	unsigned long			base_address;
 	size_t					size;
-	unsigned long			mem_prot;												// 
+	page_prot_t				mem_prot;												//
 	
 	/* Output */
 	unsigned long			out_base;
 	size_t					out_size;
 };
 
+void *sys_vmalloc(xstring name, void *addr, size_t len, int prot);
+
 /************************************************************************/
 /* misc                                                                 */
 /************************************************************************/
-struct sysreq_misc_set_pixel
+struct sysreq_misc_draw_screen
 {
 	/* INPUT */
 	struct sysreq_common base;
 	int x, y;
-	unsigned int clr;
+	union
+	{
+		struct __draw_screen_pixel__
+		{
+			unsigned int clr;
+		} pixel;
+		struct __draw_screen_bitmap__
+		{
+			int width, height;
+			int bpp;
+			void * __user buffer;
+		} bitmap;
+		
+		struct __draw_screen_resolution__
+		{
+			int width, height, bpp;
+		} resolution;
+	};
+	int type;
+#define SYSREQ_MISC_DRAW_SCREEN_PIXEL	0
+#define SYSREQ_MISC_DRAW_SCREEN_BITMAP	1
+#define SYSREQ_MISC_DRAW_GET_RESOLUTION	2
 };
 
 struct sysreq_process_printf
 {
 	/* INPUT */
 	struct sysreq_common base;
-	void * string;
+	void *string;
 };
 
 #endif

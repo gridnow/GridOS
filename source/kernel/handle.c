@@ -44,11 +44,11 @@ static void handle_space_free(void * p)
 	km_vfree(p);
 }
 
-ke_handle ke_handle_create(void *ko)
+ke_handle ke_handle_create(void *kobject)
 {
 	ke_handle h;
 	void * handle_table;
-	struct ko_process * on = KP_CURRENT();
+	struct ko_process *on = KP_CURRENT();
 	
 	handle_table = get_handle_table(on);
 	
@@ -56,13 +56,13 @@ ke_handle ke_handle_create(void *ko)
 	if (handle_table == NULL)
 		return KE_INVALID_HANDLE;
 	
-	h = i2p_alloc(handle_table, ko);
+	h = i2p_alloc(handle_table, kobject);
 	if (h == COMMON_I2P_ALLOC_ERROR)
 	{
 		h = KE_INVALID_HANDLE;
 		goto end;
 	}
-	cl_object_inc_ref(ko);
+	cl_object_inc_ref(kobject);
 end:
 	put_handle_table(on);
 	
@@ -71,8 +71,8 @@ end:
 
 bool ke_handle_delete(ke_handle handle)
 {
-	void * handle_table;
-	struct ko_process * on = KP_CURRENT();
+	void *handle_table;
+	struct ko_process *on = KP_CURRENT();
 	bool r;
 	
 	handle_table = get_handle_table(on);
@@ -86,52 +86,49 @@ bool ke_handle_delete(ke_handle handle)
 
 void *ke_handle_translate(ke_handle handle)
 {
-	void * object;
-	void * handle_table;
+	void *kobject;
+	void *handle_table;
 	struct ko_process * on = KP_CURRENT();
 	
 	handle_table = get_handle_table(on);
 	
-	object = i2p_find(handle_table, handle);
-	if (object)
-		cl_object_inc_ref(object);
+	kobject = i2p_find(handle_table, handle);
+	if (kobject)
+		cl_object_inc_ref(kobject);
 	
 	put_handle_table(on);
 	
-	return object;
+	return kobject;
 }
 
-int ke_handle_put(ke_handle handle, void *object)
+int ke_handle_put(ke_handle handle, void *kobject)
 {
 	//TODO
 	TODO("Add put method");
 }
 
-ke_handle ke_handle_create_on_specific(struct ko_process *on, void *orignal)
+ke_handle ke_handle_create_on_specific(struct ko_process *on, void *kobject)
 {
 	ke_handle h;
 	void * handle_table;
 	
 	handle_table = get_handle_table(on);
 	
-	h = i2p_alloc(handle_table, orignal);
+	h = i2p_alloc(handle_table, kobject);
 	
 	put_handle_table(on);
 	
 	return h;
 }
 
-void *ke_handle_translate_no_lock(struct ko_process * on, ke_handle handle)
+void *ke_handle_translate_no_lock(struct ko_process *on, ke_handle handle)
 {
-	void * object;
-	void * handle_table;
+	void *handle_table;
 	
 	handle_table = on->handle_table;
 	
 	/* Find the object by handle */
-	object = i2p_find(handle_table, handle);
-	
-	return object;
+	return i2p_find(handle_table, handle);
 }
 
 unsigned long ke_handle_loop(struct ko_process *on, void (*action)(struct ko_process * on, ke_handle handle))

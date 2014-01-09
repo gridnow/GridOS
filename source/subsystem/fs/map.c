@@ -30,20 +30,16 @@ void *fss_map_prepare_dbd(struct fss_file *file, void *process, uoffset file_pos
      ret	= fss_dbd_make_valid(file, which);
      if(ret < 0) 
 		 goto end;
-
-#ifdef _MSC_VER
-     map	= (struct dbmr*)malloc(sizeof(struct dbmr));
-#else
      map	= km_valloc(sizeof(struct dbmr));
-#endif
-     
      if (map == NULL)
 		 goto  end;
+	
      map->process	= process;
      map->base		= 0;
      db_addr		= which->buffer/*base*/ + file_pos % FSS_CACHE_DB_SIZE;
-     //TODO: LOCK the list
+     ke_spin_lock(&which->map_lock);
      list_add_tail(&map->list ,&which->map_list);
+     ke_spin_unlock(&which->map_lock);
 	
 end:
 	 if (which)
@@ -53,6 +49,10 @@ end:
 	
 }
 
+void fss_map_destroy(struct fss_file *file)
+{
+	
+}
 
 int fss_map_init()
 {
