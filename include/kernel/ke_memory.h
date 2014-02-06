@@ -11,6 +11,8 @@
 #define KE_MEMORY_H
 
 #include <compiler.h>
+#include <types.h>
+
 #include "kernel.h"
 
 /**
@@ -23,7 +25,7 @@ DLLEXPORT void *km_map_physical(unsigned long physical, unsigned long size, unsi
 /**
 	@brief 分配内核态全局常规内存空间段
 */
-DLLEXPORT void *km_alloc_virtual(unsigned long size, page_prot_t prot);
+DLLEXPORT void *km_alloc_virtual(unsigned long size, page_prot_t prot, void **__out kernel_space_object);
 
 /**
 	@brief 释放内核全局常规内存空间段

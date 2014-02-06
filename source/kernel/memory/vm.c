@@ -22,10 +22,9 @@ static unsigned long alloc_virtual_space(struct list_head * usage_list,
 								   unsigned long range_start, unsigned long range_len,
 								   unsigned long desired, unsigned long size)
 {
-	struct list_head * section_list;
+	struct list_head *section_list;
 	struct km_vm_node *pS = NULL, *pP = NULL;
 	unsigned long start = NULL;
-	bool found = true;
 	
 	/* 首先要定位到的位置，自动的则在区间内部找，手动的则在特定位置找 */
 	if (desired)
@@ -230,7 +229,6 @@ unsigned long km_vm_create_sub(struct ko_process *where, struct km_vm_node *pare
 {
 	unsigned long base;
 	unsigned long range_start, range_size;
-	unsigned long flags;
 
 	range_size = parent->size;
 	range_start = parent->start;
@@ -285,7 +283,7 @@ err:
 	return NULL;
 }
 
-void *km_alloc_virtual(unsigned long size, page_prot_t prot)
+void *km_alloc_virtual(unsigned long size, page_prot_t prot, void **__out kernel_space_object)
 {
 	struct ko_section *ks;
 	unsigned long base = 0;
@@ -293,7 +291,8 @@ void *km_alloc_virtual(unsigned long size, page_prot_t prot)
 	ks = ks_create(kp_get_system(), KS_TYPE_PRIVATE, base, size, prot);
 	if (!ks)
 		goto err;
-	
+	if (kernel_space_object)
+		*kernel_space_object = ks;
 	return (void*)ks->node.start;
 	
 err:

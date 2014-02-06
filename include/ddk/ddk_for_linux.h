@@ -3,6 +3,7 @@
 
 /* Types that have to be used by the interface */
 struct fss_vfs_driver;
+struct nss_hwmgr;
 struct ddk_input_handle;
 
 struct ddk_for_linux
@@ -69,6 +70,11 @@ struct ddk_for_linux
 		@brief 来自DSS的文件系统做完一件事情的回调通知，目前都是发消息到DSS去做一个文件操作，效率差一点，没办法，谁叫我们没有精力去开发原生文件系统呢？
 	*/
 	int (*fss_ops_wait)(void);
+
+	/************************************************************************/
+	/* NET                                                                  */
+	/************************************************************************/
+	void (*nss_hwmgr_register)(struct nss_hwmgr *nss);
 
 	/************************************************************************/
 	/* INPUT                                                                */

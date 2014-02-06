@@ -55,9 +55,6 @@ static bool object_init(real_object_t *obj)
 	km_arch_ctx_init(&p->mem_ctx);
 
 	return true;
-
-err:
-	return false;
 }
 
 static struct cl_object_ops process_object_ops = {
@@ -157,7 +154,7 @@ bool kp_init()
 	km_walk_init_for_kernel(&init_process->mem_ctx);
 
 	kt_init();
-		
+
 	kp_exe_init();
 	ke_srv_init();
 	return true;
@@ -195,6 +192,11 @@ void ke_startup_driver_process(void *physical_data, size_t size)
 		Elf64_Ehdr *hdr64 = (Elf64_Ehdr*)physical_data;
 		entry_address = hdr64->e_entry;
 	}
+	else
+	{
+		printk("不识别的驱动文件格式.\n");
+		goto end;
+	}
 
 	/* 64kb offset is not base */
 	base = entry_address & (~0xffff);
@@ -206,6 +208,7 @@ void ke_startup_driver_process(void *physical_data, size_t size)
 		goto err;
 
 	 ((void(*)())entry_address)(&ddk);
+end:
 	return;
 err:
 	printk("驱动包影射到内核空间失败，可能是地址冲突，要影射的地址范围为%d@%x.\n", size, base);

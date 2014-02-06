@@ -241,7 +241,7 @@ static ke_handle process_ld(struct sysreq_process_ld *req)
 /**
 	@brief Create a new user thread
 */
-static ke_handle thread_create(struct sysreq_thread_create * req)
+static ke_handle thread_create(struct sysreq_thread_create *req)
 {
 	ke_handle h;
 	struct ko_thread *t;
@@ -265,11 +265,39 @@ err:
 	}
 	return KE_INVALID_HANDLE; 
 }
+struct ko_thread *tmsg;
+/**
+	@brief Thread message slot managing
+*/
+static bool thread_msg(struct sysreq_thread_msg *req)
+{
+	bool r;
+	struct ktm *msg;
+	tmsg = kt_current();
+	
+	msg = ktm_prepare_loop();
+	if (msg == NULL)
+	{
+		req->slot_base = NULL;
+		req->slot_buffer_size = 0;
+		r = false;
+	}
+	else
+	{
+		kt_sleep(KT_STATE_WAITING_MSG);
+
+		req->slot_base			= (void*)msg->map->node.start;
+		req->slot_buffer_size	= msg->desc.slot_buffer_size;
+		r = true;
+	}
+
+	return r;
+}
 
 /************************************************************************/
 /* MISC                                                                 */
 /************************************************************************/
-static void misc_draw_screen(struct sysreq_misc_draw_screen * req)
+static void misc_draw_screen(struct sysreq_misc_draw_screen *req)
 {
 	extern void video_draw_pixel(int x, int y, unsigned int clr);
 	extern void video_draw_bitmap(int x, int y, int width, int height, int bpp, void * user_bitmap);
@@ -285,7 +313,7 @@ static void misc_draw_screen(struct sysreq_misc_draw_screen * req)
 
 /**
 */
-static void kernel_printf(struct sysreq_process_printf * req)
+static void kernel_printf(struct sysreq_process_printf *req)
 {
 	printk("%s", req->string);
 }
@@ -293,7 +321,7 @@ static void kernel_printf(struct sysreq_process_printf * req)
 /************************************************************************/
 /* MEMORY                                                               */
 /************************************************************************/
-static ke_handle memory_virtual_alloc(struct sysreq_memory_virtual_alloc * req)
+static ke_handle memory_virtual_alloc(struct sysreq_memory_virtual_alloc *req)
 {
 	unsigned long base, sz, type;
 
@@ -394,7 +422,7 @@ void ke_srv_init()
 	kernel_entry[SYS_REQ_KERNEL_PROCESS_STARTUP - SYS_REQ_KERNEL_BASE]		= (void*) process_startup;
 	kernel_entry[SYS_REQ_KERNEL_PROCESS_HANDLE_EXE - SYS_REQ_KERNEL_BASE]	= (void*) process_ld;
 	//kernel_entry[SYS_REQ_KERNEL_WAIT - SYS_REQ_KERNEL_BASE]				= (void*) process_wait;
-
+	kernel_entry[SYS_REQ_KERNEL_THREAD_MSG - SYS_REQ_KERNEL_BASE]			= (void*) thread_msg;
 
 	/* Misc */
 	kernel_entry[SYS_REQ_KERNEL_PRINTF - SYS_REQ_KERNEL_BASE]			= (void*) kernel_printf;

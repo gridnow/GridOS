@@ -1,7 +1,7 @@
 DLL=yes
 include $(MY_BUILD_BASE)/config.mk
 
-LAST_INCLUDE	+= -I../include
+LAST_INCLUDE	+= -I../include -I../../
 PARTS			= 
 OBJS			= vmalloc.o stdio.o file.o fb.o process.o
  

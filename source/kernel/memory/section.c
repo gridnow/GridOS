@@ -16,6 +16,7 @@
 #include "section.h"
 #include "page.h"
 #include "exe.h"
+#include <thread.h>
 
 static void remove_from_space(struct ko_process *who, struct ko_section *p)
 {
@@ -151,6 +152,26 @@ void ks_open_by(struct ko_process *who, struct ko_section *ks)
 	cl_object_open(who, ks);
 }
 
+/*
+	@brief Link tow sections together
+ */
+void ks_share(struct ko_process *from, struct ko_section *where,
+			  struct ko_process *to, struct ko_section *dst, int offset)
+{
+	cl_object_inc_ref(where);
+	
+	/* 
+		No need to increase the reference counter of process,
+		because it will not be deleted if it has section with reference counter.
+	*/
+	dst->type					= KS_TYPE_SHARE;
+	dst->priv.share.src			= where;
+	dst->priv.share.offset		= offset;
+	dst->priv.share.src_process = from;
+	
+	
+}
+
 /**
 	@brief Create a sub node on the current section
 */
@@ -239,11 +260,14 @@ void __init ks_init()
 	km_arch_trim(); 
 	ks_exception_init();
 	km_valloc_init();
+	
+	/* Message system need virtual memory */
+	ktm_init();
 }
 
 //------------test-----------------
 #include <kernel/ke_event.h>
-#include <thread.h>
+
 struct ke_event ev;
 static void test_thread(unsigned long para)
 {

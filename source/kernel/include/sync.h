@@ -22,7 +22,7 @@ struct thread_wait
 	struct ko_thread * who;
 	struct list_head task_list;
 };
-#if 1 /* 等待条件的完成，暂时没有用到漂亮的宏 */
+#if 1 /* 等待条件的完成，暂时没有用到的漂亮宏 */
 #define KT_DELETE_WAIT(WAIT_NODE) \
 	list_del(&(WAIT_NODE)->task_list)
 #define KT_PREPARE_WAIT(WAIT_QUEUE, WAIT_NODE) do { \

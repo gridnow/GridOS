@@ -53,14 +53,21 @@ y_handle y_process_create(xstring name, char *cmdline);
 */
 y_wait_result y_process_wait_exit(y_handle for_who, unsigned long * __in __out result);
 
-
 /************************************************************************/
 /* 同步对象                                                                     */
 /************************************************************************/
 #define Y_SYNC_MAX_OBJS_COUNT 64
 #define Y_SYNC_WAIT_INFINITE -1 
 
+typedef enum {
+	Y_MSG_LOOP_EXIT_SIGNAL = 0,
+	Y_MSG_LOOP_ERROR = -1,
+}y_msg_loop_result;
 
+/**
+	@brief 等待线程消息
+*/
+y_msg_loop_result y_message_loop();
 
 /************************************************************************/
 /* CONSOLE                                                              */

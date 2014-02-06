@@ -109,8 +109,10 @@ void main()
 	
 	printf("初始化进程启动中(stack = %p), stderr = %p...\n", &fp, stderr);	
 	
-	//y_process_create("NES", "0:\\os\\i386\\nes.exe 0:\\os\\i386\\90.nes");
+	y_process_create("NES", "0:\\os\\i386\\nes.exe 0:\\os\\i386\\90.nes");
 	
 	/* Startup service */
-	startup_services();
+	//startup_services();
+	printf("\npreparing message loop.\n");
+	y_message_loop();
 }

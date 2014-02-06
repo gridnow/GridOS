@@ -12,6 +12,7 @@
 #include <arch/thread.h>
 #include <list.h>
 #include <spinlock.h>
+#include <msg.h>
 
 struct ko_process;
 struct ko_thread
@@ -26,6 +27,9 @@ struct ko_thread
 	/* File */
 	void *current_dir;
 
+	/* Messages */
+	struct ktm msg;
+	
 	/* Scheduler */
 	struct list_head queue_list;
 	unsigned long state;
@@ -51,8 +55,10 @@ struct kt_thread_creating_context
 
 #define KT_STATE_RUNNING				1
 #define KT_STATE_WAITING_SYNC			2
-#define KT_STATE_KILLING				3
+#define KT_STATE_WAITING_MSG			3
+#define KT_STATE_KILLING				4
 #define KT_STATE_MASK					(0xffff)
+
 #define KT_STATE_ADD_UNINTERRUPT		(1 << 16)												//附加属性：不可中断地做某件事情
 #define KT_STATE_ADD_FORCE_BY_SYSTEM	(1 << 17)												//附加属性：强制休眠的，常规唤醒（用户层的唤醒）是不能的
 #define KT_STATE_ADD_DIEING				(1 << 18)												//附加属性：要死了...
@@ -64,6 +70,7 @@ struct kt_thread_creating_context
 #define KT_GET_KP(THREAD)				((THREAD)->process)
 #define KT_STATUS_BASE(THREAD)			((THREAD)->state & KT_STATE_MASK)
 #define KT_CURRENT_KILLING()			((kt_current()->state & KT_STATE_MASK) == KT_STATE_KILLING)
+#define KT_THREAD_KILLING(T)			(((T)->state & KT_STATE_MASK) == KT_STATE_KILLING)
 #define KP_CURRENT()					(KT_GET_KP(kt_current()))
 static inline struct ko_thread *kt_current()
 {
@@ -108,8 +115,9 @@ void kt_wakeup_driver(struct ko_thread *who);
 	@brief 切换线程
 */
 void kt_schedule();
-
 void kt_schedule_driver();
+#define KT_SWITCH_GIVE_CHANCE 1
+void kt_switch(int why);
 
 //arch
 void kt_arch_switch(struct ko_thread *prev, struct ko_thread *next);

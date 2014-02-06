@@ -37,7 +37,20 @@ struct sysreq_thread_wait
 {
 	/* INPUT */
 	struct sysreq_common base;
+	int wait_type;
+#define SYSREQ_THREAD_WAIT_MS		1
+#define SYSREQ_THREAD_WAIT_OBJECTS	2
 	unsigned int ms;
+};
+
+struct sysreq_thread_msg
+{
+	/* INPUT */
+	struct sysreq_common base;
+
+	/* OUTPUT */
+	void *slot_base;
+	int slot_buffer_size;
 };
 
 /**

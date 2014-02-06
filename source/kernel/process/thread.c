@@ -40,6 +40,8 @@ static bool object_init(real_object_t *obj)
 	struct ko_thread *thread = (struct ko_thread *)obj;
 	INIT_LIST_HEAD(&thread->queue_list);
 	spin_lock_init(&thread->ops_lock);
+	
+	ktm_msg_init(thread);
 
 	return true;
 }
@@ -106,7 +108,7 @@ end:
 /**
 	@brief Create a thread
 */
-struct ko_thread * kt_create(struct ko_process * where, struct kt_thread_creating_context *ctx)
+struct ko_thread *kt_create(struct ko_process *where, struct kt_thread_creating_context *ctx)
 {	
 	struct ko_thread *p = NULL;
 	
@@ -208,5 +210,6 @@ bool kt_init()
 {
 	cl_object_type_register(&thread_type);
 	init_idle_thread(kc_get_raw(), &init_thread);
+	
 	return true;
 }

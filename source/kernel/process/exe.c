@@ -162,39 +162,15 @@ err:
 
 bool kp_exe_share(struct ko_process *where, struct ko_section *ks_dst, unsigned long to, struct ko_exe *ke_src)
 {
-	int ret;
 	unsigned long source;
-	struct km *dst_mem, *src_mem;
 
 	source = ke_src->backend->node.start + ks_dst->priv.share.offset;	/* Base + section offset*/
 	source += to - ks_dst->node.start;									// Offset of the to Current process
 
 	//printk("source = %p, to = %p, ke_src->backend->node.start = %p, ks_dst->priv.share.offset = %p\n", source, to,
 	//	ke_src->backend->node.start, ks_dst->priv.share.offset);
-
-share_again:
-	dst_mem = kp_get_mem(where);
-	src_mem = kp_get_mem(kp_get_file_process());
-	ret = km_page_share(dst_mem, to, src_mem, source, KM_PROT_READ);
-	kp_put_mem(dst_mem);
-	kp_put_mem(src_mem);
-
-	if (ret != KM_PAGE_SHARE_RESULT_OK)
-	{
-		if (ret == KM_PAGE_SHARE_RESULT_ERR)
-			goto err;
-		else if (ret == KM_PAGE_SHARE_RESULT_SRC_INVALID)
-		{
-			if (ks_restore(kp_get_file_process(), ke_src->backend, source) == false)
-				goto err;
-			goto share_again;
-		}
-	}
-
-	return true;
-	
-err:
-	return false;
+	return ks_restore_share(where, ks_dst,
+							kp_get_file_process(), ke_src->backend, to, source, KM_PROT_READ/* we must be read share */);
 }
 
 int kp_exe_get_context_size()

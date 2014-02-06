@@ -23,7 +23,7 @@ static spinlock_t kernel_vm_object_lock;
 
 bool __init km_valloc_init()
 {
-	kernel_vm_object = km_alloc_virtual(KE_VIRTUAL_MEMORY_SIZE, KM_PROT_READ | KM_PROT_WRITE);
+	kernel_vm_object = km_alloc_virtual(KE_VIRTUAL_MEMORY_SIZE, KM_PROT_READ | KM_PROT_WRITE, NULL);
 	if (!kernel_vm_object)
 		goto err;
 	

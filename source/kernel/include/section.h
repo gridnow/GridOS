@@ -22,7 +22,8 @@ struct ko_exe;
 #define KS_TYPE_FILE	6
 #define KS_TYPE_SHARE	7
 #define KS_TYPE_KERNEL	8
-#define KS_TYPE_MAX		9
+
+#define KS_TYPE_MAX		10
 #define KS_TYPE_MASK	0xffff
 #define KS_TYPE_ADD_SUB (1<<16)
 
@@ -49,6 +50,8 @@ struct ko_section
 		{
 			int size;
 			int offset;
+			void *src/*may be has src object*/;
+			void *src_process/*the holder of the process*/;
 		} share;
 		
 		struct __file
@@ -92,6 +95,12 @@ struct ko_section *ks_sub_locate(struct ko_section * where, unsigned long addres
 */
 void ks_sub_close(struct ko_process * who, struct ko_section * which);
 
+/*
+	@brief Link two section together
+*/
+void ks_share(struct ko_process *from, struct ko_section *where,
+			  struct ko_process *to, struct ko_section *dst, int offset);
+
 //exp.c
 bool ks_exception_init();
 bool ks_exception(struct ko_thread *thread, unsigned long error_address, unsigned long code);
@@ -100,6 +109,8 @@ struct ko_section *ks_get_by_vaddress(struct ko_process *where, unsigned long ad
 /**
 	@brief Resotore the section contents
 */
-bool ks_restore(struct ko_process *who, struct ko_section *where, unsigned long address);
+bool ks_restore_share(struct ko_process *dst_process, struct ko_section *dst_section,
+					  struct ko_process *src_process, struct ko_section *src_section,
+					  unsigned long to, unsigned long src, page_prot_t prot_overwrite);
 
 #endif

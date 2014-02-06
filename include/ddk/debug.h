@@ -79,7 +79,7 @@ extern void hal_do_panic();
 /**
 	@brief BUG 表示一个不应该去的流程.
 */
-#define BUG()	\
+#define BUG() \
 	do {	\
 		PRINT("文件%s中的函数%s第%d行不应该执行,程序BUG.\n", __FILE__, __FUNCTION__, __LINE__);	\
 		hal_do_panic();	\
