@@ -2,8 +2,8 @@
 #define SESSION_AND_USER_MANAGER_H
 
 #include <compiler.h>
-#include "sys/session_req.h"
 
+#include <ddk/input.h>
 /************************************************************************/
 /* STDIO                                                                */
 /************************************************************************/

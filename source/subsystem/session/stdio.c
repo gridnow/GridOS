@@ -1,10 +1,10 @@
-
+#include <ddk/input.h>
 #include <types.h>
 #include "session.h"
 
 static size_t text_read(struct ifi_package * input)
 {
-//	return ifi_read_input(input);
+	return ifi_read_input((void *)input, IFI_DEV_STD_IN);
 }
 
 static size_t text_write(unsigned char * buffer, size_t size)

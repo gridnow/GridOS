@@ -27,7 +27,7 @@ int stdin_read(unsigned long *key)
 	if (ret < 0) return ret;
 	
 	/* Get the key */
-	//*key = req.contents.input.pkg.code;
+	*key = req.contents.input.pkg.code;
 	return ret;
 }
 
