@@ -9,7 +9,8 @@
  */
 #include <stdio.h>
 #include <types.h>
-
+#include <sys/session_req.h>
+#include <sys/syscall.h>
 #include "session.h"
 
 /* Request handlers */
@@ -39,6 +40,17 @@ static int stdio_read(struct sysreq_session_stdio * req)
 	int i = sau_read(&req->contents.input.pkg);	
 // 	printk("pkg %x", req->contents.input.pkg.code);
 	return i;
+}
+
+/*
+	负责创建session层面的ifi设备.
+	包括:键盘,鼠标等输入设备
+*/
+void session_create_input_device(void)
+{
+	extern int ifi_create_kb(void);
+	//创建键盘设备
+	ifi_create_kb();
 }
 
 DLLEXPORT bool session_init(int type)
