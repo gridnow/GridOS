@@ -79,7 +79,7 @@ struct ifi_device;
 typedef struct ifi_dev_ops
 {
 	/* 重设备读入用户空间,返回实际的读取长度 */
-	int (*ifi_dev_read)(struct ifi_device * dev, void * data, int len);
+	int (*ifi_dev_read)(struct ifi_device * dev, struct ifi_package * data, int len);
 	/* 往设备写入数据,返回实际写入的长度 */
 	int (*ifi_dev_write)(struct ifi_device * dev, void * data, int len);
 }ifi_dev_ops_t;
@@ -102,7 +102,7 @@ struct ifi_device
 
 	struct ifi_dev_ops *dev_ops;
 	/* 设备输入函数处理,该函数在中断上下文被调用 */
-	int (*ifi_input_stream)(struct ifi_device *dev, void *data, int len);
+	int (*ifi_input_stream)(struct ifi_device *dev, void *data, size_t len);
 	/* 设备输出函数 */
 	int (*ifi_output_stream)(struct ifi_device *dev);
 	/* 设备销毁函数 */
