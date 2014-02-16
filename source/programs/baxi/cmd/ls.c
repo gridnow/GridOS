@@ -7,13 +7,13 @@
 	控制台命令
 	Wuxin (82828068@qq.com)
  */
-#if 0
+
 #include <stdio.h>
-#include <dirent.h>
+//#include <dirent.h>
 #include <getopt.h>
 
 #include "cmd.h"
-
+#if 0
 static int show_normal()
 {
 	DIR  	*input;
@@ -30,9 +30,10 @@ static int show_normal()
 	printf("\n");
 	closedir(input);
 }
-
+#endif
 static int ls(int argc, char * argv[])
 {
+#if 0
 	int opt;
 	struct option long_help[]=
 	{
@@ -60,6 +61,9 @@ static int ls(int argc, char * argv[])
 			}
 		}
 	}
+#endif
+	TODO("");
+	return ENOSYS;
 } 
 
 struct cmd CMD_ENTRY cmd_ls = {
@@ -69,5 +73,3 @@ struct cmd CMD_ENTRY cmd_ls = {
 			"-a 列出隐藏的文件\n",
 	.func = ls,
 };
-#endif
-

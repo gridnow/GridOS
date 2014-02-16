@@ -112,8 +112,6 @@ void InfoNES_PadState( DWORD *pdwPad1, DWORD *pdwPad2, DWORD *pdwSystem )
  	/* keep this input */
  	dwSysOld = dwTemp;
  	// Joypad 2
-	/* Çå¿Õ»º³åÇø */
-	memset(key_arry, 0, sizeof(key_arry));
 }
 
 /* Release a memory for ROM */

@@ -25,17 +25,19 @@ static int cat(int argc, char * argv[])
 	
 	file = fopen(argv[1], "r");
 	if (!file)
+	{
+		printf("%s ´ò¿ªÊ§°Ü¡£\n", argv[1]);
 		goto err;
-	
+	}
 	while (((ret = fread(str, 2, 1, file))) != 0)
 	{
 		printf("%s", str);
 	}
 	fclose(file);
-	return 0;
+	return CMD_RETURN_OK;
 
 err:
-	return -1;
+	return EINVAL;
 } 
 
 struct cmd CMD_ENTRY cmd_cat = {
