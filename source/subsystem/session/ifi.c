@@ -1,6 +1,7 @@
 
 #include <ddk/input.h>
-
+#include <ddk/slab.h>
+#include <kernel/ke_atomic.h>
 static LIST_HEAD(dev_list_hd);
 
 /**
@@ -34,7 +35,7 @@ int ifi_input_stream(int type, void * buf, size_t size)
 }
 
 
-#if 1
+
 int ifi_read_input(void * input, int type)
 {
 	struct ifi_device * dev = get_ifi_dev_by_devtype(type);
@@ -48,7 +49,7 @@ int ifi_read_input(void * input, int type)
 		return 0;
 	return dev->dev_ops->ifi_dev_read(dev, (void *)input, 1);
 }
-#endif
+
 
 /**
 	@brief Create IFI device

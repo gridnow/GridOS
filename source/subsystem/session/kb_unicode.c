@@ -159,7 +159,7 @@ end:
 /*
 *供上层接口调用的kb输入函数
 */
-static int kb_read_input(struct ifi_device * dev, struct ifi_package * input, size_t len)
+static int kb_read_input(struct ifi_device * dev, struct ifi_package * input, int len)
 {
 	struct ifi_package *store_pkg = NULL;
 	/* No device ? */
