@@ -28,7 +28,7 @@ static bool handle_exe(char * cmdline)
 
 	//TODO: 获取合适的路径
 	memset(str, 0, sizeof(str));
-	strcat(str, "0:/os/Systemi386/");
+	strcat(str, "0:/os/i386/");
 	strcat(str, cmdline);
 	if ((process = y_process_create(cmdline, str)) == Y_INVALID_HANDLE)
 	{
