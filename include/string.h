@@ -156,6 +156,9 @@ size_t strnlen(const char *s, size_t maxlen);
 */
 int memcmp(const void *cs, const void *ct, size_t count);
 
+/**
+	@brief Append one NULL-terminated string to another
+*/
 char *strcat(char *dst, const char *src);
 
 END_C_DECLS;

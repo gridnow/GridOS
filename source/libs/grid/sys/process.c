@@ -6,6 +6,7 @@
 	Reuqest kernel for process
  */
 #include <types.h>
+#include <stdio.h>
 #include <ystd.h>
 
 #include "sys/ke_req.h"
@@ -38,16 +39,22 @@ DLLEXPORT y_handle y_process_create(xstring name, char *cmdline)
 	return (y_handle)system_call(&req);
 }
 
+DLLEXPORT y_wait_result y_process_wait_exit(y_handle for_who, unsigned long * __in __out result)
+{
+	TODO("");
+	return Y_SYNC_WAIT_ERROR;
+}
+
 DLLEXPORT int y_thread_wait_event()
 {
+	TODO("");
 	return 0;
 }
 
 DLLEXPORT y_msg_loop_result y_message_loop()
 {
 	struct message_instance message_instance;
-	struct sysreq_thread_msg req;
-
+	
 	message_instance.current_slot	= NULL;
 	message_instance.filter			= NULL;
 	message_instance.sleep			= default_message_wait;
@@ -55,15 +62,12 @@ DLLEXPORT y_msg_loop_result y_message_loop()
 
 	message_loop(&message_instance);
 	
-	return Y_MSG_LOOP_EXIT_SIGNAL;
-	
-err:
-	return Y_MSG_LOOP_ERROR;
-	
+	return Y_MSG_LOOP_EXIT_SIGNAL;		
 }
 
 DLLEXPORT bool y_message_send(struct message *what)
 {
-	
+	TODO("");
+	return false;	
 }
 

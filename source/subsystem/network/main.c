@@ -22,7 +22,7 @@ DLLEXPORT void nss_hwmgr_register(struct nss_hwmgr *mgr)
 {
 	hwmgr = mgr;
 
-	hwmgr->nops->open("eth0");
+//	hwmgr->nops->open("eth0");
 }
 
 void nss_main()

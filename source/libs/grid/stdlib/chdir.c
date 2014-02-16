@@ -4,22 +4,19 @@
  */
 
 /**
-	控制台命令
+	The Grid Core Library
+ 
+	Posix environment API
 	Wuxin (82828068@qq.com)
  */
-
+#include <compiler.h>
 #include <stdio.h>
-#include "cmd.h"
+#include <unistd.h>
 
-static int rm(int argc, char * argv[])
+#include "sys/ke_req.h"
+
+DLLEXPORT int chdir(const char *path)
 {
 	TODO("");
-	return ENOSYS;
+	return -1;
 }
-
-struct cmd CMD_ENTRY cmd_rm = {
-	.name = "rm",
-	.desc = "删除文件或目录",
-	.help = "TODO",
-	.func = rm,
-};

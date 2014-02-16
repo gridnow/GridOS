@@ -27,6 +27,11 @@ DLLEXPORT int puts(const char *s)
 	return printf(s);
 }
 
+DLLEXPORT int putchar(int ch)
+{	
+	return printf("%c", ch);
+}
+
 DLLEXPORT int fputc(int s, FILE *stream)
 {
 	TODO("");

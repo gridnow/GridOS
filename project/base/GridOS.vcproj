@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="GridOS"
 	ProjectGUID="{D2A6FB2B-A81D-4AA6-8324-165DAB71BD77}"
+	RootNamespace="GridOS"
 	>
 	<Platforms>
 		<Platform
@@ -1734,27 +1735,37 @@
 					Name="common"
 					>
 					<File
-						RelativePath="..\..\source\libs\common\bitrev.c"
-						>
-					</File>
-					<File
 						RelativePath="..\..\source\libs\common\blkbuf.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\source\libs\common\crc32.c"
-						>
-					</File>
-					<File
-						RelativePath="..\..\source\libs\common\crc32defs.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\source\libs\common\crc32table.h"
+						RelativePath="..\..\source\libs\common\i2p.c"
 						>
 					</File>
 					<File
 						RelativePath="..\..\source\libs\common\malloc.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)1.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)1.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\source\libs\common\msg.c"
 						>
 						<FileConfiguration
 							Name="Debug|Win32"
@@ -1783,10 +1794,6 @@
 							>
 						</File>
 						<File
-							RelativePath="..\..\source\libs\common\include\bitrev.h"
-							>
-						</File>
-						<File
 							RelativePath="..\..\source\libs\common\include\bits.h"
 							>
 						</File>
@@ -1795,7 +1802,11 @@
 							>
 						</File>
 						<File
-							RelativePath="..\..\source\libs\common\include\crc32.h"
+							RelativePath="..\..\source\libs\common\include\cl_atomic.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\common\include\cl_fname.h"
 							>
 						</File>
 						<File
@@ -1807,7 +1818,15 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\source\libs\common\include\i2p.h"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\common\include\memalloc.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\common\include\message.h"
 							>
 						</File>
 						<File
@@ -2003,7 +2022,15 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\source\libs\grid\include\env.h"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\grid\include\file.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\include\getopt_int.h"
 							>
 						</File>
 						<File
@@ -2059,6 +2086,10 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\source\libs\grid\string\strcat.c"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\grid\string\strchr.c"
 							>
 						</File>
@@ -2071,7 +2102,23 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\source\libs\grid\string\strlen.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\string\strncmp.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\string\strncpy.c"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\grid\string\strnlen.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\string\strrchr.c"
 							>
 						</File>
 					</Filter>
@@ -2313,6 +2360,76 @@
 						RelativePath="..\..\source\programs\startup\Makefile"
 						>
 					</File>
+				</Filter>
+				<Filter
+					Name="baxi"
+					>
+					<File
+						RelativePath="..\..\source\programs\baxi\main.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)10.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)10.xdc"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)10.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)10.xdc"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\source\programs\baxi\Makefile"
+						>
+					</File>
+					<Filter
+						Name="cmd"
+						>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\_null.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\cat.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\cd.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\cmd.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\cmd.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\cp.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\ls.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\Makefile"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\rm.c"
+							>
+						</File>
+					</Filter>
 				</Filter>
 			</Filter>
 		</Filter>

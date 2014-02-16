@@ -107,7 +107,7 @@ void message_reset_all(struct message_instance *instance)
 /**
 	@brief 等待一个消息，并返回
  */
-struct message *message_loop(struct message_instance *instance)
+void message_loop(struct message_instance *instance)
 {
 	struct message *cur;
 

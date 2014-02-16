@@ -82,9 +82,9 @@ struct message_instance
 /**
 	@brief goto into message loop
 
-	The function will not exist. When fetch a message it tries to handle it.
+	The function will not exist NOW. When fetch a message it tries to handle it.
 */
-struct message * message_loop(struct message_instance * instance);
+void message_loop(struct message_instance * instance);
 
 /**
 	@brief 将所有消息的状态初始化

@@ -14,7 +14,7 @@
 #include <string.h>
 #include "cmd/cmd.h"
 
-#define SHELL_BANNER "Grid操作系统命令行"
+#define SHELL_BANNER "Grid操作系统命令行,Copyright GridOS Team"
 #define SHELL_VERSION 1
 #define SHELL_KEY_ENTER 0x0d
 #define MAX_LINE_SIZE 1024									// 一行最多的字节
@@ -39,7 +39,10 @@ static int read_input(char * line_buffer, int max_size)
 		int ch = getch();
 		
 		/* 弹起？忽略 */
-		if (ch == 0) continue;
+		if (ch == 0) 
+		{			
+			continue;
+		}
 
 		/* 是一个完整的按键吗？ 方向键有多个 */
 
@@ -79,7 +82,7 @@ static void execute_cmd(char * line_buffer)
 	if (!strlen(line_buffer)) return;
 
 // 	printf("执行命令：%s(%d个字节)。\n", line_buffer, max_size);
-	cmd = command_find(line_buffer);
+	cmd = command_find(line_buffer, true);
 	if (!cmd)
 	{
 		printf("没有找到您输入的命令。\n");
@@ -92,10 +95,12 @@ static void execute_cmd(char * line_buffer)
 	}
 }
 
-void main(int argc, char * argv[])
+int main(int argc, char * argv[])
 {	
 	char current_path[] = "0:/";
-	printf(SHELL_BANNER"v%d.\n", SHELL_VERSION);
+	
+	printf(SHELL_BANNER",%s,v%d。\n", __DATE__, SHELL_VERSION);
+	printf("输入help获取帮助.\n");
 	
 	/* Loop to get char */
 	while(1)
@@ -115,4 +120,6 @@ void main(int argc, char * argv[])
 			execute_cmd(line_buffer);	
 		}		
 	}
+
+	return 0;
 }
