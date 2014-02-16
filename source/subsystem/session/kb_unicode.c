@@ -159,9 +159,10 @@ end:
 /*
 *供上层接口调用的kb输入函数
 */
-static int kb_read_input(struct ifi_device * dev, struct ifi_package * input, size_t len)
+static int kb_read_input(struct ifi_device * dev, void *data, int len)
 {
 	struct ifi_package *store_pkg = NULL;
+	struct ifi_package * input    = (struct ifi_package *)data;
 	/* No device ? */
 	if (!dev)
 		return 0;
@@ -191,7 +192,7 @@ static int kb_read_input(struct ifi_device * dev, struct ifi_package * input, si
 	@note
 		对于同一个对象不可重入		
 */
-static int kb_input_stream(struct ifi_device * dev, void * buf, size_t size)
+static int kb_input_stream(struct ifi_device * dev, void * buf, int size)
 {	
 	unsigned char scancode = 0;														//用来接收扫描码
 	int inpt_len = 0;						
