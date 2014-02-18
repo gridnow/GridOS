@@ -9,6 +9,7 @@ OBJS					= $(NES_SRC)/InfoNES.o $(NES_SRC)/InfoNES_Mapper.o $(NES_SRC)/InfoNES_p
 TARGET					= nes.exe
 DEPENDS					+=-lgrid -lpthread -lhead_exe.o  $(NES_SRC)/*.o
 ADD_INCLUDE				+=-I$(NES_SRC)
+COMMON_CC_FLAGS				+=-fno-exceptions
 
 all: subs_parts $(OBJS)
 	$(LD) $(LDFLAGS) -o $(TARGET) $(ADD_LDFLAGS) $(DEPENDS) *.o $(ARCH_LD_FLAGS)
