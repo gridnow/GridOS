@@ -3,7 +3,7 @@ NORMAL_APP=yes
 
 include $(MY_BUILD_BASE)/config.mk
 
-NES_SRC=infones093j_src
+NES_SRC=InfoNES093J_Src
 
 OBJS					= $(NES_SRC)/InfoNES.o $(NES_SRC)/InfoNES_Mapper.o $(NES_SRC)/InfoNES_pAPU.o $(NES_SRC)/K6502.o main.o
 TARGET					= nes.exe
