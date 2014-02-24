@@ -2594,6 +2594,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\include\ddk\input.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\include\ddk\io.h"
 					>
 				</File>
@@ -2603,6 +2607,10 @@
 				</File>
 				<File
 					RelativePath="..\..\include\ddk\little_endian.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\include\ddk\net.h"
 					>
 				</File>
 				<File
@@ -2619,6 +2627,10 @@
 				</File>
 				<File
 					RelativePath="..\..\include\ddk\string.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\include\ddk\swab.h"
 					>
 				</File>
 				<File
