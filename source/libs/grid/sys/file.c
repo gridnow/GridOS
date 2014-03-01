@@ -10,7 +10,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+#include <dirent.h>
 
+#include "dir.h"
 #include "file.h"
 #include "sys/file_req.h"
 
@@ -47,14 +49,21 @@ static ke_handle sys_open(const char *name, lsize_t *size)
 	req.name		= (char *)name;
 	
 	h = system_call(&req);
-	*size = req.file_size;
+	if (size)
+		*size = req.file_size;
 
 	return h;
 }
 
-static int sys_close(ke_handle handle)
+int sys_close(ke_handle handle)
 {
-	return ENOSYS;
+	struct sysreq_file_close req;
+	
+	req.base.req_id = SYS_REQ_FILE_CLOSE;
+	req.file 		= handle;
+	
+	system_call(&req);
+	return 0;
 }
 
 ssize_t sys_write(ke_handle file, void *user_buffer, uoffset file_pos, ssize_t n_bytes)
@@ -94,6 +103,24 @@ ssize_t sys_read(struct file *filp, void *user_buffer, uoffset file_pos, ssize_t
 	return req.result_size;
 }
 
+ssize_t sys_readdir(struct __dirstream *dirp, int *next)
+{
+	struct sysreq_file_readdir req;
+	ssize_t ret;
+
+	/* 读取一块目录*/	
+	req.base.req_id			= SYS_REQ_FILE_READDIR;
+	req.dir					= dirp->dir_handle;
+	req.buffer				= dirp->dir_buffer;
+	req.max_size			= dirp->total_size;
+	req.start_entry			= dirp->next_bulk;
+	ret = (ssize_t)system_call(&req);
+	*next = req.next_entry;
+	
+	/* 解析的事情是调用者自己负责 */	
+	return ret;
+}
+
 /************************************************************************/
 /* Common for all types of file                                         */
 /************************************************************************/
@@ -113,12 +140,12 @@ end_exit:
 	return NULL;
 }
 
-void file_delete(struct file *filp)
+void filp_delete(struct file *filp)
 {
 	free(filp);
 }
 
-ke_handle file_open(struct file *filp, const char *path, int oflags)
+ke_handle filp_open(struct file *filp, const char *path, int oflags)
 {
 	ke_handle file_handle;
 	
@@ -148,3 +175,21 @@ err:
 
 	return KE_INVALID_HANDLE;
 }
+
+ke_handle dir_open(const char *path)
+{
+	ke_handle file_handle;
+	
+	file_handle = sys_open(path, NULL);
+	if (KE_INVALID_HANDLE == file_handle)
+		goto err;
+	
+	return file_handle;
+	
+err:
+	if (KE_INVALID_HANDLE != file_handle)
+		sys_close(file_handle);
+
+	return KE_INVALID_HANDLE;
+}
+

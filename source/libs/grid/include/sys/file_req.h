@@ -23,7 +23,7 @@ struct sysreq_file_open
 	/* INPUT */
 	struct sysreq_common base;
 	xstring	__user name;
-	bool			exclusive;		/* 是否是独占打开 */
+	bool			exclusive;							/* 是否是独占打开 */
 	unsigned int	file_type;
 
 	/* OUTPUT */
@@ -51,14 +51,9 @@ struct sysreq_file_close
 {
 	/* INPUT */
 	struct sysreq_common base;
-	struct __close_file__
-	{
-		void *		subsystem_object;
-		int			fd;
-	}file;	
 
 	/* OUTPUT */
-	int				result_code;
+	ke_handle file;
 };
 
 /**
@@ -127,23 +122,29 @@ struct sysreq_file_ftruncate
 	/* OUTPUT */
 	int			result_code;
 };
-/************************************************************************/
-/* INTERFACE                                                            */
-/************************************************************************/
-struct file;
 
 /**
-	@brief Read a file
+	@brief Request package for readdir
+*/
+struct sysreq_file_readdir
+{
+	/* INPUT */
+	struct sysreq_common base;	
+	int start_entry;									/* 读取目录那一块，0 表示开始*/
+	ke_handle dir;
 
-	@return The bytes system has read, < 0 for error code
- */
-ssize_t sys_read(struct file *filp, void *user_buffer, uoffset file_pos, ssize_t n_bytes);
+	struct dirent_buffer
+	{
+		unsigned short name_length;
+		unsigned short entry_type;
+		xchar name[0];
 
-/**
-	@brief Write a file
+		/* Note that he dirrent_buffer should be accessed in "short" boundary */
+	} __user *buffer;									/* 传入一片内存，文件子系统负责填充每项*/	
+	int max_size;
 	
-	@return The bytes of data been written, < 0 for error code
- */
-ssize_t sys_write(ke_handle file, void *user_buffer, uoffset file_pos, ssize_t n_bytes);
+	/* OUTPUT */
+	int next_entry;										/* 为-1表示已经没有内核可以读取了*/
+};
 
 #endif

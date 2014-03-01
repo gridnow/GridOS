@@ -421,7 +421,7 @@ static int stdio_fclose(struct file *filp)
 	}
 	UNLOCK_FILE(file);
 
-	file_delete(filp);
+	filp_delete(filp);
 	
 	return ret;
 }
