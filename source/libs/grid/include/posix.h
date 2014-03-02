@@ -12,6 +12,9 @@
 
 #include "crt.h"
 
+/* End char size for string */
+#define POSIX_END_CHAR_SIZE 1
+
 /* Used when open failed for posix file */
 #define POSIX_INVALID_FD (-1)
 

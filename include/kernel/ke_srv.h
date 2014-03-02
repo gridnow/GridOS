@@ -41,7 +41,7 @@ struct ke_srv_info
 */
 struct sysreq_common
 {
-	unsigned long req_id;
+	unsigned int req_id;
 };
 
 bool ke_srv_register(const struct ke_srv_info *info);

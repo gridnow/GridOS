@@ -126,7 +126,7 @@ DLLEXPORT FILE *fopen(const char *path, const char *type)
 		set_errno(EINVAL);
 		goto err;
 	}	
-	if (KE_INVALID_HANDLE == file_open(filp, path, file->flags))
+	if (KE_INVALID_HANDLE == filp_open(filp, path, file->flags))
 		goto err;	
 	stream_file_init_ops(filp);
 	
@@ -134,6 +134,6 @@ DLLEXPORT FILE *fopen(const char *path, const char *type)
 	
 err:
 	if (filp)
-		file_delete(filp);
+		filp_delete(filp);
 	return NULL;
 }
