@@ -126,7 +126,7 @@ static struct fss_file *get_file_by_name(struct list_head *node, struct fss_file
 	list_for_each(node, &current_path->t.dir.child_head)
 	{
 		file = list_entry(node, struct fss_file, brother);
-
+		
 		/* 查看得到的file是否是需要的 */
 		if (!FSS_STRNCMP(FSS_FILE_GET_NAME(file), file_name + iStart, iEnd - iStart) && FSS_STRLEN(FSS_FILE_GET_NAME(file)) == iEnd - iStart)
 			break;

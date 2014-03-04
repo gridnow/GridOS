@@ -132,14 +132,16 @@ struct fss_file *fss_open(struct fss_file *current_dir, char *name)
 	f = fss_loop_file(current_dir, name, NULL, NULL);
 	if (!f)
 		goto err0;
-
-	f->private = f->volumn->drv->ops->fOpen(f->parent->private, f->name);
-	if (f->private == NULL)
+	
+	//if (!f->private)
 	{
-		//TODO: Close the vfs
-		TODO("关闭僵尸文件");
+		f->private = f->volumn->drv->ops->fOpen(f->parent->private, f->name);
+		if (f->private == NULL)
+		{
+			//TODO: Close the vfs
+			TODO("关闭僵尸文件");
+		}
 	}
-
 	return f;
 err0:
 	return NULL;
@@ -199,7 +201,7 @@ static ke_handle req_open(struct sysreq_file_open *req)
 	filp = fss_open(current_dir, req->name);
 	if (!filp)
 		goto err;
-
+	
 	h = ke_handle_create(filp);
 	if (h == KE_INVALID_HANDLE)
 		goto err;
@@ -243,11 +245,89 @@ end:
 	return ret;
 }
 
+
+/*
+	readdir:目录读取的系统调用
+	返回目录下文件名,索引号,文件块大小
+	文件权限,创建时间
+	@return:实际读取文件数目
+*/
+size_t req_readdir(struct sysreq_file_readdir *req)
+{
+	struct fss_file *file = NULL, *child_file;
+	struct dirent_buffer *entry;
+	int rd_count = 0, cpy_count = 0;
+	int name_len, cpy_len = 0;
+	int err;
+	
+	/* 请求 entry 是否为0 ? */
+	if (!req->max_size)
+	{
+		err = -EINVAL;
+		goto err;
+	}
+
+	file = ke_handle_translate(req->dir);	
+	/* 文件不存在或者文件不为目录? */
+	if ((!file) || (file->type != FSS_FILE_TYPE_DIR))
+	{
+		err = -ENOTDIR;
+		goto err;
+	}
+	
+	/* 
+		读取目录下文件到req readdir_entry中.
+		在打开的时候,已经将目录下所有的文件都从
+		硬盘读入内存,并通过file->brother链接到dir
+		->child_head内.
+	*/
+
+	list_for_each_entry(child_file, &(file->t.dir.child_head), brother)
+	{
+		/* 寻找这次读取文件的起点 */
+		if (rd_count < req->start_entry)
+		{
+			rd_count++;
+			continue;
+		}
+
+		/* 是否还能往buffer中继续写? */
+		if (cpy_len + sizeof(struct dirent_buffer) > req->max_size)
+			break;
+		
+		/* 
+			写入用户buffer内 
+			能copy 文件名长度
+		*/
+		name_len = FSS_STRLEN(child_file->name);
+		name_len = (name_len > (req->max_size - cpy_len - sizeof(struct dirent_buffer))) ?\
+					(req->max_size - cpy_len - sizeof(struct dirent_buffer)) :\
+					name_len;
+		
+		entry = (void *)req->buffer + cpy_len;
+		entry->entry_type  = child_file->type;
+		entry->name_length = name_len;
+		FSS_STRNCPY(entry->name, child_file->name, name_len);
+
+		cpy_len += sizeof(struct dirent_buffer) + entry->name_length;
+		++cpy_count;
+	}
+
+	/* 
+		记录下次读取目录下文件的起点 
+	*/
+	req->next_entry = req->start_entry + rd_count + cpy_count;
+	
+	err = cpy_len;
+err:
+	if (file)
+		ke_handle_put(req->dir, file);
+	return err;
+}
+
+
 /* 处理函数列表，注意必须和SYS_REQ_FILE_xxx的编号一致 */
-static void * interfaces[_SYS_REQ_FILE_MAX] = {
-	req_open,
-	req_read,
-};
+static void * interfaces[_SYS_REQ_FILE_MAX];
 
 static unsigned long kernel_srv(unsigned long req_id, void *req)
 {
@@ -263,12 +343,23 @@ const static struct ke_srv_info ke_srv_fss = {
 
 void fss_main()
 {
+	int fs_call_num;
+	
 	INIT_LIST_HEAD(&fss.vol_list);
 	INIT_LIST_HEAD(&fss.drv_list);
 	ke_rwlock_init(&fss.vol_list_lock);
 
 	fss_db_init();
 	fss_map_init();
+	
+	/* 初始化fss层系统调用函数 */
+	for(fs_call_num = 0; fs_call_num < _SYS_REQ_FILE_MAX; ++fs_call_num)
+		interfaces[fs_call_num] = ke_srv_null_sysxcal;
+	
+	interfaces[SYS_REQ_FILE_OPEN - SYS_REQ_FILE_BASE]    = req_open;
+	interfaces[SYS_REQ_FILE_READ - SYS_REQ_FILE_BASE]    = req_read;
+	interfaces[SYS_REQ_FILE_READDIR - SYS_REQ_FILE_BASE] = req_readdir;
+	
 	ke_srv_register(&ke_srv_fss);
 }
 

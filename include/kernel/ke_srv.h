@@ -54,5 +54,7 @@ void *ke_handle_translate(ke_handle handle);
 bool ke_handle_delete(ke_handle handle);
 ke_handle ke_handle_create(void *kobject);
 
+int ke_srv_null_sysxcal(void *req);
+
 #endif
 /** @} */
