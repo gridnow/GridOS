@@ -19,7 +19,7 @@ static int show_normal()
 	DIR  	*input;
 	struct 	dirent * ptr;
 	
-	input = opendir(".");
+	input = opendir("/os/");
 	if (!input)
 		return ENOENT;
 	while ((ptr = readdir(input)) != NULL)

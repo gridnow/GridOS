@@ -355,6 +355,15 @@ err0:
 	return KE_INVALID_HANDLE;
 }
 
+/*
+	未实现的系统函数使用该函数初始化
+*/
+int ke_srv_null_sysxcal(void *req)
+{
+	printk("this syscall dont support!\n");
+	return -1;
+}
+
 /**
 	@brief 内核自己的服务
 */

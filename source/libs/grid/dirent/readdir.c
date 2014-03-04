@@ -18,14 +18,16 @@
 
 static void fill_32bits_dirent(struct dirent_buffer *entry, struct dirent *dentry)
 {
-	dentry->d_name[NAME_MAX - POSIX_END_CHAR_SIZE] = '\0'; 
-	strncpy(dentry->d_name, entry->name, NAME_MAX - POSIX_END_CHAR_SIZE);
+	int name_length = entry->name_length >= NAME_MAX ? (NAME_MAX - POSIX_END_CHAR_SIZE) : entry->name_length;
+	dentry->d_name[name_length] = '\0'; 
+	strncpy(dentry->d_name, entry->name, name_length);
 }
 
 static void fill_64bits_dirent(struct dirent_buffer *entry, struct dirent64 *dentry)
 {
-	dentry->d_name[NAME_MAX - POSIX_END_CHAR_SIZE] = '\0'; 
-	strncpy(dentry->d_name, entry->name, NAME_MAX - POSIX_END_CHAR_SIZE);
+	int name_length = entry->name_length >= NAME_MAX ? (NAME_MAX - POSIX_END_CHAR_SIZE) : entry->name_length;
+	dentry->d_name[name_length] = '\0';  
+	strncpy(dentry->d_name, entry->name, name_length);
 }
 
 static void *read_dir (DIR *dirp, int bits)
@@ -40,7 +42,7 @@ static void *read_dir (DIR *dirp, int bits)
 	*/
 	if (dirp->current_entry == NULL)
 	{
-		if ((bulk = sys_readdir(dirp, &next)) < 0)
+		if ((bulk = sys_readdir(dirp, &next)) <= 0)
 			goto err;
 		dirp->current_entry 	= dirp->dir_buffer;
 		dirp->used_size			= bulk;
