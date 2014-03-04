@@ -22,7 +22,7 @@ DLLEXPORT DIR *opendir(const char *name)
 	ke_handle dir_handle;
 
 	dir_handle = dir_open(name);
-	if (POSIX_INVALID_FD == dir_handle)
+	if (KE_INVALID_HANDLE== dir_handle)
 		goto err;	
 
 	/* ´´½¨DIR */

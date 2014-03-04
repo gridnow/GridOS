@@ -50,7 +50,19 @@ struct cpu_user_fns {
 								   unsigned long vaddr, void *vm_area);
 };
 
+/**
+	@brief Define the entry flags in for Kernel
+ */
+#define PAGE_FLAG_VALID				L_PTE_PRESENT
+#define PAGE_FLAG_FROM_OTHER		(1 << 11)
+#define PAGE_FLAG_MASK				(0x3ff)
 
+/**
+	@brief Error code of page fault
+ */
+#define PAGE_FAULT_P				(1<<0)
+#define PAGE_FAULT_W				(1<<1)
 
 #endif /*Assemmbler */
+
 #endif
