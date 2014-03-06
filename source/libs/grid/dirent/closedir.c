@@ -16,6 +16,9 @@
 
 DLLEXPORT int closedir (DIR *dirp)
 {
+	/* See opendir */
+	if (dirp->dir_buffer)
+		crt_free(dirp->dir_buffer);
 	sys_close(dirp->dir_handle);
 	crt_free(dirp);
 	return 0;
