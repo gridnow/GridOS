@@ -54,7 +54,7 @@ static int import_file(struct fss_file *current_path)
 	
 	if (current_path->t.dir.tree_flags & FSS_FILE_TREE_COMPLETION)
 		goto end;
-	if (current_path->private == (void*)-1/*Not open before*/)
+	if (!current_path->private/*Not open before*/)
 	{
 		ret = -EIO;
 		current_path->private = current_path->volumn->drv->ops->fOpen(current_path->parent->private, current_path->name);
@@ -85,7 +85,7 @@ static int import_file(struct fss_file *current_path)
 
 		if (p->type == 4/*DT_DIR*/)
 			type = FSS_FILE_TYPE_DIR;
-		f = fss_file_new(current_path, (void*)-1/*Not open, error fd*/, p->name, type);
+		f = fss_file_new(current_path, NULL/*Not open, error fd*/, p->name, type);
 		if (!f)
 		{
 			ret = -ENOMEM;
@@ -367,7 +367,6 @@ loop_file_l1:
 		}
 	}
 
-just_have_dir:
 	if(action)
 		return (void*)action(cur_dir, LOOP_FILE_END, NULL, 0, 0, context);	
 	else

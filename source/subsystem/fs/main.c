@@ -8,9 +8,9 @@
 #include <kernel/ke_srv.h>
 
 #include <ddk/compiler.h>
-#include <ddk/debug.h>
 #include <errno.h>
 
+#include <fss.h>
 #include <vfs.h>
 #include <node.h>
 #include <cache.h>
@@ -133,16 +133,16 @@ struct fss_file *fss_open(struct fss_file *current_dir, char *name)
 	if (!f)
 		goto err0;
 	
-	//if (!f->private)
+	if (!f->private)
 	{
 		f->private = f->volumn->drv->ops->fOpen(f->parent->private, f->name);
 		if (f->private == NULL)
-		{
-			//TODO: Close the vfs
-			TODO("关闭僵尸文件");
-		}
+			goto err1;
 	}
 	return f;
+	
+err1:
+	fss_close(f);
 err0:
 	return NULL;
 }
@@ -216,6 +216,20 @@ err:
 	return KE_INVALID_HANDLE;
 }
 
+static void req_close(struct sysreq_file_close *req)
+{
+	ke_handle h = req->file;
+	struct fss_file *filp = ke_handle_translate(h);
+	
+	if (filp)
+	{
+		fss_close(filp);
+		ke_handle_put(h, filp);
+	}
+	
+	ke_handle_delete(h);
+}
+
 static ssize_t req_read(struct sysreq_file_io *req)
 {
 	ssize_t ret = -1;
@@ -244,7 +258,6 @@ end:
 		ke_handle_put(req->file, file);
 	return ret;
 }
-
 
 /*
 	readdir:目录读取的系统调用
@@ -355,8 +368,8 @@ void fss_main()
 	/* 初始化fss层系统调用函数 */
 	for(fs_call_num = 0; fs_call_num < _SYS_REQ_FILE_MAX; ++fs_call_num)
 		interfaces[fs_call_num] = ke_srv_null_sysxcal;
-	
 	interfaces[SYS_REQ_FILE_OPEN - SYS_REQ_FILE_BASE]    = req_open;
+	interfaces[SYS_REQ_FILE_CLOSE - SYS_REQ_FILE_BASE]   = req_close;
 	interfaces[SYS_REQ_FILE_READ - SYS_REQ_FILE_BASE]    = req_read;
 	interfaces[SYS_REQ_FILE_READDIR - SYS_REQ_FILE_BASE] = req_readdir;
 	

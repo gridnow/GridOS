@@ -18,7 +18,7 @@
 #include "sys/file_req.h"
 
 #define DIR_BUFF_LEN   (4 * 1024)
-#define dir_buff_malloc() malloc(DIR_BUFF_LEN)
+#define dir_buff_malloc() crt_alloc(DIR_BUFF_LEN)
 
 DLLEXPORT DIR *opendir(const char *name)
 {
@@ -26,7 +26,7 @@ DLLEXPORT DIR *opendir(const char *name)
 	ke_handle dir_handle;
 
 	dir_handle = dir_open(name);
-	if (POSIX_INVALID_FD == dir_handle)
+	if (KE_INVALID_HANDLE== dir_handle)
 		goto err;	
 
 	/* ´´½¨DIR */
