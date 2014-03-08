@@ -86,4 +86,9 @@ struct fss_file * fss_loop_file(struct fss_file * current_path, xstring path_str
 */
 bool fss_tree_init(struct fss_volumn *v, struct fss_vfs_driver *drv, void *root_private);
 
+/*
+	@brief Get all file in the dirty path
+*/
+int fss_tree_make_full(struct fss_file * current_path);
+
 #endif

@@ -103,6 +103,11 @@ end:
 	return ret;
 }
 
+int fss_tree_make_full(struct fss_file *current_path)
+{
+	return import_file(current_path);
+}
+
 static struct fss_file *get_file_by_name(struct list_head *node, struct fss_file *current_path, xstring file_name, int iStart, int iEnd)
 {
 	struct fss_file *file = NULL;

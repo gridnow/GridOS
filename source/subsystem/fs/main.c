@@ -263,9 +263,10 @@ end:
 	readdir:目录读取的系统调用
 	返回目录下文件名,索引号,文件块大小
 	文件权限,创建时间
-	@return:实际读取文件数目
+	@return:
+		>= 0 写入请求缓冲区字节数  < 0 错误号
 */
-size_t req_readdir(struct sysreq_file_readdir *req)
+static size_t req_readdir(struct sysreq_file_readdir *req)
 {
 	struct fss_file *file = NULL, *child_file;
 	struct dirent_buffer *entry;
@@ -280,6 +281,13 @@ size_t req_readdir(struct sysreq_file_readdir *req)
 		goto err;
 	}
 
+	/* 请求缓冲是否合法? */
+	if (check_user_buffer(req->buffer, req->max_size, 1) == false)
+	{
+		err = -EINVAL;
+		goto err;
+	}
+	
 	file = ke_handle_translate(req->dir);	
 	/* 文件不存在或者文件不为目录? */
 	if ((!file) || (file->type != FSS_FILE_TYPE_DIR))
@@ -288,10 +296,17 @@ size_t req_readdir(struct sysreq_file_readdir *req)
 		goto err;
 	}
 	
+	/* 该目录下文件读到内存目录树嘛? */
+	if (!(file->t.dir.tree_flags & FSS_FILE_TREE_COMPLETION) &&
+		fss_tree_make_full(file) < 0)
+	{
+		err = -EIO;
+		goto err;
+	}
+	
 	/* 
 		读取目录下文件到req readdir_entry中.
-		在打开的时候,已经将目录下所有的文件都从
-		硬盘读入内存,并通过file->brother链接到dir
+		并通过file->brother链接到dir
 		->child_head内.
 	*/
 
