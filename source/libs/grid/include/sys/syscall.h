@@ -90,7 +90,8 @@ static inline unsigned long system_call(void *  req_package)
 #define SYS_REQ_FILE_FTRUNCATE	(SYS_REQ_FILE_BASE + 6)
 #define SYS_REQ_FILE_CREATE		(SYS_REQ_FILE_BASE + 7)
 #define SYS_REQ_FILE_READDIR	(SYS_REQ_FILE_BASE + 8)
-#define _SYS_REQ_FILE_MAX		9
+#define SYS_REQ_FILE_NOTIFY		(SYS_REQ_FILE_BASE + 9)
+#define _SYS_REQ_FILE_MAX		10
 
 /************************************************************************/
 /* Session and User Manager                                             */

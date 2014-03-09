@@ -7,10 +7,13 @@
 	Zhaoyu, Yaosihai
  */
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
 #include <dirent.h>
+
+#include <ystd.h>
 
 #include "dir.h"
 #include "file.h"
@@ -191,5 +194,67 @@ err:
 		sys_close(file_handle);
 
 	return KE_INVALID_HANDLE;
+}
+
+/************************************************************************/
+/* Native file interface                                         */
+/************************************************************************/
+DLLEXPORT y_handle y_file_open(const char *path)
+{
+	y_handle h;
+	struct stdio_file *filp;
+	
+	//TODO: 增加更复杂的类型
+	//TODO: 根据path 来确定文件类型
+	filp = (struct stdio_file *)fopen(path, "r");
+	if (!filp)
+		h = Y_INVALID_HANDLE;
+	else
+		h = (y_handle)filp;
+
+	return h;
+}
+
+DLLEXPORT ssize_t y_file_read(y_handle file, size_t size, void *buffer)
+{	
+	ssize_t ret;
+	struct stdio_file *f = (struct stdio_file*)file;
+	struct file *filp = file_get_from_detail(f);
+
+	ret = filp->ops->read(filp, buffer, size);
+	return ret;
+}
+
+DLLEXPORT void y_file_close(y_handle file)
+{	
+	fclose((void*)file);	
+}
+
+DLLEXPORT int y_file_event_register(y_handle file, y_file_event_type_t event_mask, void *func, void *para)
+{
+	struct file *f = (struct file*)file;
+	struct sysreq_file_notify req;
+	
+	req.base.req_id = SYS_REQ_FILE_NOTIFY;
+	req.ops 		= SYSREQ_FILE_OPS_REG_FILE_NOTIFY;
+	req.file		= f->handle;
+	req.ops_private.reg.mask = event_mask;
+	req.ops_private.reg.func = func;
+	req.ops_private.reg.para = para;
+	
+	return system_call(&req);	
+}
+
+DLLEXPORT int y_file_event_unregister(y_handle file, y_file_event_type_t event_mask)
+{
+	struct file *f = (struct file*)file;
+	struct sysreq_file_notify req;
+	
+	req.base.req_id = SYS_REQ_FILE_NOTIFY;
+	req.ops 		= SYSREQ_FILE_OPS_UNREG_FILE_NOTIFY;
+	req.file		= f->handle;
+	req.ops_private.unreg.mask = event_mask;
+	
+	return system_call(&req);
 }
 

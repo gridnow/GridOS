@@ -170,7 +170,9 @@ ssize_t fss_read(struct fss_file * who, unsigned long block, void *buffer)
 	/* Read */
 	memcpy(buffer, which->buffer, FSS_CACHE_DB_SIZE);
 	ret = which->valid_size;
-	
+
+	/* Notify */
+	TODO("增加notify模块调用");
 end:
 	if (which)		
 		fss_dbd_put(which);
@@ -353,6 +355,43 @@ err:
 	return err;
 }
 
+/**
+	@brief 文件通知操作
+
+	req 中的ops 有表示具体是什么操作
+
+	@return
+		error code
+*/
+static int req_notify(struct sysreq_file_notify *req)
+{
+	int r;
+	struct fss_file *file;
+
+	if (NULL == (file = ke_handle_translate(req->file)))
+	{
+		r = -EINVAL;
+		goto end;
+	}
+	
+	switch(req->ops)
+	{
+	case SYSREQ_FILE_OPS_REG_FILE_NOTIFY:
+		TODO("SYSREQ_FILE_OPS_REG_FILE_NOTIFY, 把req 中的func记录起来，通过消息接口发送到用户");
+		break;
+		
+	case SYSREQ_FILE_OPS_UNREG_FILE_NOTIFY:
+		TODO("SYSREQ_FILE_OPS_UNREG_FILE_NOTIFY");		
+		break;
+		
+	default:
+		break;
+	}
+	r = 0;
+	
+end:
+	return r;	
+}
 
 /* 处理函数列表，注意必须和SYS_REQ_FILE_xxx的编号一致 */
 static void * interfaces[_SYS_REQ_FILE_MAX];
@@ -387,6 +426,8 @@ void fss_main()
 	interfaces[SYS_REQ_FILE_CLOSE - SYS_REQ_FILE_BASE]   = req_close;
 	interfaces[SYS_REQ_FILE_READ - SYS_REQ_FILE_BASE]    = req_read;
 	interfaces[SYS_REQ_FILE_READDIR - SYS_REQ_FILE_BASE] = req_readdir;
+	interfaces[SYS_REQ_FILE_NOTIFY - SYS_REQ_FILE_BASE]  = req_notify;
+	
 	
 	ke_srv_register(&ke_srv_fss);
 }
