@@ -147,4 +147,34 @@ struct sysreq_file_readdir
 	int next_entry;										/* 为-1表示已经没有内核可以读取了*/
 };
 
+/**
+	@brief Request package for file notification
+*/
+struct sysreq_file_notify
+{
+	/* INPUT */
+	struct sysreq_common base;
+	int ops;
+#define SYSREQ_FILE_OPS_REG_FILE_NOTIFY 	1
+#define SYSREQ_FILE_OPS_UNREG_FILE_NOTIFY	2
+	ke_handle 		file;
+	union __notify_ops
+	{
+		/* 注册关心的事件 ,如果一个事件已经被监听，那么再次注册则替换回调函数  */
+		struct __reg_file_notify_info
+		{
+			unsigned long mask;							/* See y_file_event_type_t */			
+			void *func;
+			void *para;
+		} reg;
+
+		/* 反注册 */
+		struct __unreg_file_notify_info
+		{
+			unsigned long mask;							/* See y_file_event_type_t */			
+		} unreg;		
+	} ops_private;
+	
+};
+
 #endif

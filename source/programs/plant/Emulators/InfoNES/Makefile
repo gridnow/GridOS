@@ -10,7 +10,7 @@ TARGET					= nes.exe
 DEPENDS					+=-lgrid -lpthread -lhead_exe.o  $(NES_SRC)/*.o
 ADD_INCLUDE				+=-I$(NES_SRC)
 COMMON_CC_FLAGS				+=-fno-exceptions
-
+PARTS					= $(NES_SRC)
 all: subs_parts $(OBJS)
 	$(LD) $(LDFLAGS) -o $(TARGET) $(ADD_LDFLAGS) $(DEPENDS) *.o $(ARCH_LD_FLAGS)
 	$(CP) $(TARGET) $(SYSTEM_DIR)
