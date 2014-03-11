@@ -43,12 +43,12 @@ static void input_event(struct ddk_input_handle *handle, unsigned int event_type
 				//printk("type = %d,code = %d, value = %d\n", event_type, event_code, value);
 			break;
 	}
-	return;	
+	
 	//printk("type = %x.\n", event_type);
 	if (0)
 	{
 		extern struct ko_thread *tmsg;
-		MSG_MAKE(2,0, 111);
+		MSG_MAKE(2, MSG_FLAGS_ADDRESS, 0x8004b0);
 		if (tmsg)
 		{
 			printk("Send result %d.\n", ktm_send(tmsg, pmsg));

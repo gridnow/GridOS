@@ -1723,6 +1723,76 @@
 										/>
 									</FileConfiguration>
 								</File>
+								<Filter
+									Name="src"
+									>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\etharp.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\hash.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\init.c"
+										>
+										<FileConfiguration
+											Name="Debug|Win32"
+											>
+											<Tool
+												Name="VCCLCompilerTool"
+												ObjectFile="$(IntDir)\$(InputName)1.obj"
+												XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+											/>
+										</FileConfiguration>
+										<FileConfiguration
+											Name="Release|Win32"
+											>
+											<Tool
+												Name="VCCLCompilerTool"
+												ObjectFile="$(IntDir)\$(InputName)1.obj"
+												XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+											/>
+										</FileConfiguration>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\Makefile"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\memp.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\netif.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\pbuf.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\tcp.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\tcp_in.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\tcp_out.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\timers.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\udp.c"
+										>
+									</File>
+								</Filter>
 							</Filter>
 						</Filter>
 					</Filter>

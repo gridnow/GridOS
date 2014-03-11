@@ -68,7 +68,7 @@ err:
 	return ERR_MEM;
 }
 
-int main(void)
+int dll_main(void)
 {
 	/* Core system */
 	lwip_init();

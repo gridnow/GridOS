@@ -3,7 +3,7 @@ NORMAL_APP=yes
 
 include $(MY_BUILD_BASE)/config.mk
 
-PARTS = fnotify
+PARTS = fnotify tcpip
 
 all: subs_parts
 
