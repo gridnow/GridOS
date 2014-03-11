@@ -1,9 +1,9 @@
 #ifndef ARCH_H
 #define ARCH_H
 
-#include "core/debug.h"
+#include "lwip/debug.h"
 
-#include "arch/myopts.h"
+#include "lwipopts.h"
 
 /* Should define it before cc.h, because cc need to take endian issue */
 #ifndef LITTLE_ENDIAN

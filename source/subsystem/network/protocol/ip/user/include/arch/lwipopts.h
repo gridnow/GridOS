@@ -24,8 +24,8 @@
 /* Called when tcp has event */
 #define LWIP_CALLBACK_API		1
 
-/* htons etc conflict with host OS, so use host */
-#define LWIP_PREFIX_BYTEORDER_FUNCS	1
+/* If define it, we use host, or use the simple ones */
+//#define LWIP_PREFIX_BYTEORDER_FUNCS	1
 
 /* Debug options */
 #define PBUF_DEBUG					LWIP_DBG_OFF
@@ -57,3 +57,5 @@
 
 #define MEM_ALIGNMENT 4
 
+/* Do not use the system mode */
+#define NO_SYS						1
