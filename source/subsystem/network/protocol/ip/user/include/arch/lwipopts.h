@@ -59,3 +59,13 @@
 
 /* Do not use the system mode */
 #define NO_SYS						1
+
+/* Do not use its socket */
+#define LWIP_NETCONN				0
+#define LWIP_SOCKET					0
+
+/* Now ip raw input is supported */
+#define LWIP_RAW					0
+
+/* Use system memory allocator */
+#define MEM_LIBC_MALLOC				1
