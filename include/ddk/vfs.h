@@ -1,16 +1,21 @@
+/**
+ *   See the readme.txt at the root directory of this project for the idea and originality of this operating system.
+ *   See the license.txt at the root directory of this project for the copyright information about this file and project.
+ *
+ *   Wuxin
+ *
+ *   虚拟文件系统
+ */
 #ifndef DDK_VFS_H
 #define DDK_VFS_H
+
+#include <types.h>
 
 struct fss_file;
 struct fss_volumn;
 struct fss_directory_entry;
 struct fss_state_info;
 typedef u64 file_pos;
-
-#ifndef __in
-#define __in
-#define __out
-#endif
 
 /************************************************************************/
 /* About block size                                                     */

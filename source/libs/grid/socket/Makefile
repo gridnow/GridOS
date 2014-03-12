@@ -1,10 +1,10 @@
 DLL=yes
 include $(MY_BUILD_BASE)/config.mk
 
-ADD_INCLUDE += $(CL_INCLUDE)
+ADD_INCLUDE += -I../include $(CL_INCLUDE)
 
 #要编译的文件列表
-OBJS = socket.o 
+OBJS = socket.o af_inet.o af_unix.o
 
 
 all:$(OBJS)

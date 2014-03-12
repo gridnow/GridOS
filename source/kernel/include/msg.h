@@ -43,8 +43,8 @@ struct ktm *ktm_prepare_loop();
 void ktm_msg_init(struct ko_thread *who);
 bool ktm_init();
 
-#define KE_MESSAGE_SLOTS_BUFFER_SIZE (PAGE_SIZE * 2)
-#define KE_MESSAGE_SLOTS_SIZE_PER_THREAD (8 /*¸öÏûÏ¢*/ * sizeof(struct message))	//4kb
+#define KE_MESSAGE_SLOTS_BUFFER_SIZE (PAGE_SIZE * 16/*The bitmap will also need space, so normally a page is wasted for it*/)
+#define KE_MESSAGE_SLOTS_SIZE_PER_THREAD (PAGE_SIZE)
 
 #endif
 

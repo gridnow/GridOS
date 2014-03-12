@@ -52,6 +52,12 @@ err:
 	;
 }
 
+void *posix_translate_fd(int fd)
+{
+	TODO("·µ»ØNULL");
+	return NULL;
+}
+
 DLLEXPORT void set_errno(int value)
 {
 

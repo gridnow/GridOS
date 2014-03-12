@@ -14,6 +14,7 @@
 #ifndef _Y_STANDARD_H
 #define _Y_STANDARD_H
 
+#include <stdio.h>
 #include <compiler.h>
 
 BEGIN_C_DECLS;

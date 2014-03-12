@@ -22,4 +22,5 @@
 #define POSIX_FAILED (-1)
 #define POSIX_SUCCESS 0
 
+void *posix_translate_fd(int fd);
 #endif

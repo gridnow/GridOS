@@ -1723,6 +1723,10 @@
 										/>
 									</FileConfiguration>
 								</File>
+								<File
+									RelativePath="..\..\source\subsystem\network\protocol\ip\user\Makefile"
+									>
+								</File>
 								<Filter
 									Name="src"
 									>
