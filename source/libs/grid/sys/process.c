@@ -23,13 +23,13 @@ static struct y_thread_environment_block *get_current()
 	return current;
 }
 
-static struct message_instance *get_current_mi()
+static struct y_message_instance *get_current_mi()
 {
 	struct y_thread_environment_block *current = get_current();
 	return current->mi;
 }
 
-static void set_current_mi(struct message_instance *mi)
+static void set_current_mi(struct y_message_instance *mi)
 {
 	struct y_thread_environment_block *current = get_current();
 	current->mi = mi;
@@ -40,7 +40,7 @@ static void default_sync_message_ack()
 	//TODO
 }
 
-static void default_message_wait(struct message_instance *message_instance)
+static void default_message_wait(struct y_message_instance *message_instance)
 {
 	struct sysreq_thread_msg req;
 	
@@ -76,7 +76,7 @@ DLLEXPORT int y_thread_wait_event()
 
 DLLEXPORT y_msg_loop_result y_message_loop()
 {
-	struct message_instance message_instance;
+	struct y_message_instance message_instance;
 	
 	message_instance.current_slot	= NULL;
 	message_instance.filter			= NULL;
@@ -90,13 +90,13 @@ DLLEXPORT y_msg_loop_result y_message_loop()
 	return Y_MSG_LOOP_EXIT_SIGNAL;		
 }
 
-DLLEXPORT bool y_message_send(struct message *what)
+DLLEXPORT bool y_message_send(struct y_message *what)
 {
 	TODO("");
 	return false;	
 }
 
-DLLEXPORT void y_message_read(struct message *what, ...)
+DLLEXPORT void y_message_read(struct y_message *what, ...)
 {
 	int i, count;
 	va_list wb_list;
@@ -104,7 +104,7 @@ DLLEXPORT void y_message_read(struct message *what, ...)
 	MSG_PDATA_TYPE cur;
 	MSG_DATA_TYPE data;
 	
-	struct message_instance *mi;
+	struct y_message_instance *mi;
 	
 	mi = get_current_mi();
 	count = what->count;

@@ -14,7 +14,6 @@
 #ifndef _Y_STANDARD_H
 #define _Y_STANDARD_H
 
-#include <stdio.h>
 #include <compiler.h>
 
 BEGIN_C_DECLS;
@@ -40,6 +39,13 @@ struct y_thread_environment_block
 	void *mi;
 };
 
+struct y_message
+{
+	unsigned short count;
+	volatile unsigned short flags;
+	unsigned long what;	
+};
+
 /**
 	@brief 创立进程
 
@@ -59,6 +65,21 @@ y_handle y_process_create(xstring name, char *cmdline);
 	@param[in][out] 可以为NULL，否则回写进程for_who的退出结果（一般是main函数的返回值）
 */
 y_wait_result y_process_wait_exit(y_handle for_who, unsigned long * __in __out result);
+
+/**
+	@brief 读取消息
+
+	消息处理触发函数被调用外，一般还可以携带数据
+
+	@param[in] what 消息对象，用户实际上不直接访问这个结构中的内容。
+
+	@note:
+		该函数的用法举例:
+		y_message_read(msg, &arg0, &arg1);
+		其中arg0 和argv1 是unsigned long类型
+*/
+void y_message_read(struct y_message *what, ...);
+
 
 /************************************************************************/
 /* 同步对象                                                                     */
