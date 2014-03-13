@@ -5,6 +5,8 @@
 *   Wuxin
 *   线程管理
 */
+#include <ystd.h>
+
 #include <linkage.h>
 #include <bitops.h>
 
@@ -109,7 +111,8 @@ end:
 	@brief Create a thread
 */
 struct ko_thread *kt_create(struct ko_process *where, struct kt_thread_creating_context *ctx)
-{	
+{
+	void *teb = NULL;
 	struct ko_thread *p = NULL;
 	
 	/* Handle stack */
@@ -117,14 +120,23 @@ struct ko_thread *kt_create(struct ko_process *where, struct kt_thread_creating_
 	if (ctx->cpl == KP_USER)
 	{
 		struct ko_section *ks;
-		int stack_size = KT_THREAD_FIRST_STACK_SIZE;
+		int stack_top, stack_size;
 		
 		//TODO: 一般，不是第一个线程无需这么大的堆栈
-
-		ks = ks_create(where, KS_TYPE_STACK, 0, stack_size, KM_PROT_READ|KM_PROT_WRITE);
-		if (!ks)
+		stack_top = stack_size = KT_THREAD_FIRST_STACK_SIZE;
+		/* Create the thread stack */
+		if (NULL == (ks = ks_create(where, KS_TYPE_STACK, 0, stack_size, KM_PROT_READ|KM_PROT_WRITE)))
 			goto err0;
-		ctx->stack_pos = ks->node.start + stack_size;
+		
+		/* Make space for TEB */
+		stack_top -= sizeof(struct y_thread_environment_block);
+		teb = (void*)(ks->node.start + stack_top);
+		
+		/* 占用太多资源? */
+		if (stack_top < 0)
+			goto err1;
+		
+		ctx->stack_pos = ks->node.start + stack_top;
 	}
 	if (!ctx->stack0_size/* If caller give a specific stack(driver system will), we do not need to create */)
 	{
@@ -156,7 +168,8 @@ struct ko_thread *kt_create(struct ko_process *where, struct kt_thread_creating_
 	p = cl_object_create(&thread_type);
 	if (!p)	goto err1;
 	kt_arch_init_thread(p, ctx);
-	p->process = where;
+	p->process	= where;
+	p->teb		= teb;
 	if (ctx->flags & KT_CREATE_RUN)
 		kt_wakeup(p);
 	

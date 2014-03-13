@@ -34,6 +34,12 @@ typedef enum
 	Y_SYNC_WAIT_ERROR		= -3,
 } y_wait_result;
 
+struct y_thread_environment_block
+{
+	void *self;
+	void *mi;
+};
+
 /**
 	@brief 创立进程
 

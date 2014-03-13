@@ -2668,6 +2668,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\include\ddk\grid.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\include\ddk\input.h"
 					>
 				</File>
@@ -2719,58 +2723,6 @@
 					RelativePath="..\..\include\ddk\vfs.h"
 					>
 				</File>
-				<Filter
-					Name="net"
-					>
-					<File
-						RelativePath="..\..\include\ddk\net\define.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\etherdevice.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\ethtool.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\features.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\if.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\mii.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\netdevice.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\rt.h"
-						>
-					</File>
-					<Filter
-						Name="ip"
-						>
-						<File
-							RelativePath="..\..\include\ddk\net\ip\in.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\include\ddk\net\ip\ip.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\include\ddk\net\ip\socket.h"
-							>
-						</File>
-					</Filter>
-				</Filter>
 				<Filter
 					Name="pci"
 					>
