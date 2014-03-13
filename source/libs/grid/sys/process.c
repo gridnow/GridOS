@@ -100,8 +100,8 @@ DLLEXPORT void y_message_read(struct y_message *what, ...)
 {
 	int i, count;
 	va_list wb_list;
-	
-	MSG_PDATA_TYPE cur;
+
+	MSG_PDATA_TYPE cur, wb;
 	MSG_DATA_TYPE data;
 	
 	struct y_message_instance *mi;
@@ -114,6 +114,8 @@ DLLEXPORT void y_message_read(struct y_message *what, ...)
 	for (i = 0; i < count; i++)
 	{
 		MSG_DATA_READ_NEXT(mi, cur, data, MSG_DATA_TYPE);
-		va_arg(wb_list, MSG_DATA_TYPE) = data;
+		wb = va_arg(wb_list, MSG_PDATA_TYPE);
+		*wb = data;
 	}
+
 }

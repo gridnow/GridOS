@@ -226,3 +226,8 @@ bool kt_init()
 	
 	return true;
 }
+
+struct ko_thread *ke_current()
+{
+	return kt_arch_get_current();
+}

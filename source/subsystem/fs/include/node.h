@@ -38,7 +38,11 @@ struct fss_file
 	/* 文件名，目前动态分配，容易造成碎片(See fss_file_new)，TODO：通过字符串缓冲区改进 */
 	char *name;
 	fss_file_type type;
-
+	/* 文件通告链 */
+	struct list_head notify_list;
+	/* 文件通过链原子操作锁 */
+	struct ke_spinlock notify_lock;
+	
 	union
 	{
 		struct __type_file__
