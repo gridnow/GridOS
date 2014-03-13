@@ -79,7 +79,7 @@ bool posix_deallocate_fd(int fd)
 bool posix_fd_init()
 {
 	fd_table = i2p_create(handle_space_alloc, handle_space_free);
-	if (fd_table)
+	if (!fd_table)
 		return false;
 	pthread_spin_init(&fd_table_lock, 0);
 	return true;

@@ -13,9 +13,10 @@
 
 #include "socket_file.h"
 
-void init_socket()
+bool init_socket()
 {
 	af_inet_init();
+	return true;
 }
 
 DLLEXPORT int socket(int domain, int type, int protocol)

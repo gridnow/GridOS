@@ -31,7 +31,7 @@ struct socket_file
 	struct socket_ops *ops;
 };
 
-void init_socket();
+bool init_socket();
 
 /* Socket type ops */
 void af_inet_file_init_ops(struct file *filp);
