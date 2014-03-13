@@ -15,6 +15,7 @@
 #define _Y_STANDARD_H
 
 #include <compiler.h>
+#include <types.h>
 
 BEGIN_C_DECLS;
 
