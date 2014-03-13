@@ -22,4 +22,10 @@
 #define POSIX_FAILED (-1)
 #define POSIX_SUCCESS 0
 
+void *posix_fd_translate(int fd);
+void posix_fd_deinit();
+bool posix_fd_init();
+bool posix_fd_deallocate(int fd);
+int posix_fd_allocate(void *object);
+
 #endif

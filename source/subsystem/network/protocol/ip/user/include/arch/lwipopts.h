@@ -24,8 +24,8 @@
 /* Called when tcp has event */
 #define LWIP_CALLBACK_API		1
 
-/* htons etc conflict with host OS, so use host */
-#define LWIP_PREFIX_BYTEORDER_FUNCS	1
+/* If define it, we use host, or use the simple ones */
+//#define LWIP_PREFIX_BYTEORDER_FUNCS	1
 
 /* Debug options */
 #define PBUF_DEBUG					LWIP_DBG_OFF
@@ -57,3 +57,15 @@
 
 #define MEM_ALIGNMENT 4
 
+/* Do not use the system mode */
+#define NO_SYS						1
+
+/* Do not use its socket */
+#define LWIP_NETCONN				0
+#define LWIP_SOCKET					0
+
+/* Now ip raw input is supported */
+#define LWIP_RAW					0
+
+/* Use system memory allocator */
+#define MEM_LIBC_MALLOC				1

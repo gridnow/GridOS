@@ -15,7 +15,7 @@ int test_bss_data;
 
 #define MAX_SERVICE_ARGC 10
 
-static void startup_desktop()
+void startup_desktop()
 {
 #if 0
 	char error[1024];

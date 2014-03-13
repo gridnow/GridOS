@@ -632,13 +632,13 @@ static int dl_build_image_context(xstring first_name)
 		return ENOENT;
 	}
 	
-	early_print("Loading dependency...\n");
+	//early_print("Loading dependency...\n");
 	load_dependencies();
 
-	early_print("Relocating...\n");
+	//early_print("Relocating...\n");
 	relocation();
 
-	early_print("Starting up...\n");
+	//early_print("Starting up...\n");
 	return startup();
 }
 

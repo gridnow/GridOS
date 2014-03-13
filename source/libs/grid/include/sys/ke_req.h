@@ -53,6 +53,12 @@ struct sysreq_thread_msg
 	int slot_buffer_size;
 };
 
+struct sysreq_thread_teb
+{
+	/* Input */
+	struct sysreq_common base;
+};
+
 /**
 	@brief Create process
 */

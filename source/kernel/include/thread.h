@@ -26,6 +26,9 @@ struct ko_thread
 	
 	/* File */
 	void *current_dir;
+	
+	/* Desc of user */
+	void *teb;
 
 	/* Messages */
 	struct ktm msg;

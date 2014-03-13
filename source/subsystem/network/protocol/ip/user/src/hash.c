@@ -2,14 +2,15 @@
 	Hash匹配：port　＆ IP
 
 	PCB 搜索用到本模块
-
 */
-#include "core/ip_addr.h"
-#include "core/tcp.h"
-#include "core/tcp_impl.h"
+#if 0
+#include "lwip/ip_addr.h"
+#include "lwip/tcp.h"
+#include "lwip/tcp_impl.h"
 
-#include "core/hash.h"
-#include "core/hlist_nulls.h"
+#include "arch/arch.h"
+#include "arch/hash.h"
+#include "arch/hlist_nulls.h"
 
 /* jhash.h: Jenkins hash support.
  *
@@ -28,7 +29,6 @@
  * the public domain.  It has no warranty.
  *
  */
-#include "core/def.h"
 
 struct __una_u32 { u32 x; } __packed;
 static inline u32 __get_unaligned_cpu32(const void *p)
@@ -449,3 +449,4 @@ void tcp_v4_hash_remove_listen(struct tcp_pcb_listen *who)
 	hlist_nulls_del(&who->pcb_nulls_node);
 	who->hash_list_in = HASH_LIST_UNKNOWN;
 }
+#endif

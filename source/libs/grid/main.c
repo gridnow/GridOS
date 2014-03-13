@@ -25,8 +25,12 @@ static bool init_libc()
 {
 	if (init_malloc() == false)
 		goto err;
+	if (posix_fd_init() == false)
+		goto err;
 	if (init_module() == false)
-		goto err;	
+		goto err;
+	if (init_socket() == false)
+		goto err;
 	if (stream_file_buffer_init() == false)
 		goto err;
 	

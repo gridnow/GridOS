@@ -1723,6 +1723,80 @@
 										/>
 									</FileConfiguration>
 								</File>
+								<File
+									RelativePath="..\..\source\subsystem\network\protocol\ip\user\Makefile"
+									>
+								</File>
+								<Filter
+									Name="src"
+									>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\etharp.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\hash.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\init.c"
+										>
+										<FileConfiguration
+											Name="Debug|Win32"
+											>
+											<Tool
+												Name="VCCLCompilerTool"
+												ObjectFile="$(IntDir)\$(InputName)1.obj"
+												XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+											/>
+										</FileConfiguration>
+										<FileConfiguration
+											Name="Release|Win32"
+											>
+											<Tool
+												Name="VCCLCompilerTool"
+												ObjectFile="$(IntDir)\$(InputName)1.obj"
+												XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+											/>
+										</FileConfiguration>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\Makefile"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\memp.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\netif.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\pbuf.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\tcp.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\tcp_in.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\tcp_out.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\timers.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\udp.c"
+										>
+									</File>
+								</Filter>
 							</Filter>
 						</Filter>
 					</Filter>
@@ -2594,6 +2668,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\include\ddk\grid.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\include\ddk\input.h"
 					>
 				</File>
@@ -2645,58 +2723,6 @@
 					RelativePath="..\..\include\ddk\vfs.h"
 					>
 				</File>
-				<Filter
-					Name="net"
-					>
-					<File
-						RelativePath="..\..\include\ddk\net\define.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\etherdevice.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\ethtool.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\features.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\if.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\mii.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\netdevice.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\rt.h"
-						>
-					</File>
-					<Filter
-						Name="ip"
-						>
-						<File
-							RelativePath="..\..\include\ddk\net\ip\in.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\include\ddk\net\ip\ip.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\include\ddk\net\ip\socket.h"
-							>
-						</File>
-					</Filter>
-				</Filter>
 				<Filter
 					Name="pci"
 					>

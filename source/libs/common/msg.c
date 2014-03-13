@@ -15,9 +15,9 @@
 	@return
 		The next slots after count
  */
-static struct message *message_clean(struct message_instance *instance, struct message *start, int count)
+static struct y_message *message_clean(struct y_message_instance *instance, struct y_message *start, int count)
 {
-	struct message * cur = start;
+	struct y_message * cur = start;
 	
 	while(count > 0)
 	{
@@ -37,11 +37,11 @@ static struct message *message_clean(struct message_instance *instance, struct m
 	@return
 		The next postion to fetch the message.The message length is dynmaic!
  */
-static struct message *handle_message(struct message_instance *instance, struct message *what)
+static struct y_message *handle_message(struct y_message_instance *instance, struct y_message *what)
 {
 	int count;
 	int r = true;
-	struct message * next;
+	struct y_message * next;
 	
 	if (instance->filter) r = instance->filter(what);
 	count = what->count;										//record the src count before handling message, sync msg will overwrite it.
@@ -54,7 +54,7 @@ static struct message *handle_message(struct message_instance *instance, struct 
 		 */
 		if (what->flags & MSG_FLAGS_ADDRESS)
 		{
-			void (*fn)(struct message * what);
+			void (*fn)(struct y_message * what);
 			fn = (void (*)())what->what;
 			fn(what);
 		}
@@ -91,9 +91,9 @@ static struct message *handle_message(struct message_instance *instance, struct 
 /**
 	@brief 将所有消息的状态初始化
  */
-void message_reset_all(struct message_instance *instance)
+void message_reset_all(struct y_message_instance *instance)
 {
-	struct message *cur = instance->slots;
+	struct y_message *cur = instance->slots;
 	
 	while(1)
 	{
@@ -107,9 +107,9 @@ void message_reset_all(struct message_instance *instance)
 /**
 	@brief 等待一个消息，并返回
  */
-void message_loop(struct message_instance *instance)
+void message_loop(struct y_message_instance *instance)
 {
-	struct message *cur;
+	struct y_message *cur;
 
 	instance->sleep(instance);
 	cur = instance->slots;

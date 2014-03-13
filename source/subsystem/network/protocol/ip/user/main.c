@@ -4,153 +4,137 @@
 	Sihai
 */
 
-#include <stdio.h>
+#include <ystd.h>
 #include <pthread.h>
+#include <string.h>
 
-#include "core/netif.h" 
-#include "core/etherarp.h"
-#include "core/pbuf.h"
+#include <ddk/grid.h>
 
+#include "netif.h" 
+#include "etharp.h"
+#include "pbuf.h"
+#include "init.h"
 
-pthread_key_t netif_key = (pthread_key_t)-1;
+#define DEFAULT_STREAM_FILE_PATH "/os/net/stream"
 
-struct user_if
+struct net_interface
 {
+	/* About worker */
 	pthread_t worker;
+	y_handle stream_file;
+	char stream_file_name[128];
+
+	/* About netif */
+	struct netif netif;
+
+	/* Counter */
+	unsigned long dropped;
+};
+static struct net_interface global_net_interface;
+
+static int do_connect()
+{
+	TODO("");
+
+	return -ENOSYS;
+}
+
+static struct grid_netproto ip_netproto = {
+	.proto_name = "IPv4 grid_netproto",
+	.connect = do_connect,
 };
 
-static struct netif_driver_ops user_if_ops;
-
-void dump_raw_package(void *buf, int size)
+static void setup_stream_file(struct net_interface *pni)
 {
-	unsigned char *p = buf;
-	int off = 0;
+	// TODO: Tell system our pid 
+	sprintf(pni->stream_file_name, "%s/%d", 
+		DEFAULT_STREAM_FILE_PATH, 0/*TODO:get pid*/);
+}
+
+static void stream_input(struct net_interface *pni)
+{
+	void *data;
+	size_t size;
+	struct pbuf *pb;
+
+	/* Read data file stream file */
+	// TODO:
+	size = 0;
+	data = NULL;
+
+	if (NULL == (pb = pbuf_alloc(PBUF_RAW, size, PBUF_RAM)))
+		goto err;
+
+	// TODO: 采用0拷贝方法
+	memcpy(pb->payload, data, size);
+	ethernet_input(pb, &pni->netif);
+
+	return;
+
+err:
+	pni->dropped++;
+}
+
+static void *stream_input_worker(void *parameter)
+{	
+	struct net_interface *pni = parameter;
 	
-	while (size > 0)
-	{		
-		if ((off % 16) == 0)
-			printf("\n%08x: ", off);
-		
-		printf("%02x ", p[off]);
-		off++;
-		size--;
+	/* 监听Stream文件 */
+	setup_stream_file(pni);
+	if (Y_INVALID_HANDLE == (pni->stream_file = y_file_open(pni->stream_file_name)))
+	{
+		printf("打开网络流文件 %s 失败.\n", pni->stream_file_name);
+		goto err0;
 	}
-}
-
-/**
-	@brief The hardware layer to free zerocopy buffer 
-*/
-void mytcpip_free_zerocopy_object(void *p)
-{
-
-}
-
-static void init_if(struct netif *nif)
-{
-	ip_addr_t test_ipaddr, test_netmask, test_gw;
-
-	/* TODO: 从系统获取IP + MAC */
-	IP4_ADDR(&test_gw, 192,168,1,1);
-	IP4_ADDR(&test_ipaddr, 192,168,1,12);
-	IP4_ADDR(&test_netmask, 255,255,255,0);
-	nif->hwaddr[0] = 0x11;
-	nif->hwaddr[1] = 0x22;
-	nif->hwaddr[2] = 0x33;
-	nif->hwaddr[3] = 0x44;
-	nif->hwaddr[4] = 0x55;
-	nif->hwaddr[5] = 0x66;
-	
-	netif_set_address(nif, &test_ipaddr, &test_netmask, &test_gw);	
-	myip_instance_init(nif);
-}
-
-static void create_new_stream()
-{
-	y_handle stream;
-	
-	/* 注册进程socket目录监听事件 */
-	stream_dir = opendir(path_of_process_net_stream);
-	if (stream_dir == Y_INVALID_HANDLE)
-		goto err;
-	y_file_event_register(stream_dir, Y_FILE_EVENT_CREATE_FILE, create_new_stream, NULL);
-	
-}
-
-static void *user_if_worker(void *parameter)
-{
-	y_handle stream_dir;
-	struct netif *netif;
-	
-	/* This thread use its private netif */
-	netif = parameter;
-	pthread_setspecific(netif_key, netif);
-	init_if(netif);
-
-	/* 注册进程socket目录监听事件 */
-	stream_dir = opendir(path_of_process_net_stream);
-	if (stream_dir == Y_INVALID_HANDLE)
-		goto err;
-	y_file_event_register(fpoll_info, Y_FILE_EVENT_CREATE_FILE, stream_dir, create_new_stream, NULL);
+	if (y_file_event_register(pni->stream_file, Y_FILE_EVENT_WRITE, stream_input, pni) < 0)
+		goto err1;
 		
 	y_message_loop();
-	
-	/* Handle the packages */
-	//default_bk_feedback(netif, raw_package, data_desc, size);
-	
+
+err1:
+	y_file_close(pni->stream_file);
+err0:		
 	return NULL;
 }
 
-static err_t user_if_send(struct netif *netif, struct pbuf *p)
+static int nif_init(struct net_interface *pni)
 {
-	//TODO
-	return ERR_OK;
-}
+	struct netif *nif		= &pni->netif;
 
-
-static int user_if_init(struct netif *nif, struct netif_init_info *info)
-{
-	struct user_if *p;
-
-	if ((p = calloc(1, sizeof(*p))) == NULL)
-		goto err;
-	nif->core_count			= info->core_count;
-	nif->core_id			= info->core_id;
 	nif->hwaddr_len			= ETHARP_HWADDR_LEN;
 	nif->mtu				= 1500;
 	nif->flags				= NETIF_FLAG_ETHERNET | NETIF_FLAG_ETHARP;
-	nif->driver_object		= p;
-	nif->driver_ops			= &user_if_ops;
-	nif->linkoutput			= user_if_send;
-	nif->output				= etharp_output;
+//	nif->driver_ops			= &user_if_ops;
+//	nif->linkoutput			= user_if_send;
+//	nif->output				= etharp_output;
 
-	if (pthread_create(&p->worker, NULL, user_if_worker, nif))
+	if (pthread_create(&pni->worker, NULL, stream_input_worker, pni))
 		goto err;
 
 	return ERR_OK;
 	
 err:
-	if (p)
-		free(p);
 	return ERR_MEM;
 }
 
-struct netif *user_if_add()
+int dll_main(void)
 {
-	struct netif_init_info para;
-	struct netif *nif;
+	/* Core system */
+	lwip_init();
 
-	memset(&para, 0, sizeof(para));
-	para.type		= NETIF_ETHERNET;
-	nif = netif_create(user_if_init, &para);
+	/* Virtual network interface */
+	nif_init(&global_net_interface);
 
-	return nif;
+	return 0;
 }
 
-int main(void)
+DLLEXPORT struct grid_netproto *grid_acquire_netproto()
 {
-	pthread_key_create(&netif_key, NULL);
-	myip_init();	
-	user_if_add();
+	return &ip_netproto;
+}
 
+unsigned int sys_now(void)
+{
+	printf("sys_now not implemented.\n");
 	return 0;
 }

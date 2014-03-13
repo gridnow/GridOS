@@ -294,6 +294,16 @@ static bool thread_msg(struct sysreq_thread_msg *req)
 	return r;
 }
 
+/**
+	@brief Get the TEB in current thread
+*/
+static void *thread_teb(struct sysreq_thread_msg *req)
+{
+	struct ko_thread *kt = kt_current();
+	
+	return kt->teb;
+}
+
 /************************************************************************/
 /* MISC                                                                 */
 /************************************************************************/
@@ -432,7 +442,7 @@ void ke_srv_init()
 	kernel_entry[SYS_REQ_KERNEL_PROCESS_HANDLE_EXE - SYS_REQ_KERNEL_BASE]	= (void*) process_ld;
 	//kernel_entry[SYS_REQ_KERNEL_WAIT - SYS_REQ_KERNEL_BASE]				= (void*) process_wait;
 	kernel_entry[SYS_REQ_KERNEL_THREAD_MSG - SYS_REQ_KERNEL_BASE]			= (void*) thread_msg;
-
+	kernel_entry[SYS_REQ_KERNEL_THREAD_TEB - SYS_REQ_KERNEL_BASE]			= (void*) thread_teb;
 	/* Misc */
 	kernel_entry[SYS_REQ_KERNEL_PRINTF - SYS_REQ_KERNEL_BASE]			= (void*) kernel_printf;
 	kernel_entry[SYS_REQ_KERNEL_MISC_DRAW_SCREEN - SYS_REQ_KERNEL_BASE] = (void*) misc_draw_screen;
