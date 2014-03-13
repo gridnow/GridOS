@@ -13,8 +13,14 @@
 
 #include "socket_file.h"
 
-DLLEXPORT int socket(int domain, int type, int protocol)
+void init_socket()
 {
+	af_inet_init();
+}
+
+DLLEXPORT int socket(int domain, int type, int protocol)
+{	
+	struct file *filp = NULL;
 	int ret = -ENOSYS;
 	
 	switch(domain)
@@ -25,20 +31,31 @@ DLLEXPORT int socket(int domain, int type, int protocol)
 		
 	case AF_INET:
 		{
-			struct file *filp;
 			struct socket_file *sf;
 			
 			if (NULL == (filp = file_new(sizeof(struct socket_file))))
+			{
+				ret = -ENOMEM;
 				goto err0;
+			}
 			sf = file_get_detail(filp);
 			memset(sf, 0, sizeof(struct socket_file));
-			af_inet_file_init_ops(filp);
+			af_inet_file_init_ops(filp);			
 		}
 		break;		
 	}
 
+	if (filp)
+	{
+		ret = posix_fd_allocate(filp);
+		if (ret == POSIX_INVALID_FD)
+			goto err1;
+	}
+
 	return ret;
 	
+err1:
+	filp_delete(filp);
 err0:
 	return ret;
 }
@@ -49,7 +66,7 @@ DLLEXPORT int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen
 	struct socket_file *sf;
 	
 	/* Translate fd to standard file */
-	if (NULL == (filp = posix_translate_fd(sockfd)))
+	if (NULL == (filp = posix_fd_translate(sockfd)))
 		goto err0;
 
 	sf = file_get_detail(filp);

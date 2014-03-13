@@ -8,7 +8,7 @@
 #define asmregparm
 #endif
 
-static asmregparm void * thread_wrap(void *(PTCDECL *start) (void *), void *arg)
+static asmregparm void thread_wrap(void *(PTCDECL *start) (void *), void *arg)
 {
 	struct sysreq_process_startup req;
 
@@ -19,6 +19,8 @@ static asmregparm void * thread_wrap(void *(PTCDECL *start) (void *), void *arg)
 	req.base.req_id		= SYS_REQ_KERNEL_PROCESS_STARTUP;
 	req.func			= SYSREQ_PROCESS_STARTUP_FUNC_END;
 	system_call(&req);
+
+	/* Will not reach here */
 }
 
 static ke_handle create_thread(void *entry, void * arg, bool run)

@@ -11,11 +11,18 @@
 	82828068@qq.com
 	
  */
-#include <compiler.h>
 #include <errno.h>
+#include <dlfcn.h>
 #include <socket.h>
+#include <pthread.h>
+#include <ddk/grid.h>
 
 #include "socket_file.h"
+
+static int socket_inet_not_inited = 1;
+static pthread_spinlock_t load_lock;
+static void *module_ipv4;
+static struct grid_netproto *proto_ipv4;
 
 static int do_connect()
 {
@@ -78,7 +85,6 @@ static const struct file_operations af_inet_file_ops = {
 	.close		= do_file_close,
 };
 
-static int socket_inet_not_inited = 1;
 void af_inet_file_init_ops(struct file *filp)
 {
 	struct socket_file *sf = file_get_detail(filp);
@@ -88,8 +94,30 @@ void af_inet_file_init_ops(struct file *filp)
 
 	/* But the Ipv4 module is loaded? */	
 	if (unlikely(socket_inet_not_inited))
-	{		
-		// TODO: Load TCPIP module
+	{
+		pthread_spin_lock(&load_lock);
+		if (!socket_inet_not_inited)
+			goto next;
+
+		if (NULL == (module_ipv4 = dlopen("$(SYSTEM_DIR)/tcpip.so", 0)))
+			goto err0;
+		if (NULL == (proto_ipv4 = dlsym(module_ipv4, GRID_GET_NETPROTO)))
+			goto err1;
+next:
+		pthread_spin_unlock(&load_lock);
 	}
+	return;
+err1:
+	dlclose(module_ipv4);
+	module_ipv4 = NULL;
+err0:
+	filp->ops = NULL;
+	sf->ops = NULL;	
+}
+
+void af_inet_init()
+{
+	module_ipv4 = NULL;
+	pthread_spin_init(&load_lock, 0);	
 }
 
