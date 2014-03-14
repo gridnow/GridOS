@@ -215,7 +215,7 @@ DLLEXPORT y_handle y_file_open(const char *path)
 	return h;
 }
 
-DLLEXPORT ssize_t y_file_read(y_handle file, size_t size, void *buffer)
+DLLEXPORT ssize_t y_file_read(y_handle file, void *buffer, size_t size)
 {	
 	ssize_t ret;
 	struct stdio_file *f = (struct stdio_file*)file;
