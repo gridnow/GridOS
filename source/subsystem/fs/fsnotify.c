@@ -27,22 +27,23 @@
 
 
 /*
-	向文件监听者发送事件消息
-	调用者要获取文件notify lock
+	@brief 向文件监听者发送事件消息
+	@return 
+		无
 */
-void fnotify_send_msg(struct list_head * notify_list, y_file_event_type_t even)
+void fnotify_msg_send(struct fss_file *file, y_file_event_type_t even)
 {
 	struct file_notify *ntf_file = NULL;
 
+	ke_spin_lock(&file->notify_lock);
 	/* 是否有进程监听? */
-	if (!notify_list ||
-		list_empty(notify_list))
+	if (list_empty(&file->notify_list))
 	{
 		return;
 	}
 	
 	/* 向所有监听进程发送消息 */
-	list_for_each_entry(ntf_file, notify_list, node)
+	list_for_each_entry(ntf_file, &file->notify_list, node)
 	{
 		/* 是否为监听敢兴趣事件 ? */
 		if (ntf_file->even_type_mask & even)
@@ -52,18 +53,21 @@ void fnotify_send_msg(struct list_head * notify_list, y_file_event_type_t even)
 			*pdata = (MSG_DATA_TYPE)(ntf_file->call_para);
 			
 			/* send msg */
-			ke_send((struct ko_thread *)ntf_file->listener, pmsg);
+			ke_msg_send(ntf_file->listener, pmsg);
 		}
 			
 	}
-
+	ke_spin_unlock(&file->notify_lock);
+	
 	return;
 }
 
 /*
-	供上层调用实现注册监听文件
+	@brief 供上层调用实现注册监听文件
+	@return 
+		= 0 成功  < 0 返回错误码
 */
-int  fnotify_even_register(struct fss_file *file, y_file_event_type_t cmd, void *func, void *para)
+int  fnotify_event_register(struct fss_file *file, y_file_event_type_t cmd, void *func, void *para)
 {
 	struct file_notify *notify;
 	int err;
@@ -83,7 +87,7 @@ int  fnotify_even_register(struct fss_file *file, y_file_event_type_t cmd, void 
 		goto err;
 	}
 
-	notify->listener       = (ke_thread)ke_current();
+	notify->listener       = ke_current();
 	notify->even_type_mask = cmd;
 	notify->call_func      = func;
 	notify->call_para      = para;
@@ -106,9 +110,11 @@ err:
 
 
 /*
-	取消监听文件事件类型
+	@brief 取消监听文件事件类型
+	@return 
+		= 0 成功  < 0 返回错误码
 */
-int fnotify_even_unregister(struct fss_file *file, y_file_event_type_t cmd)
+int fnotify_event_unregister(struct fss_file *file, y_file_event_type_t cmd)
 {
 	struct file_notify *notify;
 	ke_thread lister;
@@ -124,7 +130,7 @@ int fnotify_even_unregister(struct fss_file *file, y_file_event_type_t cmd)
 	ke_spin_lock(&file->notify_lock);
 	
 	/* 遍历notify list */
-	lister = (ke_thread)ke_current();
+	lister = ke_current();
 	list_for_each_entry(notify, &file->notify_list, node)
 	{
 		if ((notify->listener == lister) &&

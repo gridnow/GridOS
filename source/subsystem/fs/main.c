@@ -173,9 +173,7 @@ ssize_t fss_read(struct fss_file * who, unsigned long block, void *buffer)
 	ret = which->valid_size;
 	
 	/* Notify */
-	ke_spin_lock(&who->notify_lock);
-	fnotify_send_msg(&who->notify_list, Y_FILE_EVENT_READ);
-	ke_spin_unlock(&who->notify_lock);
+	fnotify_msg_send(who, Y_FILE_EVENT_READ);
 
 end:
 	if (which)		
@@ -381,12 +379,12 @@ static int req_notify(struct sysreq_file_notify *req)
 	switch(req->ops)
 	{
 	case SYSREQ_FILE_OPS_REG_FILE_NOTIFY:
-		r = fnotify_even_register(file, req->ops_private.reg.mask,\
+		r = fnotify_event_register(file, req->ops_private.reg.mask,\
 									req->ops_private.reg.func, req->ops_private.reg.para);
 		break;
 		
 	case SYSREQ_FILE_OPS_UNREG_FILE_NOTIFY:
-		r = fnotify_even_unregister(file, req->ops_private.reg.mask);		
+		r = fnotify_event_unregister(file, req->ops_private.reg.mask);		
 		break;
 		
 	default:

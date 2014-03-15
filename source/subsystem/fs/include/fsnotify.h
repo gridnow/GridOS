@@ -42,7 +42,7 @@ struct y_file_notify_msg
 	@ brief 文件通告函数,供文件发生改变调用
 */
 
-void fnotify_send_msg(struct list_head *notify_list, y_file_event_type_t even_mask);
+void fnotify_msg_send(struct fss_file *file, y_file_event_type_t even_mask);
 
 
 /*
@@ -50,14 +50,14 @@ void fnotify_send_msg(struct list_head *notify_list, y_file_event_type_t even_ma
 	@return
 		成功 = 0, < 0 返回错误码
 */
-int  fnotify_even_register(struct fss_file *file, y_file_event_type_t cmd, void *func, void *para);
+int  fnotify_event_register(struct fss_file *file, y_file_event_type_t cmd, void *func, void *para);
 
 /*
 	@brief 取消监听文件事件类型
 	@return
 		成功 = 0, < 0 返回错误码
 */
-int fnotify_even_unregister(struct fss_file *file, y_file_event_type_t cmd);
+int fnotify_event_unregister(struct fss_file *file, y_file_event_type_t cmd);
 
 #endif
 
