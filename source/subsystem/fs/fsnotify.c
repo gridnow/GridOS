@@ -36,11 +36,6 @@ void fnotify_msg_send(struct fss_file *file, y_file_event_type_t even)
 	struct file_notify *ntf_file = NULL;
 
 	ke_spin_lock(&file->notify_lock);
-	/* 是否有进程监听? */
-	if (list_empty(&file->notify_list))
-	{
-		return;
-	}
 	
 	/* 向所有监听进程发送消息 */
 	list_for_each_entry(ntf_file, &file->notify_list, node)
