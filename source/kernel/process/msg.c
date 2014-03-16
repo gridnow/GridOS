@@ -418,6 +418,15 @@ void ktm_delete()
 	put_thread_msg(who);
 }
 
+/*
+	@brief 提供给内核编程接口使用
+*/
+bool ke_msg_send(struct ko_thread *to, struct y_message *what)
+{
+	return ktm_send(to, what);
+}
+
+
 /**
 	@brief Init the message subsystem
 */

@@ -5,6 +5,7 @@
 */
 
 #include <kernel/ke_memory.h>
+#include <kernel/ke_lock.h>
 #include <ddk/debug.h>
 
 #include <errno.h>
@@ -398,7 +399,10 @@ struct fss_file *fss_file_new(struct fss_file *father, void *private, const char
 	file->type = type;	
 	file->private = private;
 	fss_mltt_init(file);
-
+	
+	INIT_LIST_HEAD(&file->notify_list);
+	ke_spin_init(&file->notify_lock);
+	
 	/* 目录特有的数据 */
 	if (type == FSS_FILE_TYPE_DIR)
 	{

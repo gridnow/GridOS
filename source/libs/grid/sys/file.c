@@ -232,12 +232,13 @@ DLLEXPORT void y_file_close(y_handle file)
 
 DLLEXPORT int y_file_event_register(y_handle file, y_file_event_type_t event_mask, void *func, void *para)
 {
-	struct file *f = (struct file*)file;
+	struct stdio_file *f = (struct stdio_file*)file;
+	struct file *filp = file_get_from_detail(f);
 	struct sysreq_file_notify req;
 	
 	req.base.req_id = SYS_REQ_FILE_NOTIFY;
 	req.ops 		= SYSREQ_FILE_OPS_REG_FILE_NOTIFY;
-	req.file		= f->handle;
+	req.file		= filp->handle;
 	req.ops_private.reg.mask = event_mask;
 	req.ops_private.reg.func = func;
 	req.ops_private.reg.para = para;
@@ -247,12 +248,13 @@ DLLEXPORT int y_file_event_register(y_handle file, y_file_event_type_t event_mas
 
 DLLEXPORT int y_file_event_unregister(y_handle file, y_file_event_type_t event_mask)
 {
-	struct file *f = (struct file*)file;
+	struct stdio_file *f = (struct stdio_file*)file;
+	struct file *filp = file_get_from_detail(f);
 	struct sysreq_file_notify req;
 	
 	req.base.req_id = SYS_REQ_FILE_NOTIFY;
 	req.ops 		= SYSREQ_FILE_OPS_UNREG_FILE_NOTIFY;
-	req.file		= f->handle;
+	req.file		= filp->handle;
 	req.ops_private.unreg.mask = event_mask;
 	
 	return system_call(&req);

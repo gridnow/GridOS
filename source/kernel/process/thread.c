@@ -17,7 +17,7 @@
 #include "process.h"
 #include "cpu.h"
 #include <thread.h>
-
+#include <kernel/ke_thread.h>
 #include <string.h>
 
 static struct ko_thread *init_thread;
@@ -225,4 +225,9 @@ bool kt_init()
 	init_idle_thread(kc_get_raw(), &init_thread);
 	
 	return true;
+}
+
+ke_thread ke_current()
+{
+	return kt_arch_get_current();
 }

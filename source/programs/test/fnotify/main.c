@@ -20,9 +20,10 @@
 
 static void read_event(void *para)
 {
-	char *file_name = para;
-	
-	printf("收到文件%s的读取事件。\n", file_name);
+	unsigned long file_name;
+
+	y_message_read((struct y_message *)para,&file_name);
+	printf("收到文件%s的读取事件。\n", (char *)file_name);
 }
 
 static int read_func(void *para)
