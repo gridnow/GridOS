@@ -126,14 +126,14 @@ y_handle y_file_open(const char *path);
 	读取打开成功的文件到buffer 中
 
 	@param[in] file 要读取的文件
+	@param[in] buffer 要写入的缓冲区，用户保证缓冲区长度起码有	size长度 	
 	@param[in] size 读取长度
-	@param[in] size 要写入的缓冲区，用户保证缓冲区长度起码有	size长度 
 
 	@return
 		>0 表示成功读取的字节数，不会超过过size,
 		<0表示错误码.
 */	
-ssize_t y_file_read(y_handle file, size_t size, void *buffer);
+ssize_t y_file_read(y_handle file, void *buffer, size_t size);
 
 /**
 	@brief 关闭文件
