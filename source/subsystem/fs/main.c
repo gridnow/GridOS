@@ -99,6 +99,14 @@ err:
 /************************************************************************/
 /* File                                                                 */
 /************************************************************************/
+void fss_dbd_make_dirty(struct fss_file * who, struct dbd *which)
+{
+	/* 回写线程将通过dirty 来判断该不该回写 */
+	FSS_DBD_LOCK(which);
+	which->flags |= DB_DIRTY;
+	FSS_DBD_UNLOCK(which);
+}
+
 ssize_t fss_dbd_make_valid(struct fss_file * who, struct dbd * which)
 {
 	unsigned long size = FSS_CACHE_DB_SIZE;
@@ -153,7 +161,7 @@ void fss_close(struct fss_file *who)
 	//TODO
 }
 
-ssize_t fss_read(struct fss_file * who, unsigned long block, void *buffer)
+ssize_t fss_block_io(struct fss_file * who, unsigned long block, void *buffer, bool write)
 {
 	ssize_t ret = -ENOMEM;
 	struct dbd * which = NULL;
@@ -167,14 +175,19 @@ ssize_t fss_read(struct fss_file * who, unsigned long block, void *buffer)
 	ret = fss_dbd_make_valid(who, which);
 	if (ret < 0)
 		goto end;
-
-	/* Read */
-	memcpy(buffer, which->buffer, FSS_CACHE_DB_SIZE);
+	if (!write)
+	{
+		memcpy(buffer, which->buffer, FSS_CACHE_DB_SIZE);
+		fnotify_msg_send(who, Y_FILE_EVENT_READ);
+	}
+	else
+	{
+		memcpy(which->buffer, buffer, FSS_CACHE_DB_SIZE);		
+		fss_dbd_make_dirty(who, which);
+		fnotify_msg_send(who, Y_FILE_EVENT_WRITE);
+	}
 	ret = which->valid_size;
 	
-	/* Notify */
-	fnotify_msg_send(who, Y_FILE_EVENT_READ);
-
 end:
 	if (which)		
 		fss_dbd_put(which);
@@ -250,17 +263,45 @@ static ssize_t req_read(struct sysreq_file_io *req)
 	if (!file)
 		goto end;
 
-	ret = fss_read(file, block, buf);
+	ret = fss_block_io(file, block, buf, false);
 	if (ret < 0)
 		goto end;
 
 	req->current_size = ret;
-	req->result_size = ret;
 
 end:
 	if (file)
 		ke_handle_put(req->file, file);
 	return ret;
+}
+
+static ssize_t req_write(struct sysreq_file_io *req)
+{
+	ssize_t ret = -1;
+	struct fss_file *file = NULL;
+	unsigned long block = req->pos / FSS_CACHE_DB_SIZE;
+	void *buf = req->buffer;
+
+	/* The user buffer can be read? */
+	if (req->size != FSS_CACHE_DB_SIZE)
+		goto end;
+	if (check_user_buffer(buf, req->size, 0) == false)
+		goto end;
+	file = ke_handle_translate(req->file);
+	if (!file)
+		goto end;
+
+	ret = fss_block_io(file, block, buf, true);
+	if (ret < 0)
+		goto end;
+
+	req->current_size = ret;
+
+end:
+	if (file)
+		ke_handle_put(req->file, file);
+	return ret;
+
 }
 
 /*
@@ -391,7 +432,8 @@ static int req_notify(struct sysreq_file_notify *req)
 		r = -EINVAL;
 		break;
 	}
-	
+
+	ke_handle_put(req->file, file);
 end:
 	return r;	
 }
@@ -428,9 +470,9 @@ void fss_main()
 	interfaces[SYS_REQ_FILE_OPEN - SYS_REQ_FILE_BASE]    = req_open;
 	interfaces[SYS_REQ_FILE_CLOSE - SYS_REQ_FILE_BASE]   = req_close;
 	interfaces[SYS_REQ_FILE_READ - SYS_REQ_FILE_BASE]    = req_read;
+	interfaces[SYS_REQ_FILE_WRITE - SYS_REQ_FILE_BASE]   = req_write;
 	interfaces[SYS_REQ_FILE_READDIR - SYS_REQ_FILE_BASE] = req_readdir;
 	interfaces[SYS_REQ_FILE_NOTIFY - SYS_REQ_FILE_BASE]  = req_notify;
-	
 	
 	ke_srv_register(&ke_srv_fss);
 }

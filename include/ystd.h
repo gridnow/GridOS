@@ -136,6 +136,27 @@ y_handle y_file_open(const char *path);
 ssize_t y_file_read(y_handle file, void *buffer, size_t size);
 
 /**
+	@brief 写入文件
+
+	把用户指定buffer 写入打开成功的文件
+
+	@param[in] file 要写入的文件
+	@param[in] buffer 源缓冲区，用户保证缓冲区长度起码有	size长度 	
+	@param[in] size 写入长度
+
+	@return
+		>0 表示成功读取的字节数，不会超过过size,
+		<0表示错误码.
+*/	
+ssize_t y_file_write(y_handle file, void *buffer, size_t size);
+
+/**
+	@brief Seek file
+
+*/
+int y_file_seek(y_handle file, loff_t where, int whence);
+
+/**
 	@brief 关闭文件
 
 	关闭打开的y_handle 文件
