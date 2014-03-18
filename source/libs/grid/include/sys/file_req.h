@@ -84,9 +84,7 @@ struct sysreq_file_io
 	
 	/* OUTPUT */
 	lsize_t		current_size;
-	size_t		result_size;
 };
-
 
 /**
 	@brief Request package for fstat

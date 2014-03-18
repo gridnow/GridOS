@@ -227,7 +227,15 @@ bool kt_init()
 	return true;
 }
 
+/*************************************************************
+Interface  
+*************************************************************/
 ke_thread ke_current()
 {
-	return kt_arch_get_current();
+	return (ke_thread)kt_current();
+}
+
+ke_thread ke_create_kernel(void *entry, void *para)
+{
+	return (ke_thread)kt_create_kernel(entry, (unsigned long)para);
 }

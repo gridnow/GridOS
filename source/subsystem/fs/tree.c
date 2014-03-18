@@ -4,6 +4,7 @@
 	All rights reserved.
 */
 
+#include <kernel/ke_thread.h>
 #include <kernel/ke_memory.h>
 #include <kernel/ke_lock.h>
 #include <ddk/debug.h>
@@ -450,7 +451,7 @@ bool fss_tree_init(struct fss_volumn *v, struct fss_vfs_driver *drv, void *root_
 	ke_atomic_inc(&v->using_count);
 
 	/* Create a thread to maintain the tree on the volumn */
-	kt_create_kernel(tree_thread, v);
+	ke_create_kernel(tree_thread, v);
 
 	return true;
 	

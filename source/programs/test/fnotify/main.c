@@ -32,7 +32,7 @@ static int read_func(void *para)
 	ssize_t ret;
 	y_handle file = (y_handle)para;
 
-	ret = y_file_read(file, sizeof(buffer), buffer);
+	ret = y_file_read(file, buffer, sizeof(buffer));
 	printf("读取文件%s %d字节。\n", TEST_FILE, ret);
 
 	return ret;

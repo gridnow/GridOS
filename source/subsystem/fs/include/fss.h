@@ -36,7 +36,7 @@ void *fss_map_prepare_dbd(struct fss_file *file, void *process, uoffset file_pos
 
 /* MAIN.c */
 /**
-	@brief 读取文件的某一块
+	@brief 读取、写入文件的某一块
  
 	@return
 		< 0 则是错误码，> 0则表示本次读取的字节数
@@ -44,7 +44,7 @@ void *fss_map_prepare_dbd(struct fss_file *file, void *process, uoffset file_pos
 	@note
 		调用者保证buffer能容纳一个DB的大小，为了效率本函数不做检查。
  */
-ssize_t fss_read(struct fss_file * who, unsigned long block, void * buffer);
+ssize_t fss_block_io(struct fss_file * who, unsigned long block, void * buffer, bool write);
 
 /**
  */
