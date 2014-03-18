@@ -151,7 +151,7 @@ static struct y_message *send(struct ktm *where, struct y_message *what, struct 
 	if (i != count + 1/*the head*/) 
 	{
 		ke_spin_unlock(&where->lock);
-		printk("The message pool is full, count is %d.\n", count);
+		//printk("The message pool is full, count is %d.\n", count);
 		goto full;
 	}
 

@@ -151,6 +151,12 @@ ssize_t y_file_read(y_handle file, void *buffer, size_t size);
 ssize_t y_file_write(y_handle file, void *buffer, size_t size);
 
 /**
+	@brief Seek file
+
+*/
+int y_file_seek(y_handle file, loff_t where, int whence);
+
+/**
 	@brief 关闭文件
 
 	关闭打开的y_handle 文件

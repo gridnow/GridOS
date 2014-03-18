@@ -202,7 +202,7 @@ DLLEXPORT y_handle y_file_open(const char *path)
 	
 	//TODO: 增加更复杂的类型
 	//TODO: 根据path 来确定文件类型
-	filp = (struct stdio_file *)fopen(path, "r");
+	filp = (struct stdio_file *)fopen(path, "r+");
 	if (!filp)
 		h = Y_INVALID_HANDLE;
 	else
@@ -234,6 +234,14 @@ DLLEXPORT ssize_t y_file_write(y_handle file, void *buffer, size_t size)
 DLLEXPORT void y_file_close(y_handle file)
 {	
 	fclose((void*)file);	
+}
+
+DLLEXPORT int y_file_seek(y_handle file, loff_t where, int whence)
+{	
+	struct stdio_file *f = (struct stdio_file*)file;
+	struct file *filp = file_get_from_detail(f);
+
+	return filp->ops->seek(filp, where, whence);
 }
 
 DLLEXPORT int y_file_event_register(y_handle file, y_file_event_type_t event_mask, void *func, void *para)

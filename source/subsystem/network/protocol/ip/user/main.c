@@ -66,6 +66,7 @@ static void stream_input(struct y_message *msg)
 	struct stream_input_ctx *ctx;
 	size_t size = DEFAULT_MAX_PKG_SIZE;
 
+	printf("Stream got input....");
 	y_message_read(msg, &ctx);
 
 	if (NULL == (pb = pbuf_alloc(PBUF_RAW, size, PBUF_RAM)))
@@ -77,10 +78,12 @@ static void stream_input(struct y_message *msg)
 		减少一次内存拷贝。
 	*/
 	y_file_read(ctx->stream_file, pb->payload, size);
+	y_file_seek(ctx->stream_file, 0, SEEK_SET);
 	ethernet_input(pb, &ctx->pni->netif);
 
 	/* 流文件中还有数据吗? */
 	//TODO: 轮询流文件
+	printf("OK.");
 	
 	return;
 
@@ -105,14 +108,39 @@ static err_t stream_output(struct netif *netif, struct pbuf *p)
 	return ERR_OK;
 }
 
+static void nif_startup(struct netif *nif)
+{
+	ip_addr_t test_ipaddr, test_netmask, test_gw;
+		
+	/* Setup IP */
+	// TODO: ip and mac should get from system infomation center
+	IP4_ADDR(&test_gw, 10,137,36,200);
+	IP4_ADDR(&test_ipaddr,	10,137,36,15);
+	IP4_ADDR(&test_netmask, 255,255,255,0); 	
+	nif->hwaddr[0] = 0x11;
+	nif->hwaddr[1] = 0x22;
+	nif->hwaddr[2] = 0x33;
+	nif->hwaddr[3] = 0x44;
+	nif->hwaddr[4] = 0x55;
+	nif->hwaddr[5] = 0x66;	
+	netif_set_ipaddr(nif, &test_ipaddr);
+	netif_set_netmask(nif, &test_netmask);
+	netif_set_gw(nif, &test_gw);
+		
+	netif_set_up(nif);
+}		
+
 static void *stream_input_worker(void *parameter)
 {
 	struct net_interface *pni = parameter;
 	struct stream_input_ctx ctx;
-
-	ctx.pni = pni;	
-	setup_stream_file(&ctx);
 	
+	/* Startup netif */	
+	nif_startup(&pni->netif);
+	
+	/* Setup stream */
+	ctx.pni = pni;	
+	setup_stream_file(&ctx);	
 	if (Y_INVALID_HANDLE == (ctx.stream_file = y_file_open(ctx.stream_file_name)))
 	{
 		printf("打开网络流文件 %s 失败.\n", ctx.stream_file_name);
@@ -120,7 +148,8 @@ static void *stream_input_worker(void *parameter)
 	}
 	if (y_file_event_register(ctx.stream_file, Y_FILE_EVENT_WRITE, stream_input, &ctx) < 0)
 		goto err1;
-	printf("Waiting network input...\n");
+
+	/* Wait stream */
 	y_message_loop();
 
 err1:
@@ -131,8 +160,8 @@ err0:
 
 static int nif_init(struct net_interface *pni)
 {
-	struct netif *nif		= &pni->netif;
-
+	struct netif *nif		= &pni->netif;	
+		
 	nif->hwaddr_len			= ETHARP_HWADDR_LEN;
 	nif->mtu				= 1500;
 	nif->flags				= NETIF_FLAG_ETHERNET | NETIF_FLAG_ETHARP;
