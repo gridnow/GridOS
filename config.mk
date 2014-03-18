@@ -63,7 +63,7 @@ endif
 #ต๗สิดฆภํ
 #
 ifeq ($(DEBUG),YES)
-COMMON_CC_FLAGS 		+=-D__DEBUG__=1
+COMMON_CC_FLAGS 		+=-D__DEBUG__=1 -g
 endif
 
 #
