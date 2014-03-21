@@ -58,7 +58,6 @@ kt_sync_wait_result kt_wait_objects(struct ko_thread * who, int count, struct kt
 	int i;
 	
 	kt_sync_wait_result status = KE_WAIT_ABANDONED;
-	int ready_count	= 0;
 	bool waiter_added			= false;
 	struct thread_wait			static_wait_node[KE_SYNC_STATIC_WAIT_NODE_COUNT];
 	struct thread_wait *		waited_node[Y_SYNC_MAX_OBJS_COUNT] = {0};

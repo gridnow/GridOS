@@ -45,7 +45,7 @@ static void input_event(struct ddk_input_handle *handle, unsigned int event_type
 	}
 	
 	//printk("type = %x.\n", event_type);
-	if (0)
+#if 0
 	{
 		extern struct ko_thread *tmsg;
 		MSG_MAKE(2, MSG_FLAGS_ADDRESS, 0x8004b0);
@@ -54,6 +54,7 @@ static void input_event(struct ddk_input_handle *handle, unsigned int event_type
 			printk("Send result %d.\n", ktm_send(tmsg, pmsg));
 		}
 	}
+#endif
 }
 
 /************************************************************************/
@@ -201,6 +202,8 @@ static void *input_register_handle(void *drv_input_handle)
 
 	handle->drv_handle	= drv_input_handle;
 	handle->event		= input_event;
+
+	return handle;
 }
 
 struct ddk_for_linux ddk = {

@@ -131,7 +131,7 @@ void kt_arch_init_thread(struct ko_thread * thread, struct kt_thread_creating_co
 static void dump_memory(unsigned long base, int size)
 {
 	int i = 0;
-	unsigned char *p = (char*)base;
+	unsigned char *p = (unsigned char*)base;
 	
 	while (size > 0)
 	{

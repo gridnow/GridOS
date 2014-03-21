@@ -155,7 +155,7 @@ static unsigned long allocate_page(unsigned int count)
 	struct list_head *list;
 	struct km_cluster_head *head; 
 	unsigned long page = NULL;
-	bool tried_new_cluster = false, tried_next_node = false;
+	bool tried_new_cluster = false;
 
 	/* Case 0, Fast: Current cluster have page? */
 	ram = km_get_current_cluster();
