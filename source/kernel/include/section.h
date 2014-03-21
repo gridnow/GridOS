@@ -62,7 +62,7 @@ struct ko_section
 	} priv;
 };
 
-struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsigned long base, unsigned long size, page_prot_t prot);
+struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsigned long base, size_t size, page_prot_t prot);
 void ks_close(struct ko_process *who, struct ko_section *ks);
 void ks_open_by(struct ko_process *who, struct ko_section *ks);
 void ks_init();

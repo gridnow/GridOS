@@ -120,7 +120,7 @@ static struct cl_object_type section_type = {
 	.free_space	= free_space,
 };
 
-struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsigned long base, unsigned long size, page_prot_t prot)
+struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsigned long base, size_t size, page_prot_t prot)
 {
 	struct ko_section *p;
 	

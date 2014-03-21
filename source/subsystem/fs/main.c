@@ -197,6 +197,7 @@ end:
 lsize_t fss_get_size(struct fss_file *who)
 {
 	//TODO
+	//另外fss_get_size 的调用者可能不是用lsize_t存储的，有数据溢出问题
 	return 1024*1024;
 }
 
@@ -438,6 +439,67 @@ end:
 	return r;	
 }
 
+/**
+	@brief 处理文件影射
+	
+	req 中的ops 有表示具体是什么操作
+	
+	@return
+		1,error code
+		2,对于影射来说，在req 中返回影射地址，NULL表示映射失败
+*/
+static int req_map(struct sysreq_file_map *req)
+{
+	int r;
+	struct fss_file *file;
+
+	if (NULL == (file = ke_handle_translate(req->file)))
+	{
+		r = -EINVAL;
+		goto end;
+	}
+
+	r = 0;
+	switch(req->ops)
+	{
+	case SYSREQ_FILE_OPS_MAP:
+		{
+			size_t map_size = fss_get_size(file);
+			void *base;
+			
+			/* 请求缓冲是否合法? */
+			if (check_user_buffer(req, sizeof(req), 1) == false)				
+			{
+				r = -EINVAL;
+				goto err0;
+			}
+
+			if (NULL == (base = ke_map_file(file, map_size, req->prot)))
+				r = -ENOMEM;
+			else
+			{			
+				req->map_size = map_size;
+				req->map_base =  base;
+			}
+		}
+		break;
+		
+	case SYSREQ_FILE_OPS_UNMAP:
+		TODO("SYSREQ_FILE_OPS_UNMAP");
+		r = -ENOSYS;
+		break;
+		
+	default:
+		r = -EINVAL;
+		break;
+	}
+	
+err0:
+	ke_handle_put(req->file, file);
+end:
+	return r;
+}
+
 /* 处理函数列表，注意必须和SYS_REQ_FILE_xxx的编号一致 */
 static void * interfaces[_SYS_REQ_FILE_MAX];
 
@@ -473,6 +535,8 @@ void fss_main()
 	interfaces[SYS_REQ_FILE_WRITE - SYS_REQ_FILE_BASE]   = req_write;
 	interfaces[SYS_REQ_FILE_READDIR - SYS_REQ_FILE_BASE] = req_readdir;
 	interfaces[SYS_REQ_FILE_NOTIFY - SYS_REQ_FILE_BASE]  = req_notify;
+	interfaces[SYS_REQ_FILE_MAP - SYS_REQ_FILE_BASE]     = req_map;
+	
 	
 	ke_srv_register(&ke_srv_fss);
 }

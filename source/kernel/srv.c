@@ -25,29 +25,44 @@
 
 bool ke_validate_user_buffer(void * buffer, size_t size, bool rw)
 {
+	//TODO
 	return true;
 }
 
-static struct ko_section *map_file(struct ko_process *to, xstring name, page_prot_t prot, unsigned long *map_size)
+
+static struct ko_section *create_file_map(struct ko_process *to, void *fp, size_t size, page_prot_t prot)
 {
 	struct ko_section *ks_file;
-	unsigned long size;
-	void *fp;
-	
-	fp = fss_open(kt_current()->current_dir, name);
-	if (!fp) goto end;
-	
-	*map_size = size = fss_get_size(fp);
-	ks_file = ks_create(to, KS_TYPE_FILE, NULL, size, prot);
-	if (!ks_file)
-		goto err1;
+
+	if (NULL == (ks_file = ks_create(to, KS_TYPE_FILE, NULL, size, prot)))
+		goto err0;
 	ks_file->priv.file.file = fp;
 	
 	return ks_file;
 	
+err0:
+	return NULL;
+}
+
+static struct ko_section *map_file(struct ko_process *to, xstring name, page_prot_t prot, size_t __out *size)
+{
+	void *fp;
+	size_t map_size;
+	struct ko_section *map;
+
+	//TODO: 此处应该使用to 的原始启动路径来做当前路径
+	if (NULL == (fp = fss_open(kt_current()->current_dir, name)))
+		goto err0;
+	map_size = fss_get_size(fp);
+	if (NULL == (map = create_file_map(to, fp, map_size, prot)))
+		goto err1;
+	if (size)
+		*size = map_size;
+	return map;
+	
 err1:
 	fss_close(fp);
-end:
+err0:
 	return NULL;
 }
 
@@ -207,7 +222,6 @@ static ke_handle process_ld(struct sysreq_process_ld *req)
 		{
 			void *ctx;
 			int ctx_size;
-			unsigned long size;
 			struct ko_section *file_section;
 			
 			ctx_size		= req->context_length;
@@ -220,7 +234,7 @@ static ke_handle process_ld(struct sysreq_process_ld *req)
 				goto ld_3_err;
 			if (ctx_size > kp_exe_get_context_size())
 				goto ld_3_err;
-			if ((file_section = map_file(kp_get_file_process(), module_name, KM_PROT_READ, &size)) == NULL)
+			if ((file_section = map_file(kp_get_file_process(), module_name, KM_PROT_READ, NULL)) == NULL)
 				goto ld_3_err;
 			if (kp_exe_create_from_file(module_name, file_section, ctx, NULL) == NULL)
 				goto ld_3_err;
@@ -452,3 +466,19 @@ void ke_srv_init()
 
 	ke_srv_register(&ke_srv);
 }
+
+
+/************************************************************************/
+/* 杂项对外模块API                                                              */
+/************************************************************************/
+
+void *ke_map_file(void *fp, size_t map_size, page_prot_t prot)
+{
+	struct ko_section *map;
+
+	map = create_file_map(KP_CURRENT(), fp, map_size, prot);
+	if (map)
+		return (void*)map->node.start;
+	return NULL;
+}
+

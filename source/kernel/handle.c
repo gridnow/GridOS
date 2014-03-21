@@ -21,8 +21,6 @@ static unsigned long allocated_size;
 
 static void * get_handle_table(struct ko_process * on)
 {
-	void * table;
-	
 	spin_lock(&on->handle_lock);
 	return on->handle_table;
 }
@@ -103,7 +101,7 @@ void *ke_handle_translate(ke_handle handle)
 	return kobject;
 }
 
-int ke_handle_put(ke_handle handle, void *kobject)
+void ke_handle_put(ke_handle handle, void *kobject)
 {
 	cl_object_dec_ref(kobject);
 }

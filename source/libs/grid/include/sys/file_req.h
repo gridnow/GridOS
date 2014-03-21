@@ -175,4 +175,22 @@ struct sysreq_file_notify
 	
 };
 
+/**
+	@brief Request package for file map/unmap
+*/
+struct sysreq_file_map
+{
+	/* INPUT */
+	struct sysreq_common base;
+	int ops;
+#define SYSREQ_FILE_OPS_MAP    1
+#define SYSREQ_FILE_OPS_UNMAP  2
+	ke_handle 		file;
+	page_prot_t		prot;
+
+	/* OUTPUT */
+	void *map_base;
+	size_t map_size;
+};
+
 #endif

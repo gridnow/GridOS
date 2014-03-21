@@ -47,6 +47,14 @@ DLLEXPORT void *km_valloc(unsigned long size);
 */
 DLLEXPORT void *km_vfree(void *kp);
 
+/**
+	@brief 创建文件影射Section
+
+	@return
+		影射地址或者NULL
+*/
+DLLEXPORT void *ke_map_file(void *fp, size_t map_size, page_prot_t prot);
+
 #endif
 
 /** @} */
