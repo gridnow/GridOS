@@ -195,19 +195,42 @@ err:
 /************************************************************************/
 /* Native file interface                                         */
 /************************************************************************/
-DLLEXPORT y_handle y_file_open(const char *path)
+DLLEXPORT y_handle y_file_open(const char *path, y_file_operation_type_t ops_type)
 {
 	y_handle h;
 	struct stdio_file *filp;
+	struct file *file = NULL;
 	
 	//TODO: 增加更复杂的类型
 	//TODO: 根据path 来确定文件类型
 	filp = (struct stdio_file *)fopen(path, "r+");
 	if (!filp)
-		h = Y_INVALID_HANDLE;
-	else
-		h = (y_handle)filp;
+		goto err;
 
+
+	file = file_get_from_detail(filp);
+	
+	/* init file operations */
+	switch(ops_type)
+	{
+		case Y_FILE_OPERATION_CACHE:
+			stream_file_init_ops(file);
+			break;
+
+		case Y_FILE_OPERATION_NOCACHE:
+			nocache_file_init_ops(file);
+			break;
+
+		default:
+			goto err;
+	}
+	
+	h = (y_handle)filp;
+	return h;
+err:
+	if(filp)
+		y_file_close(filp);
+	h = Y_INVALID_HANDLE;
 	return h;
 }
 
@@ -273,4 +296,27 @@ DLLEXPORT int y_file_event_unregister(y_handle file, y_file_event_type_t event_m
 	
 	return system_call(&req);
 }
+
+DLLEXPORT void * y_file_mmap(y_handle file, size_t len, page_prot_t prot, int flags, off_t offset)
+{
+	struct stdio_file *f = (struct stdio_file*)file;
+	struct file *filp = file_get_from_detail(f);
+	struct sysreq_file_map req;
+
+	req.base.req_id = SYS_REQ_FILE_MAP;
+	req.ops         = SYSREQ_FILE_OPS_MAP;
+	req.file        = filp->handle;
+	req.prot        = prot;
+	
+	if (system_call(&req) < 0)
+		return NULL;
+
+	return req.map_base;
+}
+
+DLLEXPORT int y_file_munmap(y_handle file, void *addr, size_t length)
+{
+	//TODO
+}
+
 

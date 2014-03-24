@@ -16,6 +16,7 @@
 
 #include <compiler.h>
 #include <types.h>
+#include <kernel/kernel.h>
 
 BEGIN_C_DECLS;
 
@@ -109,6 +110,14 @@ typedef enum{
 	Y_FILE_EVENT_WRITE = (1 << 1)
 } y_file_event_type_t;
 
+/*
+	@brief 打开文件初始化文件操作类型
+*/
+typedef enum{
+	Y_FILE_OPERATION_CACHE = 1,
+	Y_FILE_OPERATION_NOCACHE
+} y_file_operation_type_t;
+
 /**
 	@brief 打开文件
 
@@ -118,7 +127,7 @@ typedef enum{
 	@return
 		返回文件对象句柄
 */
-y_handle y_file_open(const char *path);
+y_handle y_file_open(const char *path, y_file_operation_type_t ops_type);
 
 /**
 	@brief 读取文件
@@ -197,6 +206,26 @@ int y_file_event_register(y_handle file, y_file_event_type_t event_mask, void *f
 		等于0正常，<0 则为错误码。
 */
 int y_file_event_unregister(y_handle file, y_file_event_type_t event_mask);
+
+/**
+	@brief 将文件映射在用户空间虚拟内存
+	
+	若用户要像使用内存访问一样访问一个文件,可以使用该方法将文件
+	映射入用户虚拟内存空间
+
+	@param[in] file 要映射的文件
+	@param[in] len  映射的长度
+	@param[in] prot  映射的页面权限
+	@param[in] flags The  flags argument determines whether updates to the mapping are visi-
+					ble to other processes mapping the same region, and whether updates are
+					carried through to the underlying file.
+	@param[in] offset 从文件偏移长度开始映射
+
+	@return
+		成功返回映射到用户虚拟空间的地址,失败返回NULL
+*/
+void * y_file_mmap(y_handle file, size_t len, page_prot_t prot, int flags, off_t offset);
+
 
 
 /************************************************************************/

@@ -13,6 +13,7 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <ystd.h>
 
 #include <ddk/debug.h>
 #include "stream_file.h"
@@ -127,8 +128,7 @@ DLLEXPORT FILE *fopen(const char *path, const char *type)
 		goto err;
 	}	
 	if (KE_INVALID_HANDLE == filp_open(filp, path, file->flags))
-		goto err;	
-	stream_file_init_ops(filp);
+		goto err;
 	
 	return (FILE*)file;
 	

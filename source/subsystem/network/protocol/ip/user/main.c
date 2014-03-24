@@ -9,12 +9,14 @@
 #include <string.h>
 
 #include <ddk/grid.h>
+#include <ddk/net.h>
 
 /* The Stack */
 #include "netif.h" 
 #include "etharp.h"
 #include "pbuf.h"
 #include "init.h"
+
 
 #define DEFAULT_STREAM_FILE_PATH "/os/net/stream"
 #define DEFAULT_MAX_PKG_SIZE	2048
@@ -65,7 +67,8 @@ static void stream_input(struct y_message *msg)
 	struct pbuf *pb;
 	struct stream_input_ctx *ctx;
 	size_t size = DEFAULT_MAX_PKG_SIZE;
-
+	ssize_t next_pack_offset = 0;
+	char * current_pack_head = NULL;
 	printf("Stream got input....");
 	y_message_read(msg, &ctx);
 
@@ -77,16 +80,34 @@ static void stream_input(struct y_message *msg)
 		此处可以用内存影射的方式替代read，从而
 		减少一次内存拷贝。
 	*/
-	y_file_read(ctx->stream_file, pb->payload, size);
-	y_file_seek(ctx->stream_file, 0, SEEK_SET);
-	ethernet_input(pb, &ctx->pni->netif);
+	//read_len = y_file_read(ctx->stream_file, pb->payload, size);
+	pb->payload = y_file_mmap(ctx->stream_file, 0, KM_PROT_READ | KM_PROT_WRITE, 0, 0);
+	if (!(pb->payload))
+		goto errmap;
+	
+	/* 当下一个报文头部偏移地址为0时表示无包 */
+	//while ((next_pack_offset = get_package_next_head((struct package_head *)(pb->payload))))
+	{
 
+		/* 修正下次读取的文件位置已经pb->payload的有效包头 */
+		current_pack_head = pb->payload;
+		
+		pb->payload += get_package_pos((struct package_head *)(pb->payload));
+
+		ethernet_input(pb, &ctx->pni->netif);
+		printf("next %d\n", next_pack_offset);
+		pb->payload = current_pack_head + next_pack_offset;
+	}
 	/* 流文件中还有数据吗? */
 	//TODO: 轮询流文件
 	printf("OK.");
 	
 	return;
-
+	
+errmap:
+	printf("文件映射失败\n");
+	pbuf_free(pb);
+	
 err:
 	ctx->pni->dropped++;
 }
@@ -141,7 +162,7 @@ static void *stream_input_worker(void *parameter)
 	/* Setup stream */
 	ctx.pni = pni;	
 	setup_stream_file(&ctx);	
-	if (Y_INVALID_HANDLE == (ctx.stream_file = y_file_open(ctx.stream_file_name)))
+	if (Y_INVALID_HANDLE == (ctx.stream_file = y_file_open(ctx.stream_file_name, Y_FILE_OPERATION_NOCACHE)))
 	{
 		printf("打开网络流文件 %s 失败.\n", ctx.stream_file_name);
 		goto err0;

@@ -136,7 +136,7 @@ int InfoNES_ReadRom( const char *pszFileName )
 	FILE *fp;
 
 	/* Open ROM file */
-	fp = fopen( pszFileName, "r" );
+	fp = fopen( pszFileName, "r");
 	if ( fp == NULL )
 		return -1;
 

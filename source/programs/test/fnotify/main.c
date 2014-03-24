@@ -43,7 +43,7 @@ int main()
 	y_handle file;
 	pthread_t read_thread;
 
-	if (Y_INVALID_HANDLE == (file = y_file_open(TEST_FILE)))
+	if (Y_INVALID_HANDLE == (file = y_file_open(TEST_FILE, Y_FILE_OPERATION_CACHE)))
 		goto err0;
 
 	if (y_file_event_register(file, EVENT_MASK, read_event, TEST_FILE) < 0)

@@ -16,6 +16,7 @@
 
 #include <types.h>
 #include <stdarg.h>
+#include <ystd.h>
 
 BEGIN_C_DECLS;
 
