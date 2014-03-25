@@ -9,6 +9,7 @@
 #include <Windows.h>
 #endif
 
+#include <kernel/kernel.h>
 #include "syscall.h"
 
 /************************************************************************/

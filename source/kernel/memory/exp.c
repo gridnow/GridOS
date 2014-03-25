@@ -236,8 +236,8 @@ static bool refill_file(struct ko_thread *current, struct ko_section *where, uns
 	{
 		if (!(where->prot & KM_PROT_WRITE))
 			goto end;
-		TODO("COW");
-		goto end;
+		//TODO("COW");
+		//goto end;
 	}
 
 	r = restore_file(KT_GET_KP(current), where, address);

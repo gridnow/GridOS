@@ -254,10 +254,12 @@ static ssize_t req_read(struct sysreq_file_io *req)
 	struct fss_file *file = NULL;
 	unsigned long block = req->pos / FSS_CACHE_DB_SIZE;
 	void *buf = req->buffer;
-
+#if 0
 	/* The user buffer can be written? */
 	if (req->size != FSS_CACHE_DB_SIZE)
 		goto end;
+#endif
+
 	if (check_user_buffer(buf, req->size, 1) == false)
 		goto end;
 	file = ke_handle_translate(req->file);
@@ -282,10 +284,12 @@ static ssize_t req_write(struct sysreq_file_io *req)
 	struct fss_file *file = NULL;
 	unsigned long block = req->pos / FSS_CACHE_DB_SIZE;
 	void *buf = req->buffer;
-
+#if 0
 	/* The user buffer can be read? */
 	if (req->size != FSS_CACHE_DB_SIZE)
 		goto end;
+#endif
+
 	if (check_user_buffer(buf, req->size, 0) == false)
 		goto end;
 	file = ke_handle_translate(req->file);
