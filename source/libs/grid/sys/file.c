@@ -229,7 +229,7 @@ DLLEXPORT y_handle y_file_open(const char *path, y_file_operation_type_t ops_typ
 	return h;
 err:
 	if(filp)
-		y_file_close(filp);
+		y_file_close((y_handle)filp);
 	h = Y_INVALID_HANDLE;
 	return h;
 }
