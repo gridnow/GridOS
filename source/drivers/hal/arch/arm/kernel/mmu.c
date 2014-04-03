@@ -11,6 +11,7 @@
 #include <string.h>
 #include <ddk/compatible.h>
 #include <ddk/debug.h>
+#include <kernel/ke_memory.h>
 
 #include <asm/cputype.h>
 #include <asm/cp15.h>
@@ -454,17 +455,6 @@ int h2c(char *p,unsigned long hex)
 	return j;
 }
 
-static void __init alloc_init_pte(pgd_t *pgd, unsigned long addr,
-								  unsigned long end, unsigned long pfn,
-								  const struct mem_type *type)
-{
-//	pte_t *pte = early_pte_alloc(pmd, addr, type->prot_l1);
-//	do {
-//		set_pte_ext(pte, pfn_pte(pfn, __pgprot(type->prot_pte)), 0);
-//		pfn++;
-//	} while (pte++, addr += PAGE_SIZE, addr != end);
-}
-
 static void __init alloc_init_section(pgd_t *pgd, unsigned long addr,
 									  unsigned long end, phys_addr_t phys,
 									  const struct mem_type *type)
@@ -523,8 +513,13 @@ static void __init create_mapping(struct map_desc *md)
  */
 int __init arm_bsp_create_map(struct map_desc *desc, int nr)
 {
-	TODO("");
-	return -1;
+	void *vaddress;
+
+	vaddress = km_map_physical_arch(desc->pfn, desc->virtual, desc->length, desc->type);
+	if (!vaddress || (unsigned long)vaddress != desc->virtual)
+		return -1;
+	
+	return 0;
 }
 
 /* Goto paging mode */

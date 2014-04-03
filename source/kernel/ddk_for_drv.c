@@ -207,7 +207,7 @@ static void *input_register_handle(void *drv_input_handle)
 }
 
 struct ddk_for_linux ddk = {
-	.printk					= printk,//ddk_printk,
+	.printk					= ddk_printk,
 	.allocate_physical_bulk = allocate_physical_bulk,
 	
 	.setup_irq_handler		= setup_irq_handler,

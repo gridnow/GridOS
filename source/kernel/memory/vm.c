@@ -283,6 +283,24 @@ err:
 	return NULL;
 }
 
+void *km_map_physical_arch(unsigned long pfn, unsigned long vaddress, unsigned long size, unsigned long arch_flags)
+{
+	/* arch spccial is set by us */
+	if (arch_flags & KM_MAP_ARCH_SPECIAL)
+		return NULL;
+
+	/* TODO: Check the vaddress's valid range, should be located in consulted area */
+	TODO("Vritual Address should be checked to see if in valid range");
+	
+	/* Map it */
+	if (km_page_map_range(&kp_get_system()->mem_ctx, 
+							vaddress, size, 
+							pfn, 
+							arch_flags | KM_MAP_ARCH_SPECIAL) == false)
+		return NULL;
+	return (void*)vaddress;
+}
+
 void *km_alloc_virtual(unsigned long size, page_prot_t prot, void **__out kernel_space_object)
 {
 	struct ko_section *ks;

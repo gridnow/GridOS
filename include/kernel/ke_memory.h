@@ -23,6 +23,13 @@ DLLEXPORT void *km_map_physical(unsigned long physical, unsigned long size, unsi
 #define KM_MAP_PHYSICAL_FLAG_NORMAL_CACHE	(1 << 1)				/* 物理地址映射时，使用常规的cache模式（而不是非缓存）*/
 
 /**
+	@brief Map IO memory space
+
+	一些平台可能有特殊的影射，此种影射通过arch_flags来给定
+*/
+void *km_map_physical_arch(unsigned long pfn, unsigned long vaddress, unsigned long size, unsigned long arch_flags);
+
+/**
 	@brief 分配内核态全局常规内存空间段
 */
 DLLEXPORT void *km_alloc_virtual(unsigned long size, page_prot_t prot, void **__out kernel_space_object);

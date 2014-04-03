@@ -19,6 +19,7 @@
 #include <asm/tlbflush.h>
 #include <asm/domain.h>
 #include <asm/cacheflush.h>
+#include <asm/mmu.h>
 #include <const.h>
 
 /**
@@ -98,22 +99,33 @@ static inline void set_pte_at(pte_t *ptep, pte_t pteval, unsigned long addr)
 #define write_pte(PTE, WHAT) set_pte_at(p, what, 0);
 
 static inline unsigned long km_arch_get_flags(page_prot_t prot)
-{
-	unsigned long arch_flags = PAGE_FLAG_USER;
-	if (!prot) return 0;
-#if 0
+{	
+	const struct mem_type *type;
+	unsigned long arch_flags = 0;
+	
+	if (!prot) 
+		goto end;
+	
 	if (prot & KM_MAP_DEVICE)
 	{
-		arch_flags |= PAGE_FLAG_VALID|PAGE_FLAG_RW|PAGE_FLAG_PCD|PAGE_FLAG_PWT;
+		type = get_mem_type(MT_DEVICE);
+		arch_flags = type->prot_pte;
+	}
+	else if (prot & KM_MAP_ARCH_SPECIAL)
+	{		
+		type = get_mem_type(prot & 0xffff);
+		arch_flags = type->prot_pte;
 	}
 	
 	/*Or the normal*/
 	else
-	{
-		if (prot & KM_PROT_READ)			arch_flags |= PAGE_FLAG_VALID;
-		if (prot & KM_PROT_WRITE)			arch_flags |= PAGE_FLAG_RW | PAGE_FLAG_VALID;
+	{		
+		if (prot & KM_PROT_READ)		
+			arch_flags |= PAGE_FLAG_VALID | L_PTE_RDONLY;
+		if (prot & KM_PROT_WRITE)
+			arch_flags |= PAGE_FLAG_VALID;
 	}
-#endif
+end:
 	return arch_flags;
 }
 

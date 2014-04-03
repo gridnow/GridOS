@@ -12,8 +12,6 @@
 #include <walk.h>
 #include <memory.h>
 
-#include <asm/mmu.h>
-
 /**
 	@brief Arch ctx init
  */
