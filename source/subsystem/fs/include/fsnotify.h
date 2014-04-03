@@ -38,21 +38,23 @@ struct y_file_notify_msg
 	void *call_para;
 };
 
-/*
+/**
 	@ brief 文件通告函数,供文件发生改变调用
+	@return 
+		void 
 */
 
 void fnotify_msg_send(struct fss_file *file, y_file_event_type_t even_mask);
 
 
-/*
+/**
 	@brief 提供用户注册文件通告事件
 	@return
 		成功 = 0, < 0 返回错误码
 */
 int  fnotify_event_register(struct fss_file *file, y_file_event_type_t cmd, void *func, void *para);
 
-/*
+/**
 	@brief 取消监听文件事件类型
 	@return
 		成功 = 0, < 0 返回错误码
