@@ -51,15 +51,15 @@ void __init __noreturn hal_main()
 	/* 开辟鸿蒙,谁为情种？最初的一切*/
 	km_cluster_init();
 	build_ram_list();
-
+	
 	/* Go back to ARCH, we have inited the basic paging allocator */
 	hal_arch_init(HAL_ARCH_INIT_PHASE_EARLY);
-
+	
 	/* KERNEL */
 	kc_init();
 	kp_init();
 	ks_init();
-
+	
 	hal_malloc_init();
 	hal_dpc_init();
 	hal_time_init();

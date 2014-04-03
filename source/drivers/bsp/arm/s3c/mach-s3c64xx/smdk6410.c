@@ -49,7 +49,7 @@ MACHINE_START(SMDK6410, "SMDK6410")
 
 	.init_irq		= 0,
 	.handle_irq		= 0,
-	.map_io			= 0,
+	.map_io			= smdk6410_map_io,
 	.init_machine	= 0,
 	.init_late		= 0,
 	.timer			= 0,

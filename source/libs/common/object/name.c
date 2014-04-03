@@ -85,3 +85,13 @@ real_object_t cl_object_search_name(struct cl_object_type *type, xstring name)
 	}
 	return NULL;
 }
+
+xstring cl_object_get_name(real_object_t who)
+{
+	struct cl_object *object;
+	
+	object = TO_CL_OBJECT(who);
+
+	return object->name;
+}
+

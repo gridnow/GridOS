@@ -259,10 +259,14 @@ void __init ks_init()
 	/* Trim the memory mapping, i386 is full mapping */
 	km_arch_trim(); 
 	ks_exception_init();
+#ifdef __arm__
+	printk("ks_init currently not supported arm for virtual memory access.\n");
+#else
 	km_valloc_init();
 	
 	/* Message system need virtual memory */
 	ktm_init();
+#endif
 }
 
 //------------test-----------------

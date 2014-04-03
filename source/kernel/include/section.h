@@ -15,7 +15,6 @@ struct ko_thread;
 struct ko_exe;
 
 #define KS_TYPE_PRIVATE 1
-#define KS_TYPE_MAP		2
 #define KS_TYPE_DEVICE	3
 #define KS_TYPE_EXE		4
 #define KS_TYPE_STACK	5
@@ -112,5 +111,8 @@ struct ko_section *ks_get_by_vaddress(struct ko_process *where, unsigned long ad
 bool ks_restore_share(struct ko_process *dst_process, struct ko_section *dst_section,
 					  struct ko_process *src_process, struct ko_section *src_section,
 					  unsigned long to, unsigned long src, page_prot_t prot_overwrite);
+
+// debug.c
+void ks_show_by_process(struct ko_process *who);
 
 #endif

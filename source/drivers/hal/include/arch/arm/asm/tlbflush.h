@@ -10,19 +10,13 @@
 #ifndef _ASMARM_TLBFLUSH_H
 #define _ASMARM_TLBFLUSH_H
 
-#ifdef CONFIG_MMU
-#ifndef __ASSEMBLER__
-/* For flush compatible */
-struct mm_struct
-{
-	unsigned int asid;
-};
-struct vm_area_struct
-{
-	struct mm_struct *vm_mm;
-};
-
+#ifndef __ASSEMBLY__
+#include <cpumask.h>
+#include <smp.h>
+#include <asm/barrier.h>
 #endif
+
+#ifdef CONFIG_MMU
 
 #ifdef CONFIG_CPU_HAS_ASID
 #define ASID_BITS	8

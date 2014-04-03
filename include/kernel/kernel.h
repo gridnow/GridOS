@@ -10,10 +10,11 @@
 #define KE_H
 
 typedef unsigned int page_prot_t;
-#define KM_PROT_READ	(1 << 0)
-#define KM_PROT_WRITE	(1 << 1)
-#define KM_MAP_DEVICE	(1 << 16)
-#define KM_MAP_ANON		(1 << 17)
+#define KM_PROT_READ			(1 << 0)
+#define KM_PROT_WRITE			(1 << 1)
+#define KM_MAP_DEVICE			(1 << 16)
+#define KM_MAP_ANON				(1 << 17)
+#define KM_MAP_ARCH_SPECIAL		(1 << 31/*Arch special map */)
 
 #define Y_SYNC_MAX_OBJS_COUNT 64
 #define KE_SYNC_WAIT_INFINITE (-1UL)

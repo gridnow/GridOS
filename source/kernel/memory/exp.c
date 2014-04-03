@@ -66,6 +66,7 @@ static struct ko_section *ks_get_by_vaddress_unlock(struct ko_process *where, un
 
 static bool restore_file(struct ko_process *who, struct ko_section *where, unsigned long address)
 {
+	int r;
 	void *db_addr;
 	uoffset pos;
 	bool ret = false;
@@ -79,8 +80,10 @@ static bool restore_file(struct ko_process *who, struct ko_section *where, unsig
 	mem_dst = kp_get_mem(who);
 	mem_src = kp_get_mem(kp_get_system());
 
-	if (km_page_share(mem_dst, address, mem_src, (unsigned long)db_addr, KM_PROT_READ) != KM_PAGE_SHARE_RESULT_OK)
+	if (KM_PAGE_SHARE_RESULT_OK != (r = km_page_share(mem_dst, address, mem_src, (unsigned long)db_addr, where->prot)))
+	{
 		goto end1;
+	}
 
 	ret = true;
 
@@ -283,7 +286,9 @@ bool ks_exception(struct ko_thread *thread, unsigned long error_address, unsigne
 		ret = exception_handler[ks->type & KS_TYPE_MASK](thread, ks, error_address, code);
 	else
 		ret = false;
-	
+
+	if (ret == false)
+		ks_show_by_process(where);
 	return ret;
 }
 

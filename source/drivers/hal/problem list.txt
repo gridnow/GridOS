@@ -13,3 +13,4 @@
 3,commonlibs:
 	
 	其中的crc32.c中要CONFIG_CRC32_SLICEBY8 和CONFIG_64BIT的定义，强制包含了hal_config.h，并定义在里头。但是gen_crc32table.c 应该自己运行来生成crc32table.h。结果是在__cacheline_aligned上遇到了问题，这个宏只在hal中有，hal以外还不能直接使用。
+	(已经删掉该文件）

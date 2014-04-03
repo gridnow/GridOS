@@ -20,6 +20,7 @@
  * "Logical" Flags
  */
 #define L_PTE_PRESENT		(_AT(pteval_t, 1) << 0)
+#define L_PTE_VALID		(_AT(pteval_t, 1) << 0)		/* Valid */
 #define L_PTE_YOUNG		(_AT(pteval_t, 1) << 1)
 #define L_PTE_DIRTY		(_AT(pteval_t, 1) << 6)
 #define L_PTE_RDONLY		(_AT(pteval_t, 1) << 7)

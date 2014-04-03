@@ -139,7 +139,7 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 	{
 		case KP_CPL0:
 			if (start)
-				*start = HAL_GET_BASIC_KADDRESS(0) + CONFIG_HAL_KERNEL_MEM_LEN;
+				*start = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET) + CONFIG_HAL_KERNEL_MEM_LEN;
 			if (size)
 				*size = CONFIG_HAL_KERNEL_VM_LEN - PAGE_SIZE;
 			break;
@@ -153,12 +153,12 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 			if (size)
 			{
 #if defined(__i386__) || defined (__arm__)
-				*size = HAL_GET_BASIC_KADDRESS(0) - user_start;
+				*size = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET) - user_start;
 				/* For big kernel sharing creation */
 				if (is_type_kernel)
 				{
 					*desired_size = *size;
-					*desired_start = HAL_GET_BASIC_KADDRESS(0);
+					*desired_start = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET);
 					*start = *desired_start;
 				}
 #elif defined(__mips64__)
@@ -166,7 +166,7 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 				if (is_type_kernel)
 				{
 					*desired_size = *size;
-					*desired_start = HAL_GET_BASIC_KADDRESS(0);
+					*desired_start = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET);
 					*start = *desired_start;
 				}
 #else
@@ -281,6 +281,24 @@ err1:
 	ks_close(kp_get_system(), ks);
 err:
 	return NULL;
+}
+
+void *km_map_physical_arch(unsigned long pfn, unsigned long vaddress, unsigned long size, unsigned long arch_flags)
+{
+	/* arch spccial is set by us */
+	if (arch_flags & KM_MAP_ARCH_SPECIAL)
+		return NULL;
+
+	/* TODO: Check the vaddress's valid range, should be located in consulted area */
+	TODO("Vritual Address should be checked to see if in valid range");
+	
+	/* Map it */
+	if (km_page_map_range(&kp_get_system()->mem_ctx, 
+							vaddress, size, 
+							pfn, 
+							arch_flags | KM_MAP_ARCH_SPECIAL) == false)
+		return NULL;
+	return (void*)vaddress;
 }
 
 void *km_alloc_virtual(unsigned long size, page_prot_t prot, void **__out kernel_space_object)
