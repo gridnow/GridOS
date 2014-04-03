@@ -1,4 +1,9 @@
-//#include <compiler.h>
+/**
+	PAGE support for x86
+ 
+	wuxin
+	82828068@qq.com
+*/
 
 #include <process.h>
 #include <thread.h>
@@ -14,7 +19,7 @@ extern void *hal_x86_get_init_pgtable();
 
 static bool address_in_user(unsigned long address)
 {
-	if (address < HAL_GET_BASIC_KADDRESS(0))
+	if (address < HAL_GET_BASIC_KADDRESS(PHYS_OFFSET))
 		return true;
 	return false;
 }
@@ -78,12 +83,12 @@ __init void km_arch_trim()
 		1,µÍ¶Ë¡£
 		2,¸ß¶Ë
 	*/
-	for(i = 0; i < HAL_GET_BASIC_KADDRESS(0) / 0x400000; i++)
+	for(i = 0; i < HAL_GET_BASIC_KADDRESS(PHYS_OFFSET) / 0x400000; i++)
 		p[i] = 0;																//Mask as invalid;
-	for(i = (HAL_GET_BASIC_KADDRESS(0) + CONFIG_HAL_KERNEL_MEM_LEN) / 0x400000; i < 1024; i++)
+	for(i = (HAL_GET_BASIC_KADDRESS(PHYS_OFFSET) + CONFIG_HAL_KERNEL_MEM_LEN) / 0x400000; i < 1024; i++)
 		p[i] = 0;																//Mask as invalid;
 	
-	write_cr3((unsigned long)hal_x86_get_init_pgtable() - HAL_GET_BASIC_KADDRESS(0));
+	write_cr3((unsigned long)hal_x86_get_init_pgtable() - HAL_GET_BASIC_KADDRESS(PHYS_OFFSET));
 
 	/*
 	 load tr
@@ -115,7 +120,7 @@ void km_arch_init_for_kernel(struct km *mem)
 void km_arch_ctx_init(struct km * mm_ctx)
 {
 	/* Share the core's address space */
-	int base = HAL_GET_BASIC_KADDRESS(0) / 0x400000;
+	int base = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET) / 0x400000;
 	int end  = ARCH_KM_LV2_COUNT;
 
 	copy_kernel_to_user(mm_ctx, base, end);

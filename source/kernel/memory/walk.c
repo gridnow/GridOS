@@ -78,6 +78,9 @@ void *km_walk_alloc_table(struct km_walk_ctx *ctx)
 	if (!p) goto end;
 	memset(p, 0, PAGE_SIZE);
 	
+	/* The arch may also want to clean it */
+	arch_clean_pte_table(p);
+	
 end:
 	return p;
 }

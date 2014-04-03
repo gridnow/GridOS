@@ -22,6 +22,7 @@ AR				= $(GCC_PREFIX)ar
 LD				= $(GCC_PREFIX)ld
 RES				= fares
 CP				= cp
+RM				= rm
 OBJCOPY			= $(GCC_PREFIX)objcopy
 
 CFLAGS_arm         = -c -O2 -march=armv6k

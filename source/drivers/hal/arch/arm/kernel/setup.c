@@ -370,6 +370,8 @@ static void __init devicemaps_init(struct machine_desc *mdesc)
 void __init __noreturn __arm_main0(char **cmdline)
 {
 	early_paging_init();
+	
+	/* Will not reach here */
 	while(1);
 }
 
@@ -377,12 +379,7 @@ void __init __noreturn __arm_main1()
 {	
 	/* Make sure printk can be used*/
 	mmu_map_debug_device();
-	
-	setup_processor();
-	
-	/* Init the page-related low level information */
-	paging_init();
-	
+
 	/* OK, let's go through the HAL phase */
 	hal_main();
 }
@@ -395,19 +392,30 @@ void hal_arch_init(int step)
 	switch (step)
 	{
 		case HAL_ARCH_INIT_PHASE_EARLY:
-			{
-				/*
-					Init machine.
-					Default to s3c6410, TODO: should get by machine id.
-				*/
-				extern struct machine_desc *get_s3c6410_machine_desc();
-				struct machine_desc *machine = get_s3c6410_machine_desc();
-				devicemaps_init(machine);
-			}
+		{
+			printk("In HAL_ARCH_INIT_PHASE_EARLY phase of ARM...\n");
+				
+			setup_processor();
+			/* Init the page-related low level information */
+			paging_init();
+		
 			break;
+		}
 		case HAL_ARCH_INIT_PHASE_MIDDLE:
-			printk("\n%s->%s->%d.",__FILE__,__FUNCTION__,__LINE__);
+		{
+			/*
+				Init machine after kernel is ready,
+				Default to s3c6410, TODO: should get by machine id.
+			 */
+			extern struct machine_desc *get_s3c6410_machine_desc();
+			struct machine_desc *machine;
+			
+			printk("In HAL_ARCH_INIT_PHASE_MIDDLE phase of ARM...\n");
+			machine = get_s3c6410_machine_desc();
+			devicemaps_init(machine);
+		
 			break;
+		}
 		case HAL_ARCH_INIT_PHASE_LATE:
 			break;
 	}
@@ -420,5 +428,6 @@ const xstring hal_arch_get_name()
 
 void hal_arch_setup_percpu(int cpu, unsigned long base)
 {
-	TODO("");
+	/* We do not have special register to set cpu base, just put to stack top */	
+	arch_stack_thread_info()->cpu = (void*)base;
 }

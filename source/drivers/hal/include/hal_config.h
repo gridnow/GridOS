@@ -35,6 +35,7 @@
 #define CONFIG_CPU_HAS_ASID					1
 #define CONFIG_CPU_TLB_V6					1
 #define CONFIG_CPU_V6						1
+#define CONFIG_CPU_32v6K					1								/* spinlock need it*/
 #define	CONFIG_MMU							1
 #define PHYS_OFFSET							0x50000000						//不同的平台不一样，此处要挪走
 #define PAGE_OFFSET							CONFIG_HAL_KERNEL_BASE
@@ -68,7 +69,7 @@
 
 /* Config of common */
 #define CONFIG_SMP							1
-#define NR_CPUS								256
+#define NR_CPUS								32
 #define NR_IRQS								128								//IRQ/IRQDESC.c需要一个全局数组描述系统中最多的中断描述符
 #define CONFIG_NR_CPUS						NR_CPUS
 #define PAGE_SIZE							(1UL << PAGE_SHIFT)
@@ -78,9 +79,6 @@
 #define CONFIG_CLKEVT_I8253					1								/* 8253 可以作为时钟事件 */
 //#define CONFIG_CLKSRC_I8253					1								/* 8253 可以作为时钟源 */
 #define CONFIG_GENERIC_HARDIRQS             1
-
-/* Config for common lib, should be splited */
-#define CONFIG_CRC32_SLICEBY8				1								//crc32.c 中要用
 
 /* Basic HAL memory conversion */
 #ifndef PHYS_OFFSET															/* No physical offset means physical address starting from 0 */

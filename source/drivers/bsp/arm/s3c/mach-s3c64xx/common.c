@@ -11,6 +11,7 @@
 
 #include <ddk/compiler.h>
 #include <ddk/types.h>
+#include <ddk/compatible.h>
 
 #include <mach/arch.h>
 #include <mach/map.h>

@@ -139,7 +139,7 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 	{
 		case KP_CPL0:
 			if (start)
-				*start = HAL_GET_BASIC_KADDRESS(0) + CONFIG_HAL_KERNEL_MEM_LEN;
+				*start = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET) + CONFIG_HAL_KERNEL_MEM_LEN;
 			if (size)
 				*size = CONFIG_HAL_KERNEL_VM_LEN - PAGE_SIZE;
 			break;
@@ -153,12 +153,12 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 			if (size)
 			{
 #if defined(__i386__) || defined (__arm__)
-				*size = HAL_GET_BASIC_KADDRESS(0) - user_start;
+				*size = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET) - user_start;
 				/* For big kernel sharing creation */
 				if (is_type_kernel)
 				{
 					*desired_size = *size;
-					*desired_start = HAL_GET_BASIC_KADDRESS(0);
+					*desired_start = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET);
 					*start = *desired_start;
 				}
 #elif defined(__mips64__)
@@ -166,7 +166,7 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 				if (is_type_kernel)
 				{
 					*desired_size = *size;
-					*desired_start = HAL_GET_BASIC_KADDRESS(0);
+					*desired_start = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET);
 					*start = *desired_start;
 				}
 #else

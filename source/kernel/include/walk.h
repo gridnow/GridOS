@@ -102,8 +102,22 @@ static inline unsigned long km_get_vid(unsigned long level, unsigned long va)
 
 #endif
 
+/*
+	Normal write is enough for x86
+*/
 #ifndef ARCH_HAS_PTE_T
 typedef unsigned long pte_t;
+#define write_pte(PTE, WHAT) *(PTE) = (WHAT)
+#endif
+
+static inline void km_pte_write_force(struct km_walk_ctx * ctx, pte_t what)
+{
+	void *entry  = &(ctx->table_base[1][ctx->hirarch_id[1]]);
+	pte_t *p = entry;
+	
+	write_pte(p, what);
+}
+
 static inline void km_pte_write(struct km_walk_ctx * ctx, pte_t what)
 {
 	void *entry  = &(ctx->table_base[1][ctx->hirarch_id[1]]);
@@ -121,18 +135,9 @@ static inline void km_pte_write(struct km_walk_ctx * ctx, pte_t what)
 		printk("ERROR:PTE entry is not empty.\n");
 		return;
 	}
-	*p = what;
-}
 
-static inline void km_pte_write_force(struct km_walk_ctx * ctx, pte_t what)
-{
-	void *entry  = &(ctx->table_base[1][ctx->hirarch_id[1]]);
-	pte_t *p = entry;
-	
-	*p = what;
+	km_pte_write_force(ctx, what);
 }
-
-#endif
 
 /**
 	@brief Adjust to next pte entry
@@ -212,6 +217,18 @@ static inline unsigned long km_walk_jump(struct km_walk_ctx *ctx)
 
 	return ctx->current_virtual_address - old;
 }
+
+/************************************************************************/
+/* Hook for arch for table maintenance                                  */
+/************************************************************************/
+/**
+	@brief Clean the PTE table for a new allocation
+ 
+	This is used when TLB and Dcache is working in split mode(such as ARM)
+*/
+#ifndef arch_clean_pte_table
+#define arch_clean_pte_table(PTE_TABLE) do { } while(0)
+#endif
 
 /************************************************************************/
 /*                                                                      */

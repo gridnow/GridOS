@@ -49,7 +49,7 @@ static bool object_init(real_object_t *obj)
 	
 	/* 
 		Although init_process will call it, but it dose not matter for a page disappeared
-		created in walk as root table.
+		created in walk as root table, and we will reset it for init_process...
 	 */
 	km_walk_init(&p->mem_ctx);
 	km_arch_ctx_init(&p->mem_ctx);
@@ -147,9 +147,9 @@ bool kp_init()
 {	
 	cl_object_type_register(&process_type);
 	
-	/* Core process */
 	init_process = kp_create(KP_CPL0, "操作系统核心进程");
-	if (!init_process) 
+	/* Core process */
+	if (!init_process)
 		goto err;
 	km_walk_init_for_kernel(&init_process->mem_ctx);
 

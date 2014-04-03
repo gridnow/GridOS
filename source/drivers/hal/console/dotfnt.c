@@ -86,7 +86,7 @@ unsigned int draw_gbk_chinese(unsigned short gbk_code, int org_x, int org_y, uns
 /* Draw the ASCII code ,return the drew pixel count */
 unsigned int draw_eng_char(unsigned char c, int org_x, int org_y, unsigned int color)
 {
-	unsigned short *linear_dot, dr1, dr2, dr3;
+	unsigned short *linear_dot, dr1;
 	unsigned char *pt;
 	int k, x, y;
 
@@ -98,7 +98,7 @@ unsigned int draw_eng_char(unsigned char c, int org_x, int org_y, unsigned int c
 	*/
 																				//get the char's offset	
 																				//c is ascii,-33 is the first index,+..is the table address
-	pt = (c - 33) * 32 + (char*)eng_boot_font_address;									//get the char's dot address in the table;
+	pt = (unsigned char*)((c - 33) * 32 + (char*)eng_boot_font_address);		//get the char's dot address in the table;
 	linear_dot = (unsigned short*)pt;			
 
 	/*
@@ -126,7 +126,11 @@ unsigned int draw_eng_char(unsigned char c, int org_x, int org_y, unsigned int c
 /**
 	@brief Get the char width
 */
-int get_eng_char_width(unsigned char ascii){	return get_chs_char_width(0) / 2;#if 0 /* 用等宽字体了 */	unsigned short *linear_dot, dr1, dr2, dr3;
+int get_eng_char_width(unsigned char ascii)
+{
+	return get_chs_char_width(0) / 2;
+#if 0 /* 用等宽字体了 */
+	unsigned short *linear_dot, dr1, dr2, dr3;
 	unsigned char *pt;
 	int k, x, y;
 
@@ -156,9 +160,15 @@ int get_eng_char_width(unsigned char ascii){	return get_chs_char_width(0) / 2;
 		k++;
 	}		
 	return x;
-#endif}
+#endif
+}
+
 /**
 	@brief Get the char width
 */
-int get_chs_char_width(unsigned int gbk_code){	return 14;}
+int get_chs_char_width(unsigned int gbk_code)
+{
+	return 14;
+}
+
 

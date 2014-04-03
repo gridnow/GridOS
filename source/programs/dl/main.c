@@ -646,7 +646,7 @@ static int dl_build_image_context(xstring first_name)
 /**
 	@brief get a symbol
 */
-bool __weak ki_get_symbol(struct elf_context * elf, const char *name, unsigned long * address, bool search_other)
+bool ki_get_symbol(struct elf_context * elf, const char *name, unsigned long * address, bool search_other)
 {
 	bool ret = false;
 	struct image *what = container_of(elf, struct image, exe_desc);

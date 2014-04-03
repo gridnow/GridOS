@@ -13,6 +13,7 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <ystd.h>
 
 #include <ddk/debug.h>
 #include "stream_file.h"
