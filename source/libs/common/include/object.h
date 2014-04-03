@@ -100,4 +100,11 @@ xstring cl_object_set_name(real_object_t who, xstring what);
 */
 real_object_t cl_object_search_name(struct cl_object_type *type, xstring name);
 
+/**
+	@brief 获取对象名称
+
+	对象名称是存放在对象中，用户一般不要保存到其他地方，指针也不要间接引用。
+*/
+xstring cl_object_get_name(real_object_t who);
+
 #endif

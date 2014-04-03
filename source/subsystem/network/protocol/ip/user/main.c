@@ -28,7 +28,7 @@ struct net_interface
 
 	/* About netif */
 	struct netif netif;
-
+	
 	/* Counter */
 	unsigned long dropped;
 };
@@ -38,6 +38,10 @@ struct stream_input_ctx
 {
 	struct net_interface *pni;	
 	y_handle stream_file;	
+	
+	/* Buffer */
+	void *stream_map;
+	
 	char stream_file_name[128];
 };
 
@@ -55,11 +59,41 @@ static struct grid_netproto ip_netproto = {
 	.connect = do_connect,
 };
 
-static void setup_stream_file(struct stream_input_ctx *ctx)
+static bool setup_stream_file(struct stream_input_ctx *ctx)
 {
 	// TODO: Tell system our pid 
 	sprintf(ctx->stream_file_name, "%s/%d", 
 		DEFAULT_STREAM_FILE_PATH, 0/*TODO:get pid*/);
+	
+	if (Y_INVALID_HANDLE == (ctx->stream_file = y_file_open(ctx->stream_file_name, Y_FILE_OPERATION_NOCACHE)))
+	{
+		printf("打开网络流文件 %s 失败.\n", ctx->stream_file_name);
+		goto err0;
+	}
+
+	if (NULL == (ctx->stream_map = y_file_mmap(ctx->stream_file, 0, KM_PROT_READ | KM_PROT_WRITE, 0, 0)))
+	{
+		printf("影射网络文件失败。\n");
+		goto err1;
+	}
+
+	return true;
+
+err1:
+	y_file_close(ctx->stream_file);
+err0:
+	return false;
+}
+
+static void close_stream_file(struct stream_input_ctx *ctx)
+{
+	if (ctx->stream_map)
+	{
+		TODO("反隐射ctx->stream_map");
+		ctx->stream_map = NULL;
+	}
+	y_file_close(ctx->stream_file);
+	ctx->stream_file = Y_INVALID_HANDLE;
 }
 
 static void stream_input(struct y_message *msg)
@@ -81,7 +115,7 @@ static void stream_input(struct y_message *msg)
 		减少一次内存拷贝。
 	*/
 	//read_len = y_file_read(ctx->stream_file, pb->payload, size);
-	pb->payload = y_file_mmap(ctx->stream_file, 0, KM_PROT_READ | KM_PROT_WRITE, 0, 0);
+	pb->payload = ctx->stream_map;
 	if (!(pb->payload))
 		goto errmap;
 	
@@ -161,20 +195,15 @@ static void *stream_input_worker(void *parameter)
 	
 	/* Setup stream */
 	ctx.pni = pni;	
-	setup_stream_file(&ctx);	
-	if (Y_INVALID_HANDLE == (ctx.stream_file = y_file_open(ctx.stream_file_name, Y_FILE_OPERATION_NOCACHE)))
-	{
-		printf("打开网络流文件 %s 失败.\n", ctx.stream_file_name);
+	if (false == setup_stream_file(&ctx))
 		goto err0;
-	}
 	if (y_file_event_register(ctx.stream_file, Y_FILE_EVENT_WRITE, stream_input, &ctx) < 0)
 		goto err1;
 
 	/* Wait stream */
 	y_message_loop();
-
 err1:
-	y_file_close(ctx.stream_file);
+	close_stream_file(&ctx);
 err0:		
 	return NULL;
 }

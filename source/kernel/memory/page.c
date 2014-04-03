@@ -150,7 +150,9 @@ int km_page_share(struct km *dst, unsigned long dst_addr, struct km *src, unsign
 
 		/* Read src one by one */
 		if (unlikely(km_pte_read_and_next(&src_ctx, &pte) == false))
+		{
 			goto end;
+		}
 
 		/* Not a valid pte */
 		if (KE_PAGE_INVALID_PTE(pte))
@@ -163,7 +165,9 @@ int km_page_share(struct km *dst, unsigned long dst_addr, struct km *src, unsign
 		pte &= ~PAGE_FLAG_MASK;
 		pte |= km_arch_get_flags(prot) | PAGE_FLAG_FROM_OTHER;
 		if (unlikely(km_pte_write_and_next(&dst_ctx, pte) == false))
+		{
 			goto end;
+		}
  	}
  	r = KM_PAGE_SHARE_RESULT_OK;
 	
