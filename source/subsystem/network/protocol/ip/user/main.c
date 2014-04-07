@@ -119,7 +119,7 @@ static void stream_input(struct y_message *msg)
 	/* 获取可读报文 */
 	while (ring_pkt = ring_cache_read_package(cache))
 	{
-		if (NULL == (pb = pbuf_alloc(PBUF_REF, size, PBUF_RAM)))
+		if (NULL == (pb = pbuf_alloc(PBUF_RAW, size, PBUF_REF)))
 			goto err;
 
 		pb->payload = (void *)cache + ring_pkt->package_offset;
