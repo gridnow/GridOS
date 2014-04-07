@@ -11,6 +11,7 @@
 #include <ddk/grid.h>
 #include <ddk/net.h>
 
+#include <ring_buff.h>
 /* The Stack */
 #include "netif.h" 
 #include "etharp.h"
@@ -98,51 +99,40 @@ static void close_stream_file(struct stream_input_ctx *ctx)
 
 static void stream_input(struct y_message *msg)
 {
+	struct ring_package *ring_pkt;
+	struct ring_buff_cache *cache;
 	struct pbuf *pb;
 	struct stream_input_ctx *ctx;
 	size_t size = DEFAULT_MAX_PKG_SIZE;
-	ssize_t next_pack_offset = 0;
-	char * current_pack_head = NULL;
+	
 	printf("Stream got input....");
 	y_message_read(msg, &ctx);
-
-	if (NULL == (pb = pbuf_alloc(PBUF_RAW, size, PBUF_RAM)))
-		goto err;
 
 	/* 
 		从消息中得到流文件，并读取流文件。
 		此处可以用内存影射的方式替代read，从而
 		减少一次内存拷贝。
 	*/
-	//read_len = y_file_read(ctx->stream_file, pb->payload, size);
-	pb->payload = ctx->stream_map;
-	if (!(pb->payload))
-		goto errmap;
-	
-	/* 当下一个报文头部偏移地址为0时表示无包 */
-	//while ((next_pack_offset = get_package_next_head((struct package_head *)(pb->payload))))
+
+	cache = (struct ring_buff_cache *)(ctx->stream_map);
+
+	/* 获取可读报文 */
+	while (ring_pkt = ring_cache_read_package(cache))
 	{
+		if (NULL == (pb = pbuf_alloc(PBUF_REF, size, PBUF_RAM)))
+			goto err;
 
-		/* 修正下次读取的文件位置已经pb->payload的有效包头 */
-		current_pack_head = pb->payload;
-		
-		pb->payload += get_package_pos((struct package_head *)(pb->payload));
-
+		pb->payload = (void *)cache + ring_pkt->package_offset;
 		ethernet_input(pb, &ctx->pni->netif);
-		printf("next %d\n", next_pack_offset);
-		pb->payload = current_pack_head + next_pack_offset;
 	}
-	/* 流文件中还有数据吗? */
+
 	//TODO: 轮询流文件
 	printf("OK.");
 	
 	return;
 	
-errmap:
-	printf("文件映射失败\n");
-	pbuf_free(pb);
-	
 err:
+	printf("pbuf 分配失败\n");
 	ctx->pni->dropped++;
 }
 
@@ -197,7 +187,7 @@ static void *stream_input_worker(void *parameter)
 	ctx.pni = pni;	
 	if (false == setup_stream_file(&ctx))
 		goto err0;
-	if (y_file_event_register(ctx.stream_file, Y_FILE_EVENT_WRITE, stream_input, &ctx) < 0)
+	if (y_file_event_register(ctx.stream_file, Y_FILE_EVENT_READ, stream_input, &ctx) < 0)
 		goto err1;
 
 	/* Wait stream */

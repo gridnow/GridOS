@@ -17,6 +17,7 @@
 #include <ystd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ring_buff.h>
 
 #include <ddk/net.h>
 
@@ -24,6 +25,9 @@
 
 static pthread_t write_worker;
 
+#define CACHE_LEN (4 * 1024)
+#define max_test (256 * 1024)
+static char test[max_test];
 /*
 	ARP Request
 	ARP, Ethernet (len 6), IPv4 (len 4), Request who-has 10.137.36.15 tell 10.137.36.21, length 46
@@ -57,44 +61,55 @@ unsigned char udp_data[] = {
 		0x79,0x73,0x74,0x61,0x72,0x74,0x3A,0x44,0x41,0x59,0x53,0x54,0x41,0x52,0x54,0x3A,0x36,0x32,0x39,0x31,0x34,0x35,0x37,
 		0x3A,0xB8,0xDF,0xBA,0xA3,0xCB,0xC9,0x2D,0x58,0x50,0x00,0xCE,0xDE,0xCF,0xDF,0xCD,0xF8,0xC2,0xE7,0xB2,0xBF,0x00};
 
+
 static void *write_thread(void *para)
 {
 	y_handle file;
-	char *arp_head = NULL, *tcp_head = NULL, *udp_head = NULL;
-	size_t package_len = sizeof(struct package_head) * 2 * 4 + sizeof(arp_request)\
-			+ sizeof(tcp_connect_request) + sizeof(udp_data);
+	int loop_times = 2;
+	void *map_start = NULL;
+	unsigned char *arp_p = NULL, *tcp_p = NULL, *udp_p = NULL;
+	struct ring_buff_cache * cache;
 	
 	if (Y_INVALID_HANDLE == (file = y_file_open(DEFAULT_WRITE_FILE, Y_FILE_OPERATION_NOCACHE)))
 		goto err0;
-
-	/* 构造arp packet */
-	arp_head = malloc(package_len);
-	if (!arp_head)
-		goto err1;
-	memset(arp_head, 0, package_len);
 	
-	MAKE_PACKAGE((struct package_head *)arp_head, sizeof(arp_request));
-	memcpy((void *)arp_head + get_package_pos(arp_head), arp_request, sizeof(arp_request));
+	/* mmap */
+	map_start = y_file_mmap(file, 0, KM_PROT_READ | KM_PROT_WRITE, 0, 0);
+	if (!map_start)
+		goto err1;
 
-	tcp_head = arp_head + get_package_next_head(arp_head);
-	MAKE_PACKAGE((struct package_head *)tcp_head, sizeof(tcp_connect_request));
-	memcpy((void *)tcp_head + get_package_pos(tcp_head), tcp_connect_request, sizeof(tcp_connect_request));
+	memset(map_start, 0, CACHE_LEN);
 
-	udp_head = tcp_head + get_package_next_head(tcp_head);
-	MAKE_PACKAGE((struct package_head *)udp_head, sizeof(udp_data));
-	memcpy((void *)udp_head + get_package_pos(udp_head), udp_data, sizeof(udp_data));
+	/* init ring buff */
+	cache = ring_buff_head_init(map_start, CACHE_LEN);
+	
+	cache_package_head_info_debug(cache);
+	
+	while (loop_times--)
+	{
+		/* alloc arp */
+		arp_p = ring_buff_alloc(cache, sizeof(arp_request));
+		if (!arp_p)
+			goto err0;
+		memcpy(arp_p, arp_request, sizeof(arp_request));
 
-	//while(1)
-	{		
-		y_file_write(file, arp_head, package_len);
-		//y_file_seek(file, 0, SEEK_CUR);
-		//y_file_write(file, tcp_head, sizeof(tcp_connect_request) + sizeof(struct package_head) + sizeof(struct package_pos));
-		//y_file_write(file, udp_data, sizeof(udp_data));
-		//y_file_seek(file, 0, SEEK_SET);
+		tcp_p = ring_buff_alloc(cache, sizeof(tcp_connect_request));
+		if (!tcp_p)
+			goto err0;
+		memcpy(tcp_p, tcp_connect_request, sizeof(tcp_connect_request));
+	
+		udp_p = ring_buff_alloc(cache, sizeof(udp_data));
+		if (!udp_p)
+			goto err0;
+		memcpy(udp_p, udp_data, sizeof(udp_data));
 	}
 	
-err2:
-	free(arp_head);
+	/* DEBUG 显示cache分配情况 */
+	cache_package_head_info_debug(cache);
+
+	/* 触发协议栈收报 */
+	y_file_read(file, &test, sizeof(test));
+	
 err1:
 	y_file_close(file);
 	return NULL;

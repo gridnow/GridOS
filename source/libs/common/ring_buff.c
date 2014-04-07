@@ -272,32 +272,31 @@ mereg_next:
 */
 struct ring_package *ring_cache_read_package(struct ring_buff_cache *cache)
 {
-	struct ring_package *curr_read = NULL, *next_package = NULL;
+	struct ring_package *curr_read, *next_package;
 	
-	if (cache)
-	{
-		curr_read = cache_read_pos(cache);
-		next_package = get_next_ring_package(curr_read);
+	curr_read = cache_read_pos(cache);
+	next_package = get_next_ring_package(curr_read);
 		
-		/* 修改下次可读取的报文头部位置 */
-		while(ptr_to_cache_offset(next_package) != cache->curr_write_pos)
+	/* 修改下次可读取的报文头部位置 */
+	while (ptr_to_cache_offset(next_package) != cache->curr_write_pos)
+	{
+		/* 是否为可读标志 */
+		if (next_package->valid_flag == VALID_FLAG)
 		{
-			/* 是否为可读标志 */
-			if (next_package->valid_flag == VALID_FLAG)
-			{
-				cache->curr_read_pos = ptr_to_cache_offset(next_package);
-				goto out;
-			}
-			
-			next_package = get_next_ring_package(next_package);
+			cache->curr_read_pos = ptr_to_cache_offset(next_package);
+			goto out;
 		}
+			
+		next_package = get_next_ring_package(next_package);
+	}
 
-		/* 
-			oh,no 当前已经是可读的最后一个package head啦 
-			既然没有找到合适的下一个可读ring package
-			那么下一个可读ring package肯定应该是指向当前可写位置
-		*/
-		cache->curr_read_pos = cache->curr_write_pos;
+	/* 
+		oh,no 当前已经是可读的最后一个package head啦 
+		既然没有找到合适的下一个可读ring package
+		那么下一个可读ring package肯定应该是指向当前可写位置
+	*/
+	cache->curr_read_pos = cache->curr_write_pos;
+	
 out:
 	/* 一般当前指定的是有效的 */
 	if (curr_read->valid_flag == VALID_FLAG)
@@ -306,9 +305,7 @@ out:
 		curr_read->valid_flag = BUSY_FLAG;
 		return curr_read;
 	}
-
-	}
-
+	
 	return NULL;
 }
 
