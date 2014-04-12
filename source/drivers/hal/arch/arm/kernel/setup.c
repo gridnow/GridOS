@@ -413,7 +413,9 @@ void hal_arch_init(int step)
 			printk("In HAL_ARCH_INIT_PHASE_MIDDLE phase of ARM...\n");
 			machine = get_s3c6410_machine_desc();
 			devicemaps_init(machine);
-		
+			/* 使用新的串口地址，devicemaps_init 已经重新映射了 */
+			serial_set_base(0xf7005000);
+			
 			break;
 		}
 		case HAL_ARCH_INIT_PHASE_LATE:

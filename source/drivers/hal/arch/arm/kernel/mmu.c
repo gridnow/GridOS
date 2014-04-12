@@ -513,11 +513,15 @@ static void __init create_mapping(struct map_desc *md)
  */
 int __init arm_bsp_create_map(struct map_desc *desc, int nr)
 {
+	int i;
 	void *vaddress;
-
-	vaddress = km_map_physical_arch(desc->pfn, desc->virtual, desc->length, desc->type);
-	if (!vaddress || (unsigned long)vaddress != desc->virtual)
-		return -1;
+	
+	for (i = 0; i < nr; i++,desc++)
+	{
+		vaddress = km_map_physical_arch(desc->pfn, desc->virtual, desc->length, desc->type);
+		if (!vaddress || (unsigned long)vaddress != desc->virtual)
+			return -1;
+	}
 	
 	return 0;
 }

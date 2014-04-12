@@ -12,9 +12,12 @@
 #include <debug.h>
 #include <spinlock.h>
 
-#include <arch/page.h>
-
+/**
+	@brief Generic version of acquiring physical address from table entry 
+*/
 #define KM_PAGE_PHY_FROM_ENTRY(entry, level) ((entry) & PAGE_MASK)				//TODO: to support non page_mask size
+
+#include <arch/page.h>
 
 /* Default table entry count is 1K for 4kb page */
 #ifndef ARCH_KM_LV1_COUNT
@@ -123,20 +126,22 @@ static inline void km_pte_write(struct km_walk_ctx * ctx, pte_t what)
 	void *entry  = &(ctx->table_base[1][ctx->hirarch_id[1]]);
 	pte_t *p = entry;
 	
-	//	printk("kmm_pte_write: ctx->table_base[0] = %p, id %d, entry %p(%p), what %p.\n",
-	//	   		ctx->table_base[1],
-	//	   		ctx->hirarch_id[1],
-	//	   		entry, *(unsigned long*)entry,
-	//	   		what);
-	
 	/* Sanity check */
  	if (*p)
 	{
+	
 		printk("ERROR:PTE entry is not empty.\n");
 		return;
 	}
 
 	km_pte_write_force(ctx, what);
+#if 0
+	printk("kmm_pte_write: ctx->table_base[0] = %p, id %d, entry %p(%p), what %p.\n",
+		   ctx->table_base[1],
+		   ctx->hirarch_id[1],
+		   entry, *(unsigned long*)entry,
+		   what);
+#endif
 }
 
 /**
@@ -217,6 +222,19 @@ static inline unsigned long km_walk_jump(struct km_walk_ctx *ctx)
 
 	return ctx->current_virtual_address - old;
 }
+
+#ifndef ARCH_HAS_GET_SUB_TABLE
+static inline void *km_get_sub_table(unsigned long *table, int sub_id)
+{
+	unsigned long sub_table_phy;
+	
+	sub_table_phy = KM_PAGE_PHY_FROM_ENTRY(table[sub_id], sub_id);
+	if (sub_table_phy == NULL)
+		return NULL;
+	//TODO: to support non-identical mapping tables
+	return (void*)HAL_GET_BASIC_KADDRESS(sub_table_phy);
+}
+#endif
 
 /************************************************************************/
 /* Hook for arch for table maintenance                                  */

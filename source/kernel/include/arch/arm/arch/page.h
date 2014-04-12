@@ -8,6 +8,8 @@
 #else
 #include "pgtable-2level.h"
 #endif
+#include "pgtable-hwdef.h"
+#include <asm/tlbflush.h>
 
 #ifndef __ASSEMBLER__
 #ifdef CONFIG_ARM_LPAE
@@ -15,8 +17,7 @@
 #else
 #include "pgtable-2level-types.h"
 #endif
-#include "pgtable-hwdef.h"
-#include <asm/tlbflush.h>
+
 #include <asm/domain.h>
 #include <asm/cacheflush.h>
 #include <asm/mmu.h>
@@ -40,6 +41,12 @@ struct mem_type {
 };
 
 /**
+	@brief Mach related protect mode
+*/
+extern pgprot_t		pgprot_user;
+extern pgprot_t		pgprot_kernel;
+
+/**
 	@brief Define the entry flags in for Kernel
  */
 #define PAGE_FLAG_VALID				L_PTE_VALID
@@ -51,39 +58,21 @@ struct mem_type {
 #define pte_present_user(pte)		(pte_present(pte) && (pte_val(pte) & L_PTE_USER))
 
 /**
-	@brief Error code of page fault
+	Error code of page fault
  */
 #define PAGE_FAULT_P				(1<<0)
 #define PAGE_FAULT_W				(1<<1)
 
 /**
-	@brief For page table
+	For page table
 */
 #define _PAGE_USER_TABLE	(PMD_TYPE_TABLE | PMD_BIT4 | PMD_DOMAIN(DOMAIN_USER))
 #define _PAGE_KERNEL_TABLE	(PMD_TYPE_TABLE | PMD_BIT4 | PMD_DOMAIN(DOMAIN_KERNEL))
 
 /*
-	For page walk, should be defined in x-level.h
+	For page walk
 */
-#define ARCH_HAS_PTE_T
-typedef unsigned long pte_t;
-#define ARCH_KM_LV1_COUNT	2048
-#define ARCH_KM_LV2_COUNT	512
-#define KM_WALK_MAX_LEVEL	2
-
-#define PTE_HWTABLE_PTRS	(ARCH_KM_LV2_COUNT)
-#define PTE_HWTABLE_OFF		(PTE_HWTABLE_PTRS * sizeof(pte_t))
-#define PTE_HWTABLE_SIZE	(ARCH_KM_LV2_COUNT * sizeof(u32))
-
-static inline void km_write_sub_table(unsigned long *table, int sub_id, unsigned long phyiscal)
-{
-	phyiscal = phyiscal + PTE_HWTABLE_OFF;
-	
-	/* 两个PTE 表相邻 */
-	table[sub_id] = phyiscal | _PAGE_USER_TABLE;
-	table[sub_id + 1] = (phyiscal + 1024) | _PAGE_USER_TABLE ;
-	flush_pmd_entry(&table[sub_id]);
-}
+#include "walk-2level.h"
 
 static inline void set_pte_at(pte_t *ptep, pte_t pteval, unsigned long addr)
 {
@@ -119,21 +108,56 @@ static inline unsigned long km_arch_get_flags(page_prot_t prot)
 	
 	/*Or the normal*/
 	else
-	{		
+	{
+#if 0
+		arch_flags = pgprot_kernel;
+		//TODO: To support user level protection
 		if (prot & KM_PROT_READ)		
 			arch_flags |= PAGE_FLAG_VALID | L_PTE_RDONLY;
 		if (prot & KM_PROT_WRITE)
 			arch_flags |= PAGE_FLAG_VALID;
+#endif
+		printk("User specific flags not supported.\n");
 	}
 end:
 	return arch_flags;
+}
+
+#define ARCH_HAS_KM_GET_VID
+static inline unsigned long km_get_vid(unsigned long level, unsigned long va)
+{
+	if (sizeof(unsigned long) == 4)
+	{
+		switch (level)
+		{
+			case 2:
+				va >>= 21;
+				va &= (ARCH_KM_LV2_COUNT - 1);
+				break;
+				
+			case 1:
+				va >>= 12;
+				va &= (ARCH_KM_LV1_COUNT - 1);
+				break;
+				
+			default:
+				va = -1;
+		}
+	}
+	else
+	{
+		//TODO level3?
+		va = -1;
+	}
+	
+	return va;
 }
 
 /*
 	For TLB and Cache
 */
 #define arch_clean_pte_table(PTE_TABLE) do { \
-	clean_dcache_area((unsigned long)(PTE_TABLE) + PTE_HWTABLE_OFF, PTE_HWTABLE_SIZE); \
+	clean_dcache_area((void*)(unsigned long)(PTE_TABLE) + PTE_HWTABLE_OFF, PTE_HWTABLE_SIZE); \
 } while(0)
 
 #endif /*Assemmbler */
