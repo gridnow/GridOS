@@ -117,12 +117,13 @@ static void stream_input(struct y_message *msg)
 	cache = (struct ring_buff_cache *)(ctx->stream_map);
 
 	/* 获取可读报文 */
-	while (ring_pkt = ring_cache_read_package(cache))
+	while (NULL != (ring_pkt = ring_cache_read_package(cache)))
 	{
 		if (NULL == (pb = pbuf_alloc(PBUF_RAW, size, PBUF_REF)))
 			goto err;
 
-		pb->payload = (void *)cache + ring_pkt->package_offset;
+		pb->payload_org = pb->payload = (void *)cache + ring_pkt->package_offset;
+		pb->zero_object = ring_pkt;
 		ethernet_input(pb, &ctx->pni->netif);
 	}
 
@@ -226,6 +227,11 @@ int dll_main(void)
 	nif_init(&global_net_interface);
 
 	return 0;
+}
+
+void pbuf_free_zero_object(void* p)
+{
+	TODO("");
 }
 
 unsigned int sys_now(void)
