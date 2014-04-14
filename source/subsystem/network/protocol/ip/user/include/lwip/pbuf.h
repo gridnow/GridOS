@@ -58,7 +58,8 @@ typedef enum {
   PBUF_RAM, /* pbuf data is stored in RAM */
   PBUF_ROM, /* pbuf data is stored in ROM */
   PBUF_REF, /* pbuf comes from the pbuf pool */
-  PBUF_POOL /* pbuf payload refers to RAM */
+  PBUF_POOL, /* pbuf payload refers to RAM */
+  PBUF_ZEROCOPY /* pbuf from space of other module */
 } pbuf_type;
 
 
@@ -82,6 +83,9 @@ struct pbuf {
 
   /** pointer to the actual data in the buffer */
   void *payload;
+
+  /** pointer to actual data for outer space which is not modified by pbuf_xxx interface */
+  void *payload_org, *zero_object;
 
   /**
    * total length of this buffer and all next buffers in chain

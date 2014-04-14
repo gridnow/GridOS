@@ -14,17 +14,6 @@
 
 #include <sync.h>
 
-void *km_get_sub_table(unsigned long *table, int sub_id)
-{
-	unsigned long sub_table_phy;
-	
-	sub_table_phy = KM_PAGE_PHY_FROM_ENTRY(table[sub_id], sub_id);
-	if (sub_table_phy == NULL)
-		return NULL;
-	//TODO: to support non-identical mapping tables
-	return (void*)HAL_GET_BASIC_KADDRESS(sub_table_phy);
-}
-
 /**
 	@brief Walk to a given virtual address
  

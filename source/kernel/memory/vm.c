@@ -298,6 +298,7 @@ void *km_map_physical_arch(unsigned long pfn, unsigned long vaddress, unsigned l
 							pfn, 
 							arch_flags | KM_MAP_ARCH_SPECIAL) == false)
 		return NULL;
+	printk("Mapped pfn %x at %p,size = %d.\n", pfn, vaddress, size);
 	return (void*)vaddress;
 }
 
