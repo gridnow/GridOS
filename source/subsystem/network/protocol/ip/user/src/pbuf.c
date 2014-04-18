@@ -320,6 +320,8 @@ pbuf_alloc(pbuf_layer layer, u16_t length, pbuf_type type)
     break;
   /* pbuf references existing (non-volatile static constant) ROM payload? */
   case PBUF_ROM:
+  /* pbuf with data from other module */
+  case PBUF_ZEROCOPY:
   /* pbuf references existing (externally allocated) RAM payload? */
   case PBUF_REF:
     /* only allocate memory for the pbuf structure */
@@ -342,6 +344,8 @@ pbuf_alloc(pbuf_layer layer, u16_t length, pbuf_type type)
   }
   /* set reference count */
   p->ref = 1;
+  /* zero object is set by user */
+  p->zero_object = NULL;
   /* set flags */
   p->flags = 0;
   LWIP_DEBUGF(PBUF_DEBUG | LWIP_DBG_TRACE, ("pbuf_alloc(length=%"U16_F") == %p\n", length, (void *)p));
@@ -407,6 +411,7 @@ pbuf_alloced_custom(pbuf_layer l, u16_t length, pbuf_type type, struct pbuf_cust
   p->pbuf.len = p->pbuf.tot_len = length;
   p->pbuf.type = type;
   p->pbuf.ref = 1;
+  p->pbuf.zero_object = NULL;
   return &p->pbuf;
 }
 #endif /* LWIP_SUPPORT_CUSTOM_PBUF */
@@ -437,7 +442,7 @@ pbuf_realloc(struct pbuf *p, u16_t new_len)
   LWIP_ASSERT("pbuf_realloc: sane p->type", p->type == PBUF_POOL ||
               p->type == PBUF_ROM ||
               p->type == PBUF_RAM ||
-              p->type == PBUF_REF);
+              p->type == PBUF_REF || p->type == PBUF_ZEROCOPY);
 
   /* desired length larger than current length? */
   if (new_len >= p->tot_len) {
@@ -555,6 +560,18 @@ pbuf_header(struct pbuf *p, s16_t header_size_increment)
       /* bail out unsuccesfully */
       return 1;
     }
+  } else if (type == PBUF_ZEROCOPY/* Actually is ram */) {
+	  /* set new payload pointer */
+	  p->payload = (u8_t *)p->payload - header_size_increment;
+	if (p->payload < p->payload_org) {
+		LWIP_DEBUGF( PBUF_DEBUG | LWIP_DBG_LEVEL_SERIOUS,
+			("pbuf_header: failed as %p < %p (not enough space for new header size)\n",
+			(void *)p->payload, (void *)(p + 1)));
+		/* restore old payload pointer */
+		p->payload = payload;
+		/* bail out unsuccesfully */
+		return 1;
+	}
   /* pbuf types refering to external payloads? */
   } else if (type == PBUF_REF || type == PBUF_ROM) {
     /* hide a header in the payload? */
@@ -634,7 +651,7 @@ pbuf_free(struct pbuf *p)
 
   LWIP_ASSERT("pbuf_free: sane type",
     p->type == PBUF_RAM || p->type == PBUF_ROM ||
-    p->type == PBUF_REF || p->type == PBUF_POOL);
+    p->type == PBUF_REF || p->type == PBUF_POOL || p->type == PBUF_ZEROCOPY);
 
   count = 0;
   /* de-allocate all consecutive pbufs from the head of the chain that
@@ -666,11 +683,18 @@ pbuf_free(struct pbuf *p)
       } else
 #endif /* LWIP_SUPPORT_CUSTOM_PBUF */
       {
+        /* is this puf from zero copy? free the object first */
+		if (p->zero_object) {
+		  extern void pbuf_free_zero_object(void*);
+          pbuf_free_zero_object(p->zero_object);
+          p->zero_object = NULL;
+        }
+		
         /* is this a pbuf from the pool? */
         if (type == PBUF_POOL) {
           memp_free(MEMP_PBUF_POOL, p);
         /* is this a ROM or RAM referencing pbuf? */
-        } else if (type == PBUF_ROM || type == PBUF_REF) {
+        } else if (type == PBUF_ROM || type == PBUF_REF || type == PBUF_ZEROCOPY/*Use pool, see alloc*/) {
           memp_free(MEMP_PBUF, p);
         /* type == PBUF_RAM */
         } else {
