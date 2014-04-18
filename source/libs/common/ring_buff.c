@@ -3,8 +3,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#define errmsg(...) printf(__VA_ARGS__)
-
 #define DEBUG_HEAD_INFO(head) \
 	printf("=======================\n"\
 			"head prev offset %d\n"\
@@ -187,8 +185,6 @@ search_round:
 	/* 是否真的找到了可分配的buff */
 	if (found)
 		return slice_buff(cache, curr, length);
-
-	errmsg("not find fit package??\n");
 
 	return NULL;
 }
