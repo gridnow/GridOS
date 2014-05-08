@@ -158,7 +158,7 @@ bool kp_init()
 	kp_exe_init();
 	ke_srv_init();
 	/*内核标准输入初始化服务函数*/
-	session_init(1);
+	//session_init(1);
 	return true;
 err:
 	return false;

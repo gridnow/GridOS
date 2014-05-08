@@ -47,6 +47,14 @@ struct sysreq_common
 bool ke_srv_register(const struct ke_srv_info *info);
 
 /**
+	@brief 句柄和对象都不想要了，在接口函数中使用
+
+	@note
+		对象一定是被转换过，并且句柄没有被put 过。
+*/
+void ke_handle_and_object_destory(ke_handle handle, void *kobject);
+
+/**
 	@brief Handler part
 */
 void ke_handle_put(ke_handle handle, void *kobject);

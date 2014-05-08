@@ -65,7 +65,7 @@ static inline unsigned long system_call(void *  req_package)
 #define SYS_REQ_KERNEL_BASE					KE_SRV_MAKE_REQ_NUM(KERNEL_REQ_BASE, 0)
 #define SYS_REQ_KERNEL_PROCESS_CREATE		(SYS_REQ_KERNEL_BASE + 0)
 #define SYS_REQ_KERNEL_THREAD_CREATE		(SYS_REQ_KERNEL_BASE + 1)
-#define SYS_REQ_KERNEL_THREAD_WAIT			(SYS_REQ_KERNEL_BASE + 2)
+#define SYS_REQ_KERNEL_SYNC					(SYS_REQ_KERNEL_BASE + 2)
 #define SYS_REQ_KERNEL_PROCESS_STARTUP		(SYS_REQ_KERNEL_BASE + 3)
 #define SYS_REQ_KERNEL_PRINTF				(SYS_REQ_KERNEL_BASE + 4)
 #define SYS_REQ_KERNEL_PROCESS_HANDLE_EXE	(SYS_REQ_KERNEL_BASE + 5)
@@ -102,5 +102,14 @@ static inline unsigned long system_call(void *  req_package)
 #define SESSION_REQ_BASE					KE_SRV_MAKE_REQ_NUM(SESSION_REQ_BASE_ID, 0)
 #define SYS_REQ_SESSION_STDIO_READ			(SESSION_REQ_BASE + 0)
 #define SYS_REQ_SESSION_STDIO_WRITE			(SESSION_REQ_BASE + 1)
+
+
+/************************************************************************/
+/* Network                                                                                                        */
+/************************************************************************/
+#define NETWORK_REQ_BASE_ID					3
+#define SYS_REQ_NETWORK_BASE				KE_SRV_MAKE_REQ_NUM(NETWORK_REQ_BASE_ID, 0)
+#define SYS_REQ_NETWORK_STREAM				(SYS_REQ_NETWORK_BASE + 0)
+#define SYS_REQ_NETWORK_MAX					10
 
 #endif

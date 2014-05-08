@@ -26,7 +26,7 @@ static struct grid_netproto *proto_ipv4;
 
 static int do_connect()
 {
-	return -ENOSYS;
+	return proto_ipv4->connect();
 }
 
 static int do_send()
@@ -99,7 +99,7 @@ void af_inet_file_init_ops(struct file *filp)
 		if (!socket_inet_not_inited)
 			goto next;
 
-		if (NULL == (module_ipv4 = dlopen("$(SYSTEM_DIR)/tcpip.so", 0)))
+		if (NULL == (module_ipv4 = dlopen("tcpip.so", 0)))
 			goto err0;
 		if (NULL == (proto_ipv4 = dlsym(module_ipv4, GRID_GET_NETPROTO)))
 			goto err1;
@@ -107,6 +107,7 @@ next:
 		pthread_spin_unlock(&load_lock);
 	}
 	return;
+	
 err1:
 	dlclose(module_ipv4);
 	module_ipv4 = NULL;

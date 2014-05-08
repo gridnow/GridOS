@@ -27,6 +27,9 @@ typedef u32 socklen_t;
 #define AF_UNIX 	AF_LOCAL
 #define	AF_INET		2		/* IP protocol family.  */
 
+/* Socket type */
+#define SOCK_STREAM 1
+
 #endif
 
 /** @} */

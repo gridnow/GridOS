@@ -40,8 +40,11 @@ void ke_event_init(struct ke_event *event, bool manual_reset, bool initial_statu
 	如果该事件是自动复位的，那么只唤醒等待队列中最前面的线程。
 
 	@param[in] event 事件的有效指针
+ 
+	@return
+		返回唤醒的线程数量
 */
-void ke_event_set(struct ke_event *event);
+int ke_event_set(struct ke_event *event);
 
 /**
 	@brief 复位一个事件

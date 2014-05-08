@@ -287,8 +287,9 @@ void kernel_test()
 	//for (i = 0; i < 34; i++)
 	//	kt_create_kernel(test_thread, i);
 	fss_main();
+	nss_main();
 	//初始化输入设备
-extern void session_create_input_device(void);
+	session_init();	
 	session_create_input_device();
 	/* we have timer tick to switch preemptly */
 #if 0

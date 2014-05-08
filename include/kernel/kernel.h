@@ -24,9 +24,10 @@ typedef unsigned int page_prot_t;
 typedef enum
 {
 	KE_WAIT_OK = 0,
-	KE_WAIT_TIMEDOUT,
-	KE_WAIT_ABANDONED,
-}kt_sync_wait_result;
+	KE_WAIT_TIMEDOUT	= -1,
+	KE_WAIT_ABANDONED	= -2,
+	KE_WAIT_ERROR		= -3,
+} kt_sync_wait_result;
 
 /*******************************************************/
 /* About thread */
@@ -45,5 +46,9 @@ typedef enum
 */
 signed long ke_sleep_timeout(signed long timeout);
 
+/*******************************************************/
+/* ‘”œÓ                                                                         */
+/*******************************************************/
+void ke_panic(char *why);
 #endif
 /** @} */

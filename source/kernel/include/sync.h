@@ -22,7 +22,7 @@ struct thread_wait
 	struct ko_thread * who;
 	struct list_head task_list;
 };
-#if 1 /* 等待条件的完成，暂时没有用到的漂亮宏 */
+
 #define KT_DELETE_WAIT(WAIT_NODE) \
 	list_del(&(WAIT_NODE)->task_list)
 #define KT_PREPARE_WAIT(WAIT_QUEUE, WAIT_NODE) do { \
@@ -50,7 +50,6 @@ struct thread_wait
 	} while(1); \
 	__ret__; \
 })
-#endif
 
 #define KE_SYNC_STATIC_WAIT_NODE_COUNT 4
 #define KE_SYNC_OBJ_LOCK(x) spin_lock(&((struct kt_sync_base*)(x))->lock)
@@ -88,5 +87,13 @@ void kt_sync_init(struct kt_sync_base * sync, struct kt_sync_ops * ops);
 int kt_sync_wakeup(struct kt_sync_base * sync, int count);
 kt_sync_wait_result kt_wait_object(struct ko_thread * who, struct kt_sync_base *p, unsigned int timeout);
 kt_sync_wait_result kt_wait_objects(struct ko_thread * who, int count, struct kt_sync_base ** objects, bool wait_all, unsigned int timeout, int *id);
+
+//event.c
+/**
+	@brief 创建一个对象级得Event
+ 
+	主要是用于用户态的event创建
+*/
+struct ke_event *ke_event_object_create(bool manual_reset, bool initial_status);
 
 #endif

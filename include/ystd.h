@@ -20,21 +20,9 @@
 
 BEGIN_C_DECLS;
 
-/* Should move to kernel standard typedef */
-typedef unsigned long y_handle;
-#define Y_INVALID_HANDLE (-1UL)
-
 /************************************************************************/
-/* 进程                                                                         */
+/* 进程                                                                  */
 /************************************************************************/
-typedef enum 
-{
-	Y_SYNC_WAIT_RESULT_OK	= 0,
-	Y_SYNC_WAIT_ABANDONED	= -1,
-	Y_SYNC_WAIT_TIMEDOUT	= -2,
-	Y_SYNC_WAIT_ERROR		= -3,
-} y_wait_result;
-
 struct y_thread_environment_block
 {
 	void *self;
@@ -48,6 +36,14 @@ struct y_message
 	unsigned long what;	
 };
 
+#define Y_SYNC_MAX_OBJS_COUNT 64
+#define Y_SYNC_WAIT_INFINITE -1
+typedef kt_sync_wait_result y_wait_result;
+typedef enum {
+	Y_MSG_LOOP_EXIT_SIGNAL = 0,
+	Y_MSG_LOOP_ERROR = -1,
+} y_msg_loop_result;
+
 /**
 	@brief 创立进程
 
@@ -58,7 +54,6 @@ struct y_message
 		成功返回进程句柄，失败返回Y_INVALID_HANDLE
 */
 y_handle y_process_create(xstring name, char *cmdline);
-
 
 /**
 	@brief 等待进程退出
@@ -82,22 +77,55 @@ y_wait_result y_process_wait_exit(y_handle for_who, unsigned long * __in __out r
 */
 void y_message_read(struct y_message *what, ...);
 
-
-/************************************************************************/
-/* 同步对象                                                                     */
-/************************************************************************/
-#define Y_SYNC_MAX_OBJS_COUNT 64
-#define Y_SYNC_WAIT_INFINITE -1 
-
-typedef enum {
-	Y_MSG_LOOP_EXIT_SIGNAL = 0,
-	Y_MSG_LOOP_ERROR = -1,
-}y_msg_loop_result;
-
 /**
 	@brief 等待线程消息
 */
 y_msg_loop_result y_message_loop();
+
+/**
+	@brief 等待事件的发生
+ 
+	线程阻塞等待事件的出发，如果一个事件曾经被出发过，但是是还没有被还原，那么等待失效，直到重新被恢复。
+ 
+	@param[in] event 等待的事件对象
+	@param[in] timeout 等待超时，单位为ms，Y_SYNC_WAIT_INFINITE 为无限等待
+ 
+	@return
+		The result in the format of y_wait_result
+*/
+y_wait_result y_event_wait(y_handle event, int timeout);
+
+/**
+	@brief 触发一个事件
+
+	唤醒事件的等待者
+ 
+	@param[in] event 要触发的事件
+ 
+	@return
+		唤醒了几个线程，< 0表示错误
+*/
+int y_event_set(y_handle event);
+
+/**
+	@brief 创建事件对象
+	
+	创建事件同步对象，并设置事件的类型。
+ 
+	@param[in] manual_reset 是否是自动还原的事件，如果是那么被触发后会唤醒一个线程，并设置为未触发状态，否则需要手动处理
+	@param[in] initial_status 事件原始状态是触发的还是没有被触发的
+ 
+	@return
+		成功返回事件对象，失败返回Y_INVALID_HANDLE.
+*/
+y_handle y_event_create(bool manual_reset, bool initial_status);
+
+/**
+	@brief 删除事件
+ 
+	删除事件对象，如果事件对象有人在等待，那么这些线程都将被唤醒，并返回取消错误码。
+*/
+void y_event_delete(y_handle event);
 
 /************************************************************************/
 /* 文件对象                                                                     */
