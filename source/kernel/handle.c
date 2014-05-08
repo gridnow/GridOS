@@ -104,6 +104,24 @@ void *ke_handle_translate(ke_handle handle)
 void ke_handle_put(ke_handle handle, void *kobject)
 {
 	cl_object_dec_ref(kobject);
+	
+	//TODO: If object's ref is zero, we should have to trigger recalling routing for this object.
+}
+
+void ke_handle_and_object_destory(ke_handle handle, void *kobject)
+{
+	/* Object has at least 2 ref counter */
+	if (cl_object_get_ref_counter(kobject) < 2)
+	{
+		ke_panic("为什么ke_object_want_destory关闭时对象计数器不对?");
+	}
+
+	/* Translated before */
+	ke_handle_put(handle, kobject);
+	ke_handle_delete(handle);
+
+	/* Opened by the thread at handle creating */
+	cl_object_close(KP_CURRENT(), kobject);
 }
 
 ke_handle ke_handle_create_on_specific(struct ko_process *on, void *kobject)

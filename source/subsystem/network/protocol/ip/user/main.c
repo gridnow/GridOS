@@ -17,7 +17,7 @@
 #include "etharp.h"
 #include "pbuf.h"
 #include "init.h"
-
+#include "tcp.h"
 
 #define DEFAULT_STREAM_FILE_PATH "/os/net/stream"
 #define DEFAULT_MAX_PKG_SIZE	2048
@@ -45,17 +45,81 @@ struct stream_input_ctx
 	
 	char stream_file_name[128];
 };
-
 static struct net_interface global_net_interface;
+
+struct tcp_connection_ctx
+{
+	/* 用于链接和数据的唤醒 */
+	y_handle event;
+};
+
+/**
+	@brief 协议栈链接成功的回调
+*/
+static err_t tcp_connected(void *arg, struct tcp_pcb *pcb, err_t err)
+{
+	struct tcp_connection_ctx *connection = (struct tcp_connection_ctx *)arg;
+	
+	printf("Tcp 链接成功，唤醒等待者链接完成的线程...\n");
+	y_event_set(connection->event);
+	return ERR_OK;
+}
+
+static int tcp_connect_wait(struct tcp_pcb *pcb)
+{
+	struct tcp_connection_ctx *connection = (struct tcp_connection_ctx *)pcb->callback_arg;
+	y_wait_result result;
+	
+	printf("TCP 链接已经发送，等待完成...\n");
+	result = y_event_wait(connection->event, 3000/*TODO: 应该用更合适的 超时 3 seconds*/);
+	if (result == KE_WAIT_OK)
+		return 0;
+	
+	return ETIMEDOUT;
+}
 
 static int do_connect()
 {
-	TODO("");
+	struct tcp_pcb *new_connection;
+	struct tcp_connection_ctx *tcp_context;
+	
+	ip_addr_t ipaddr = {0};
+	u16_t port = 0;
+	int ret = ENOMEM;
+	
+	TODO("Fill the arguments of ipaddr port");
+	new_connection = tcp_new();
+	if (!new_connection)
+		goto err0;
+	tcp_context = malloc(sizeof(*tcp_context));
+	if (!tcp_context)
+		goto err1;
+	tcp_context->event = y_event_create(false, false);
+	if (tcp_context->event == Y_INVALID_HANDLE)
+		goto err2;
+	tcp_arg(new_connection, tcp_context);
+	
+	/* Do connection by call the protocol stack */
+	if (ERR_OK != tcp_connect(new_connection, &ipaddr, port, tcp_connected))
+		goto err3;
 
-	return -ENOSYS;
+	/* Sleep to wait connected callback */
+	if ((ret = tcp_connect_wait(new_connection)))
+		goto err3;
+		
+	return 0;
+	
+err3:
+	y_event_delete(tcp_context->event);
+err2:
+	free(tcp_context);
+err1:
+	tcp_abort(new_connection);
+err0:
+	return ret;
 }
 
-static struct grid_netproto ip_netproto = {
+DLLEXPORT struct grid_netproto grid_acquire_netproto = {
 	.proto_name = "IPv4 grid_netproto",
 	.connect = do_connect,
 };
@@ -168,7 +232,9 @@ static void nif_startup(struct netif *nif)
 	nif->hwaddr[2] = 0x33;
 	nif->hwaddr[3] = 0x44;
 	nif->hwaddr[4] = 0x55;
-	nif->hwaddr[5] = 0x66;	
+	nif->hwaddr[5] = 0x66;
+	nif->name[0] = 'e';
+	nif->name[1] = 't';
 	netif_set_ipaddr(nif, &test_ipaddr);
 	netif_set_netmask(nif, &test_netmask);
 	netif_set_gw(nif, &test_gw);
@@ -238,9 +304,4 @@ unsigned int sys_now(void)
 {
 	printf("sys_now not implemented.\n");
 	return 0;
-}
-
-DLLEXPORT struct grid_netproto *grid_acquire_netproto()
-{
-	return &ip_netproto;
 }

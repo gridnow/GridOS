@@ -19,9 +19,11 @@
 #include <asm/abicall.h>
 
 #include <kernel/ke_srv.h>
+#include <kernel/ke_event.h>
 
 #include "../source/subsystem/fs/include/fss.h"
 #include "../source/libs/grid/include/sys/ke_req.h"
+
 
 bool ke_validate_user_buffer(void * buffer, size_t size, bool rw)
 {
@@ -279,7 +281,111 @@ err:
 	}
 	return KE_INVALID_HANDLE; 
 }
-struct ko_thread *tmsg;
+
+/**
+	@brief Thread synchronizing operation
+ 
+	@return kt_sync_wait_result
+*/
+static int thread_sync_ops(struct sysreq_thread_sync *req)
+{
+	int i;
+	int ops = req->ops;
+
+	switch(ops)
+	{
+		/* 等待同步对象 */
+		case SYSREQ_THREAD_SYNC_WAIT_OBJS:
+		{
+			int count = req->detail.wait_objs.count;
+			struct kt_sync_base *sync_objs[Y_SYNC_MAX_OBJS_COUNT];
+			y_handle sync_handles[Y_SYNC_MAX_OBJS_COUNT];
+			kt_sync_wait_result ret = KE_WAIT_ERROR;
+			
+			if (count > Y_SYNC_MAX_OBJS_COUNT)
+				goto wait_end;
+			
+			for (i = 0; i < count; i++)
+			{
+				sync_handles[i] =(ke_handle)req->detail.wait_objs.sync_objects[i];
+				sync_objs[i] = ke_handle_translate(sync_handles[i]);
+				if (!sync_objs[i])
+					goto unwind_translate;
+			}
+			ret = kt_wait_objects(kt_current(), count, sync_objs,
+							req->detail.wait_objs.wait_all,
+							req->detail.wait_objs.timeout, NULL);
+
+unwind_translate:
+			for (i = 0; i < count; i++)
+			{
+				if (sync_objs[i])
+					ke_handle_put(sync_handles[i], sync_objs[i]);
+			}
+wait_end:
+			return ret;
+		}
+		case SYSREQ_THREAD_SYNC_WAIT_MS:
+		{
+			TODO("");
+			break;	
+		}
+
+		case SYSREQ_THREAD_SYNC_EVENT:
+		{
+			ke_handle hevent;
+			struct ke_event *event;
+			
+			switch (req->detail.event.ops)
+			{
+				case 's':
+				{
+					/* 唤醒线程，返回唤醒数量 */
+					int count;
+					
+					hevent = req->detail.event.event;
+					if (!(event = ke_handle_translate(hevent)))
+						goto invalid_handle;
+					count = ke_event_set(event);
+					ke_handle_put(hevent, event);
+					
+					return count;
+				}
+				case 'c':
+				{
+					/* Create event, return handle */
+					if (!(event = ke_event_object_create(req->detail.event.is_manual, req->detail.event.is_set)))
+						goto invalid_handle;
+					if (KE_INVALID_HANDLE == (hevent = ke_handle_create(event)))
+					{
+						km_vfree(event);
+						goto invalid_handle;
+					}
+				
+					return hevent;
+				}
+				case 'd':
+				{
+					/* delete the event, cause everybody wakeup */
+#if 0
+					hevent = req->detail.event.event;
+					if (!(event = ke_handle_translate(hevent)))
+						goto invalid_handle;
+					ke_handle_and_object_destory(hevent, event);
+#else
+					TODO("事件对象用户模型还缺少cl_object的封装，无法销毁对象");
+#endif
+					return 0;
+				}
+			}
+			break;
+		}
+	}
+	
+invalid_handle:
+	return KE_INVALID_HANDLE;
+}
+
 /**
 	@brief Thread message slot managing
 */
@@ -287,7 +393,6 @@ static bool thread_msg(struct sysreq_thread_msg *req)
 {
 	bool r;
 	struct ktm *msg;
-	tmsg = kt_current();
 	
 	msg = ktm_prepare_loop();
 	if (msg == NULL)
@@ -450,7 +555,7 @@ bool ke_srv_register(const struct ke_srv_info * info)
 void ke_srv_init()
 {
 	kernel_entry[SYS_REQ_KERNEL_THREAD_CREATE - SYS_REQ_KERNEL_BASE]	= (void*) thread_create;
-	//kernel_entry[SYS_REQ_KERNEL_THREAD_WAIT - SYS_REQ_KERNEL_BASE]		= (void*) thread_wait;
+	kernel_entry[SYS_REQ_KERNEL_SYNC - SYS_REQ_KERNEL_BASE]				= (void*) thread_sync_ops;
 	kernel_entry[SYS_REQ_KERNEL_PROCESS_CREATE - SYS_REQ_KERNEL_BASE]	= (void*) process_create;
 	kernel_entry[SYS_REQ_KERNEL_PROCESS_STARTUP - SYS_REQ_KERNEL_BASE]		= (void*) process_startup;
 	kernel_entry[SYS_REQ_KERNEL_PROCESS_HANDLE_EXE - SYS_REQ_KERNEL_BASE]	= (void*) process_ld;

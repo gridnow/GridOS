@@ -17,7 +17,9 @@
 #include <ystd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ring_buff.h>
+#include <socket.h>
+
+#include "ring_buff.h"
 
 #include <ddk/net.h>
 
@@ -119,6 +121,30 @@ err0:
 	return NULL;
 }
 
+static void *socket_thread(void *unused)
+{
+	struct sockaddr addr;
+	socklen_t addrlen;
+	int fd, r;
+	
+	fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (fd == -1)
+	{
+		printf("Create socket error.\n");
+	}
+	printf("Socket id is %d.\n", fd);
+	
+	printf("Connecting....");
+	memset(&addr, 0, sizeof(addr));
+	addrlen = sizeof(addr);
+	r = connect(fd, &addr, addrlen);
+	printf("result is %d.\n", r);
+	
+	//TODO: close socket
+	
+	return NULL;
+}
+
 int main()
 {
 	void *so = dlopen("tcpip.so", 0);	
@@ -139,7 +165,11 @@ int main()
 	entry(0, NULL);
 
 	/* Ð´°üÏß³Ì */	
-	if (pthread_create(&write_worker, NULL, write_thread, 0))
+	//if (pthread_create(&write_worker, NULL, write_thread, 0))
+	//	goto err;
+	
+	/* Socket testing thread */
+	if (pthread_create(NULL, NULL, socket_thread, 0))
 		goto err;
 	
 	return 0;

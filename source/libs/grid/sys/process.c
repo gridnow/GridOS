@@ -65,13 +65,7 @@ DLLEXPORT y_handle y_process_create(xstring name, char *cmdline)
 DLLEXPORT y_wait_result y_process_wait_exit(y_handle for_who, unsigned long * __in __out result)
 {
 	TODO("");
-	return Y_SYNC_WAIT_ERROR;
-}
-
-DLLEXPORT int y_thread_wait_event()
-{
-	TODO("");
-	return 0;
+	return KE_WAIT_ERROR;
 }
 
 DLLEXPORT y_msg_loop_result y_message_loop()
@@ -117,5 +111,58 @@ DLLEXPORT void y_message_read(struct y_message *what, ...)
 		wb = va_arg(wb_list, MSG_PDATA_TYPE);
 		*wb = data;
 	}
+}
 
+DLLEXPORT y_wait_result y_wait_objects(y_handle * __user sync_objects, int count, int timeout)
+{
+	struct sysreq_thread_sync req;
+	
+	req.base.req_id = SYS_REQ_KERNEL_SYNC;
+	req.ops			= SYSREQ_THREAD_SYNC_WAIT_OBJS;
+	req.detail.wait_objs.sync_objects = sync_objects;
+	req.detail.wait_objs.count = count;
+	req.detail.wait_objs.timeout = timeout;
+	
+	return (y_wait_result)system_call(&req);
+}
+
+DLLEXPORT y_wait_result y_event_wait(y_handle event, int timeout)
+{
+	y_handle sync_object[] = { event };
+	return y_wait_objects(sync_object, 1, timeout);
+}
+
+DLLEXPORT int y_event_set(y_handle event)
+{	
+	struct sysreq_thread_sync req;
+	
+	req.base.req_id = SYS_REQ_KERNEL_SYNC;
+	req.ops			= SYSREQ_THREAD_SYNC_EVENT;
+	req.detail.event.ops = 's';
+	req.detail.event.event = event;
+	
+	return (int)system_call(&req);
+}
+
+DLLEXPORT y_handle y_event_create(bool manual_reset, bool initial_status)
+{
+	struct sysreq_thread_sync req;
+	
+	req.base.req_id = SYS_REQ_KERNEL_SYNC;
+	req.ops			= SYSREQ_THREAD_SYNC_EVENT;
+	req.detail.event.ops = 'c';
+	
+	return (y_handle)system_call(&req);
+}
+
+DLLEXPORT void y_event_delete(y_handle event)
+{
+	struct sysreq_thread_sync req;
+	
+	req.base.req_id = SYS_REQ_KERNEL_SYNC;
+	req.ops			= SYSREQ_THREAD_SYNC_EVENT;
+	req.detail.event.event = event;
+	req.detail.event.ops = 'd';
+	
+	system_call(&req);
 }
