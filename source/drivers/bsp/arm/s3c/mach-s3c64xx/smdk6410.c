@@ -11,37 +11,29 @@
 
 #include <ddk/compiler.h>
 #include <ddk/types.h>
+#include <ddk/compatible.h>
 
+#include <plat/map-base.h>
 #include <mach/arch.h>
-#include <mach/map.h>
-
 #include <mach-types.h>
+#include "mach/map.h"
+#include "mach/map_s3c.h"
 
 #include "common.h"
 
-static struct map_desc smdk6410_iodesc[] = {};
+static struct map_desc smdk6410_iodesc[] = {
+	{
+		.virtual	= (unsigned long)S3C_VA_LCD,
+		.pfn		= __phys_to_pfn(S3C64XX_PA_FB),
+		.length		= SZ_16K,
+		.type		= MT_DEVICE,
+	},
+};
 
 static void __init smdk6410_map_io(void)
 {
-	u32 tmp;
-	
 	s3c64xx_init_io(smdk6410_iodesc, ARRAY_SIZE(smdk6410_iodesc));
-#if 0
-	s3c24xx_init_clocks(12000000);
-	s3c24xx_init_uarts(smdk6410_uartcfgs, ARRAY_SIZE(smdk6410_uartcfgs));
-	
-	/* set the LCD type */
-	
-	tmp = __raw_readl(S3C64XX_SPCON);
-	tmp &= ~S3C64XX_SPCON_LCD_SEL_MASK;
-	tmp |= S3C64XX_SPCON_LCD_SEL_RGB;
-	__raw_writel(tmp, S3C64XX_SPCON);
-	
-	/* remove the lcd bypass */
-	tmp = __raw_readl(S3C64XX_MODEM_MIFPCON);
-	tmp &= ~MIFPCON_LCD_BYPASS;
-	__raw_writel(tmp, S3C64XX_MODEM_MIFPCON);
-#endif
+	//s3cfb_init_lcd();
 }
 
 MACHINE_START(SMDK6410, "SMDK6410")

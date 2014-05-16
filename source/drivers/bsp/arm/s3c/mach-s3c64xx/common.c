@@ -21,7 +21,7 @@
 #include "common.h"
 
 #include <plat/map-base.h>
-#include "include/mach/map.h"
+#include "mach/map_s3c.h"
 
 /* see notes on uart map in arch/arm/mach-s3c64xx/include/mach/debug-macro.S */
 #define UART_OFFS (S3C_PA_UART & 0xfffff)
