@@ -18,6 +18,7 @@
 #include "pbuf.h"
 #include "init.h"
 #include "tcp.h"
+#include "socket.h"
 
 #define DEFAULT_STREAM_FILE_PATH "/os/net/stream"
 #define DEFAULT_MAX_PKG_SIZE	2048
@@ -117,6 +118,62 @@ err1:
 	tcp_abort(new_connection);
 err0:
 	return ret;
+}
+
+/**
+	@brief bind socket
+*/
+static int do_bind(struct sockaddr *addr, socklen_t addr_len)
+{
+	ip_addr_t local_ip;
+	int ret = ENOMEM;
+	struct tcp_pcb *bind_pcb;
+	struct tcp_connection_ctx *tcp_ctx;
+
+	/* set local port and ip */
+	struct sockaddr_in *in_addr = (struct sockaddr_in *)addr;
+	u16_t local_port   = in_addr->sin_port;
+	inet_addr_to_ipaddr(&local_ip, &in_addr->sin_addr);
+	
+	bind_pcb = tcp_new();
+	if (!bind_pcb)
+		goto err;
+	tcp_ctx = malloc(sizeof(*tcp_ctx));
+	if (!tcp_ctx)
+		goto err0;
+
+	/* call protocol stack tcp bind */
+	if (tcp_bind(bind_pcb, &local_ip, local_port) != ERR_OK)
+		goto err1;
+
+	/* TODO 这里需要记录tcp pcb,供listen使用 */
+	
+	return 0;
+	
+err1:
+	free(tcp_ctx);
+	
+err0:
+	tcp_abort(bind_pcb);
+	
+err:
+	return ret;
+}
+
+/**
+	@brief listen
+*/
+static int do_listen(struct tcp_pcb *listen_pcb, int backlog)
+{
+	
+}
+
+/**
+	@brief accept sock connect
+*/
+static int do_accept(struct sockaddr *addr_out, socklen_t addr_len)
+{
+	
 }
 
 DLLEXPORT struct grid_netproto grid_acquire_netproto = {
@@ -297,7 +354,7 @@ int dll_main(void)
 
 void pbuf_free_zero_object(void* p)
 {
-	TODO("");
+	ring_buff_free_package(p);
 }
 
 unsigned int sys_now(void)

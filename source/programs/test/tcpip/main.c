@@ -165,12 +165,12 @@ int main()
 	entry(0, NULL);
 
 	/* Ð´°üÏß³Ì */	
-	//if (pthread_create(&write_worker, NULL, write_thread, 0))
-	//	goto err;
+	if (pthread_create(&write_worker, NULL, write_thread, 0))
+		goto err;
 	
 	/* Socket testing thread */
-	if (pthread_create(NULL, NULL, socket_thread, 0))
-		goto err;
+	//if (pthread_create(NULL, NULL, socket_thread, 0))
+	//	goto err;
 	
 	return 0;
 err:

@@ -38,6 +38,8 @@ struct ring_package
 	size_t package_size;
 };
 
+
+
 /**
 	@brief 给定一个内存区域,初始化为ring buff
 	@return
@@ -58,6 +60,13 @@ void *ring_buff_alloc(struct ring_buff_cache *cache, size_t length);
 		无
 */
 void ring_buff_free(struct ring_buff_cache *cache, void *buff);
+
+/**
+	@brief 释放package 对象
+	@return
+		void
+*/
+void ring_buff_free_package(void *obj);
 
 /**
 	@brief 获取当前可读取报文头
