@@ -34,7 +34,7 @@ static void build_ram_list()
 	
 #ifdef __arm__
 	unsigned long node = 0;
-	unsigned long reserved = 0x100000;
+	unsigned long reserved = 0x200000;
 	unsigned long start = 0x50000000 + reserved;
 	unsigned long size = 128*1024*1024 - reserved;
 #else
@@ -63,10 +63,10 @@ void __init __noreturn hal_main()
 	hal_malloc_init();
 	hal_dpc_init();
 	hal_time_init();
-	hal_console_init();
-	
+
 	hal_arch_init(HAL_ARCH_INIT_PHASE_MIDDLE);
-	
+
+	hal_console_init();
 	printk("GridOS Æô¶¯ÖÐ...\n");
 	ke_module_entry();
 	
