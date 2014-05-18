@@ -11,45 +11,6 @@
 
 #define NSS_HWMGR_VERSION_CUR 0
 
-struct package_pos
-{
-	/* 包大小 */
-	size_t package_size;
-	/* 数据位置 */
-	unsigned long package_offset;
-};
-
-struct package_head
-{
-	/* 包头包含的数据包数目 */
-	size_t package_count;
-	/* 下一个包头的位置 */
-	unsigned long next_head_offset;
-	struct package_pos pos[0];
-};
-
-#define DATA_SIZE(BYTE) (((BYTE) + sizeof(struct package_head) - 1)/sizeof(struct package_head))
-
-/* 该宏暂时能用于一个报文的封装 TODO */
-#define MAKE_PACKAGE(head, nbyte) do{\
-	(head)->package_count = 1;\
-	(head)->next_head_offset = (nbyte) + sizeof(struct package_head) + sizeof(struct package_pos);\
-	(head)->pos->package_size = (nbyte);\
-	(head)->pos->package_offset = sizeof(struct package_head) + sizeof(struct package_pos);\
-	}while(0)
-
-/* 获取next package head offset */
-#define get_package_next_head(head) \
-	(((struct package_head *)(head))->next_head_offset)
-
-/* 获取package pos */
-#define get_package_pos(head) \
-	(((struct package_head *)(head))->pos->package_offset)
-
-/* 获取package size */
-#define get_package_size(head) \
-	(((struct package_head *)(head))->pos->package_size)
-
 
 /* 由于我们现在还没有完备的设备管理器，因此先抽象一套网卡设备管理器的接口处理 */
 struct nss_netif_ops

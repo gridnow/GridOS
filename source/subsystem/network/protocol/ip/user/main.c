@@ -18,6 +18,7 @@
 #include "pbuf.h"
 #include "init.h"
 #include "tcp.h"
+#include "socket.h"
 
 #define DEFAULT_STREAM_FILE_PATH "/os/net/stream"
 #define DEFAULT_MAX_PKG_SIZE	2048
@@ -117,6 +118,30 @@ err1:
 	tcp_abort(new_connection);
 err0:
 	return ret;
+}
+
+/**
+	@brief bind socket
+*/
+static int do_bind(struct sockaddr *addr, socklen_t addr_len)
+{
+	
+}
+
+/**
+	@brief listen
+*/
+static int do_listen(struct tcp_pcb *listen_pcb, int backlog)
+{
+	
+}
+
+/**
+	@brief accept sock connect
+*/
+static int do_accept(struct sockaddr *addr_out, socklen_t addr_len)
+{
+	
 }
 
 DLLEXPORT struct grid_netproto grid_acquire_netproto = {
@@ -297,7 +322,7 @@ int dll_main(void)
 
 void pbuf_free_zero_object(void* p)
 {
-	TODO("");
+	ring_buff_free_package(p);
 }
 
 unsigned int sys_now(void)

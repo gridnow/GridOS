@@ -2,7 +2,7 @@
 #include "ring_buff.h"
 #include <string.h>
 #include <stdio.h>
-
+#include <stddef.h>
 #define DEBUG_HEAD_INFO(head) \
 	printf("=======================\n"\
 			"head prev offset %d\n"\
@@ -67,6 +67,10 @@
 
 #define slice_new_package_offset(slice) \
 	(ptr_to_cache_offset((slice))+ sizeof(struct ring_package))
+
+
+#define get_cache_head_by_ring_pkt(pkt) \
+	((pkt) - (pkt)->package_offset + sizeof(struct ring_package))
 
 /**
 	@brief 给定一个内存区域,初始化为ring buff
@@ -140,6 +144,9 @@ void *ring_buff_alloc(struct ring_buff_cache *cache, size_t length)
 	struct ring_package *curr = NULL;
 	int found = 0;
 
+	/* length 必须sizeof(long)对齐,在某些嵌入式设备要求指针对齐 */
+	length = ALIGN(length,sizeof(long));
+	
 	/* IS FULL ? */
 	if (cache_is_full(cache))
 		return NULL;
@@ -147,15 +154,11 @@ void *ring_buff_alloc(struct ring_buff_cache *cache, size_t length)
 	curr = cache_write_pos(cache);
 
 	/* 
-		为空的时候,我们需要直接跳进while循环查找一个轮询后在退出
-		因为中间可能有为被释放的ring package
-	*/
-	if (cache_is_empty(cache))
-		goto search_round;
-	
-	while (curr != cache_read_pos(cache))
+		查找可用packge head
+		当为空buff只需一次找到
+	*/	
+	do
 	{
-search_round:
 		/* 当前buff 是否有效*/
 		if (curr->valid_flag)
 		{
@@ -180,7 +183,7 @@ search_round:
 		}
 
 		curr = (struct ring_package *)cache_offset_to_ptr(curr->next_head);
-	}
+	} while(curr != cache_read_pos(cache));
 
 	/* 是否真的找到了可分配的buff */
 	if (found)
@@ -261,6 +264,19 @@ mereg_next:
 	return;
 }
 
+
+/**
+	@brief 释放package 对象
+	@return
+		void
+*/
+void ring_buff_free_package(void *obj)
+{
+	struct ring_package *ring_pkt = (struct ring_package *)obj;
+	struct ring_buff_cache *cache = (struct ring_buff_cache *)get_cache_head_by_ring_pkt(ring_pkt);
+	return ring_buff_free(cache, (obj + sizeof(struct ring_package)));
+}
+
 /**
 	@brief 获取当前可读取报文头
 	@return
@@ -269,7 +285,8 @@ mereg_next:
 struct ring_package *ring_cache_read_package(struct ring_buff_cache *cache)
 {
 	struct ring_package *curr_read, *next_package;
-	
+
+	/* 当前可读报文位置,由前一次read package的时候修正 */
 	curr_read = cache_read_pos(cache);
 	next_package = get_next_ring_package(curr_read);
 		
@@ -319,7 +336,7 @@ void cache_package_head_info_debug(struct ring_buff_cache *cache)
 		DEBUG_HEAD_INFO(next);
 		head_count++;
 		next = get_next_ring_package(next);
-	}while(next != cache_head_ring_package(cache));
+	} while(next != cache_head_ring_package(cache));
 	
 	printf("total package head %d\n", head_count);
 
