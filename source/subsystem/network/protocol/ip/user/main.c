@@ -19,7 +19,6 @@
 #include "init.h"
 #include "tcp.h"
 #include "socket.h"
-#include "sockets.h"
 
 #define DEFAULT_STREAM_FILE_PATH "/os/net/stream"
 #define DEFAULT_MAX_PKG_SIZE	2048
