@@ -26,14 +26,17 @@ BEGIN_C_DECLS;
 struct y_thread_environment_block
 {
 	void *self;
+	
+	/* Message information */
 	void *mi;
 };
 
+typedef unsigned long message_id_t;
 struct y_message
 {
 	unsigned short count;
 	volatile unsigned short flags;
-	unsigned long what;	
+	message_id_t what;
 };
 
 #define Y_SYNC_MAX_OBJS_COUNT 64

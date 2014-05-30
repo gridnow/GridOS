@@ -10,6 +10,7 @@
 #define COMMON_LIBS_MSG_H
 
 #include <ystd.h>
+#include <list.h>
 
 #define MSG_STATUS_NEW		(1 << 1)
 #define MSG_STATUS_USED_BIT	(1 << 3)
@@ -56,16 +57,19 @@ typedef unsigned long MSG_DATA_TYPE;
 } while (0)
 
 struct y_message_instance;
+typedef void (*y_message_func)(struct y_message *msg);
 
 typedef bool (*message_filter)(struct y_message *what);
 typedef void (*message_sleep)(struct y_message_instance *msg_instance);
 typedef void (*message_response_sync)(struct y_message *what);
+typedef y_message_func (*message_find_handler)(struct y_message_instance *msg_instance, message_id_t id);
 
 struct y_message_instance
 {
 	message_filter filter;
 	message_sleep sleep;
 	message_response_sync response_sync;
+	message_find_handler find_handler;
 	void * slots;
 	void * current_slot;
 	int slot_buffer_size;
@@ -76,14 +80,15 @@ struct y_message_instance
 
 	The function will not exist NOW. When fetch a message it tries to handle it.
 */
-void message_loop(struct y_message_instance * instance);
+void message_loop(struct y_message_instance *instance);
 
 /**
 	@brief 将所有消息的状态初始化
 
 	一般用于初始化刚刚创立的消息缓冲区
 */
-void message_reset_all(struct y_message_instance * instance);
+void message_reset_all(struct y_message_instance *instance);
 
 #endif
+
 /** @} */
