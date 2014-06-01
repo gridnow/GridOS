@@ -57,7 +57,6 @@ typedef unsigned long MSG_DATA_TYPE;
 } while (0)
 
 struct y_message_instance;
-typedef void (*y_message_func)(struct y_message *msg);
 
 typedef bool (*message_filter)(struct y_message *what);
 typedef void (*message_sleep)(struct y_message_instance *msg_instance);
