@@ -9,8 +9,21 @@
 #include <stdio.h>
 #include <ystd.h>
 
+#include "crt.h"
 #include "sys/ke_req.h"
 #include "common/include/message.h"
+
+/* We are operating on the file exclusively */
+static LIST_HEAD(registered_handler);
+#define LOCK_REGISTERED_HANDLER()  //TODO
+#define UNLOCK_REGISTERED_HANDLER()
+
+struct message_desc
+{
+	struct list_head list;
+	message_id_t msg_id;
+	y_message_func callback;
+};
 
 static struct y_thread_environment_block *get_current()
 {
@@ -35,20 +48,39 @@ static void set_current_mi(struct y_message_instance *mi)
 	current->mi = mi;
 }
 
-static void default_sync_message_ack()
+static void message_default_sync_ack()
 {
 	//TODO
 }
 
-static void default_message_wait(struct y_message_instance *message_instance)
+static void message_default_wait(struct y_message_instance *message_instance)
 {
 	struct sysreq_thread_msg req;
 	
 	req.base.req_id = SYS_REQ_KERNEL_THREAD_MSG;
+	req.ops			= SYSREQ_THREAD_MSG_SLEEP;
 	system_call(&req);
 	
 	message_instance->slots				= req.slot_base;
 	message_instance->slot_buffer_size	= req.slot_buffer_size;
+}
+
+static y_message_func message_default_find_handler(struct y_message_instance *message_instance, message_id_t id)
+{
+	struct message_desc *desc;
+	
+	LOCK_REGISTERED_HANDLER();
+	list_for_each_entry(desc, &registered_handler, list)
+	{
+		if (desc->msg_id == id)
+		{
+			UNLOCK_REGISTERED_HANDLER();
+			return desc->callback;
+		}
+	}
+	
+	UNLOCK_REGISTERED_HANDLER();
+	return NULL;
 }
 
 DLLEXPORT y_handle y_process_create(xstring name, char *cmdline)
@@ -74,8 +106,9 @@ DLLEXPORT y_msg_loop_result y_message_loop()
 	
 	message_instance.current_slot	= NULL;
 	message_instance.filter			= NULL;
-	message_instance.sleep			= default_message_wait;
-	message_instance.response_sync	= default_sync_message_ack;
+	message_instance.sleep			= message_default_wait;
+	message_instance.response_sync	= message_default_sync_ack;
+	message_instance.find_handler	= message_default_find_handler;
 
 	/* Set current mi for user to use in some message API */
 	set_current_mi(&message_instance);
@@ -84,10 +117,38 @@ DLLEXPORT y_msg_loop_result y_message_loop()
 	return Y_MSG_LOOP_EXIT_SIGNAL;		
 }
 
-DLLEXPORT bool y_message_send(struct y_message *what)
+DLLEXPORT bool y_message_register(message_id_t message_id, y_message_func call_back_func)
 {
-	TODO("");
-	return false;	
+	struct message_desc *node;
+	
+	/* Already registered before? */
+	if (NULL != message_default_find_handler(get_current_mi(), message_id))
+		goto err;
+	
+	/* Allocate a new one */
+	if (NULL == (node = crt_alloc(sizeof(*node))))
+		goto err;
+	node->callback	= call_back_func;
+	node->msg_id	= message_id;
+	
+	LOCK_REGISTERED_HANDLER();
+	list_add_tail(&node->list, &registered_handler);
+	UNLOCK_REGISTERED_HANDLER();
+	return true;
+	
+err:
+	return false;
+}
+
+DLLEXPORT bool y_message_send(ke_handle to_thread, struct y_message *what)
+{
+	struct sysreq_thread_msg req;
+	
+	req.base.req_id		= SYS_REQ_KERNEL_THREAD_MSG;
+	req.ops				= SYSREQ_THREAD_MSG_SEND;
+	req.send.to_thread	= to_thread;
+	req.send.msg		= what;
+	return system_call(&req);
 }
 
 DLLEXPORT void y_message_read(struct y_message *what, ...)

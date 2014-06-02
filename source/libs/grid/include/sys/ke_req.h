@@ -85,7 +85,15 @@ struct sysreq_thread_msg
 {
 	/* INPUT */
 	struct sysreq_common base;
-
+	int ops;
+#define SYSREQ_THREAD_MSG_SLEEP 1
+#define SYSREQ_THREAD_MSG_SEND 2
+	struct __send_msg__
+	{
+		ke_handle to_thread;
+		void *msg;
+	} send;
+	
 	/* OUTPUT */
 	void *slot_base;
 	int slot_buffer_size;

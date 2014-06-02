@@ -17,6 +17,7 @@
 #include <compiler.h>
 #include <types.h>
 #include <kernel/kernel.h>
+#include <kernel/ke_srv.h>
 
 BEGIN_C_DECLS;
 
@@ -26,15 +27,19 @@ BEGIN_C_DECLS;
 struct y_thread_environment_block
 {
 	void *self;
+	
+	/* Message information */
 	void *mi;
 };
 
+typedef unsigned long message_id_t;
 struct y_message
 {
 	unsigned short count;
 	volatile unsigned short flags;
-	unsigned long what;	
+	message_id_t what;
 };
+typedef void (*y_message_func)(struct y_message *msg);
 
 #define Y_SYNC_MAX_OBJS_COUNT 64
 #define Y_SYNC_WAIT_INFINITE -1
@@ -94,6 +99,16 @@ y_msg_loop_result y_message_loop();
 		The result in the format of y_wait_result
 */
 y_wait_result y_event_wait(y_handle event, int timeout);
+
+/**
+	@brief 发送消息到线程
+*/
+bool y_message_send(ke_handle to_thread, struct y_message *what);
+
+/**
+	@brief 注册消息处理函数
+*/
+bool y_message_register(message_id_t message_id, y_message_func call_back_func);
 
 /**
 	@brief 触发一个事件

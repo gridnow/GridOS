@@ -7,6 +7,7 @@
  */
 
 #include <types.h>
+
 #include "message.h"
 
 /**
@@ -19,7 +20,7 @@ static struct y_message *message_clean(struct y_message_instance *instance, stru
 {
 	struct y_message * cur = start;
 	
-	while(count > 0)
+	while (count > 0)
 	{
 		cur->flags = 0;
 		MSG_GET_NEXT_SLOT(instance, cur);
@@ -48,18 +49,27 @@ static struct y_message *handle_message(struct y_message_instance *instance, str
 	
 	if (r == true)
 	{
+		
 		/*
 		 1，地址调用型的？
 		 2，那么就是查询的
 		 */
 		if (what->flags & MSG_FLAGS_ADDRESS)
 		{
-			void (*fn)(struct y_message * what);
-			fn = (void (*)())what->what;
+			y_message_func fn;
+			fn = (y_message_func)what->what;
 			fn(what);
 		}
-		
-		//TODO : LOOKUP
+		else
+		{
+			y_message_func fn;
+			if (instance->find_handler)
+			{
+				fn = instance->find_handler(instance, what->what);
+				if (fn)
+					fn(what);
+			}
+		}
 	}
 	
 	/*

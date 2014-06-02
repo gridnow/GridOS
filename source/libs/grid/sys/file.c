@@ -17,6 +17,8 @@
 
 #include "dir.h"
 #include "file.h"
+#include "stream_file.h"
+#include "nocache_file.h"
 #include "sys/file_req.h"
 
 static ke_handle sys_mkfile(const char *name)

@@ -391,25 +391,41 @@ invalid_handle:
 */
 static bool thread_msg(struct sysreq_thread_msg *req)
 {
-	bool r;
+	bool r = false;
 	struct ktm *msg;
 	
-	msg = ktm_prepare_loop();
-	if (msg == NULL)
+	if (req->ops == SYSREQ_THREAD_MSG_SLEEP)
 	{
-		req->slot_base = NULL;
-		req->slot_buffer_size = 0;
-		r = false;
+		msg = ktm_prepare_loop();
+		if (msg == NULL)
+		{
+			req->slot_base = NULL;
+			req->slot_buffer_size = 0;
+		}
+		else
+		{
+			kt_sleep(KT_STATE_WAITING_MSG);
+
+			req->slot_base			= (void*)msg->map->node.start;
+			req->slot_buffer_size	= msg->desc.slot_buffer_size;
+			r = true;
+		}
 	}
-	else
+	else if (req->ops == SYSREQ_THREAD_MSG_SEND)
 	{
-		kt_sleep(KT_STATE_WAITING_MSG);
-
-		req->slot_base			= (void*)msg->map->node.start;
-		req->slot_buffer_size	= msg->desc.slot_buffer_size;
-		r = true;
+		struct y_message *what = req->send.msg;
+		ke_handle thread = req->send.to_thread;
+		struct ko_thread *to;
+		
+		/* Translate thread */
+		if (!(to = ke_handle_translate(thread)))
+			goto end;
+		
+		r = ktm_send(to, what);
+		
+		ke_handle_put(thread, to);
 	}
-
+end:
 	return r;
 }
 
