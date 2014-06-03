@@ -44,7 +44,8 @@ void fnotify_msg_send(struct fss_file *file, y_file_event_type_t even)
 		if (ntf_file->even_type_mask & even)
 		{
 			/* 构造发送消息 */
-			MSG_MAKE(1, MSG_FLAGS_ADDRESS, (ntf_file->call_func))
+			MSG_MAKE(pmsg, MSG_FLAGS_ADDRESS, 1, (ntf_file->call_func))
+			MSG_MAKE_OUT_PARA(pmsg, pdata);
 			*pdata = (MSG_DATA_TYPE)(ntf_file->call_para);
 			
 			/* send msg */

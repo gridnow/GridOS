@@ -19,14 +19,16 @@
 #define MSG_FLAGS_SYNC		(1 << 5)
 
 #define __data_size__(DATA_COUNT) ((DATA_COUNT)  * sizeof(MSG_DATA_TYPE))
-#define __msg_count__(DATA_COUNT) ((__data_size__(DATA_COUNT) + sizeof(struct y_message) - 1)/*max possible size*/ / sizeof(struct y_message))
-#define MSG_MAKE(DATA_COUNT, FLAGS, NAME) \
-	struct y_message __msg__[__msg_count__(DATA_COUNT)/* Data part */ + 1/*The head of msg*/];	\
-	struct y_message *pmsg = &__msg__[0];	\
-	unsigned long *pdata = (unsigned long*) &__msg__[1];	\
-	pmsg->count = __msg_count__(DATA_COUNT);	\
-	pmsg->flags = FLAGS;	\
-	pmsg->what = (unsigned long)NAME;
+#define __add_msg_count__(DATA_COUNT) ((__data_size__(DATA_COUNT) + sizeof(struct y_message) - 1)/*max possible size*/ / sizeof(struct y_message))
+#define MSG_MAKE(NAME, FLAGS, DATA_COUNT, WHAT) \
+	struct y_message __msg##NAME__[__add_msg_count__(DATA_COUNT)/* Data part */ + 1/*The head of msg*/];	\
+	struct y_message *(NAME) = &__msg##NAME__[0];	\
+	(NAME)->count = (DATA_COUNT);	\
+	(NAME)->flags = (FLAGS);	\
+	(NAME)->what = (unsigned long)WHAT;
+#define MSG_MAKE_OUT_PARA(MSG, WRITE_NAME) \
+	unsigned long *WRITE_NAME = (unsigned long*) &(MSG)[1];	
+
 
 /**
 	@brief Data ops on received msg

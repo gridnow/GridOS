@@ -124,7 +124,8 @@ static struct y_message *send(struct ktm *where, struct y_message *what, struct 
 	struct y_message *dst, *tmp, *src;
 	int count, i;
 
-	count	= what->count;
+	/* what->count is actually para counter */
+	count	= __add_msg_count__(what->count);
 	i		= 0;
 
 	/* 
@@ -203,6 +204,7 @@ static struct y_message *send(struct ktm *where, struct y_message *what, struct 
 	dst->what	= what->what;
 	dst->flags |= what->flags;												//FLAGS must a the end
 	dst->flags |= MSG_STATUS_NEW;											//The New will cause dst thread to read the msg
+	
 	return dst;
 
 full:
@@ -265,8 +267,8 @@ try_again:
 		{
 			int i;
 			struct y_message *dst, *src;
-			int response_count = wait.sent->count;
-			int request_count  = what->count;
+			int response_count = __add_msg_count__(wait.sent->count);
+			int request_count  = __add_msg_count__(what->count);
 
 			//TODO: check if we can write to user space directly;
 			
