@@ -151,7 +151,7 @@ DLLEXPORT bool y_message_send(ke_handle to_thread, struct y_message *what)
 	return system_call(&req);
 }
 
-DLLEXPORT void y_message_read(struct y_message *what, ...)
+DLLEXPORT int y_message_read(struct y_message *what, ...)
 {
 	int i, count;
 	va_list wb_list;
@@ -172,6 +172,8 @@ DLLEXPORT void y_message_read(struct y_message *what, ...)
 		wb = va_arg(wb_list, MSG_PDATA_TYPE);
 		*wb = data;
 	}
+
+	return count;
 }
 
 DLLEXPORT y_wait_result y_wait_objects(y_handle * __user sync_objects, int count, int timeout)

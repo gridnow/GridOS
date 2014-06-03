@@ -79,8 +79,10 @@ y_wait_result y_process_wait_exit(y_handle for_who, unsigned long * __in __out r
 		该函数的用法举例:
 		y_message_read(msg, &arg0, &arg1);
 		其中arg0 和argv1 是unsigned long类型
+	@return
+		The count of parameters the message attached.
 */
-void y_message_read(struct y_message *what, ...);
+int y_message_read(struct y_message *what, ...);
 
 /**
 	@brief 等待线程消息
