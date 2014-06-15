@@ -124,9 +124,10 @@ err0:
 static void *socket_thread(void *unused)
 {
 	struct sockaddr addr;
+	struct sockaddr_in *addr_inet = &addr;
 	socklen_t addrlen;
 	int fd, r;
-	
+
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd == -1)
 	{
@@ -137,18 +138,64 @@ static void *socket_thread(void *unused)
 	printf("Connecting....");
 	memset(&addr, 0, sizeof(addr));
 	addrlen = sizeof(addr);
+
+	addr_inet->sin_len = addrlen;
+	addr_inet->sin_family = AF_INET;
+	addr_inet->sin_port   = 0x123;
+	addr_inet->sin_addr.s_addr = 0x0f24890a;
+	
 	r = connect(fd, &addr, addrlen);
 	printf("result is %d.\n", r);
-	
+
 	//TODO: close socket
 	
 	return NULL;
+}
+
+/**
+	@brief accept thread for tcp
+	
+*/
+static void *accept_thread(void *para)
+{
+	struct sockaddr addr;
+	struct sockaddr_in *addr_inet = &addr;
+	socklen_t addrlen;
+	int fd, ret;
+
+	fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (fd == -1)
+	{
+		printf("Create socket error.\n");
+	}
+	printf("socket id is %d.\n", fd);
+	
+	printf("Binding....");
+	memset(&addr, 0, sizeof(addr));
+	addrlen = sizeof(addr);
+
+	addr_inet->sin_len = addrlen;
+	addr_inet->sin_family = AF_INET;
+	addr_inet->sin_port   = 291;
+	addr_inet->sin_addr.s_addr = 0x0f24890a;
+	
+	ret = bind(fd, &addr, addrlen);
+	printf("bind result %d\n", ret);
+
+	ret = listen(fd, 12);
+	printf("listen result %d\n", ret);
+	
+	ret = accept(fd, &addr, &addrlen);
+	printf("接受 result %d\n", ret);
+	
+	return;
 }
 
 int main()
 {
 	void *so = dlopen("tcpip.so", 0);	
 	int (*entry)(int argc, char **argv);
+	y_handle hevent;
 	
 	if (!so)
 	{
@@ -163,15 +210,26 @@ int main()
 		goto err;
 	}
 	entry(0, NULL);
+	
+	/* Wait 1ms for tcpip to startup */
+	hevent = y_event_create(false, false);
+	y_event_wait(hevent, 1000);
+	printf("OK, let's go test tcpip.\n");
 
 	/* 写包线程 */	
-	if (pthread_create(&write_worker, NULL, write_thread, 0))
+	//if (pthread_create(&write_worker, NULL, write_thread, 0))
+	//	goto err;
+
+	/* test bind thread */
+	if (pthread_create(NULL, NULL, accept_thread, 0))
 		goto err;
 	
 	/* Socket testing thread */
-	//if (pthread_create(NULL, NULL, socket_thread, 0))
-	//	goto err;
+	if (pthread_create(NULL, NULL, socket_thread, 0))
+		goto err;
 	
+	/* We cannot exit , so wait */
+	y_event_wait(hevent, 1000000000);
 	return 0;
 err:
 	return -1;	

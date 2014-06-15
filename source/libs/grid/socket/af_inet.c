@@ -24,9 +24,29 @@ static pthread_spinlock_t load_lock;
 static void *module_ipv4;
 static struct grid_netproto *proto_ipv4;
 
-static int do_connect()
+static void *do_socket(int type, int proto)
 {
-	return proto_ipv4->connect();
+	return proto_ipv4->socket(type, proto);
+}
+
+static int do_connect(struct grd_netconn *netconn, const void *addr, size_t addr_len)
+{
+	return proto_ipv4->connect(netconn, addr, addr_len);
+}
+
+static int do_bind(struct grd_netconn *netconn, const void *addr, size_t addr_len)
+{
+	return proto_ipv4->bind(netconn, (void *)addr, addr_len);
+}
+
+static int do_listen(struct grd_netconn *netconn, int backlog)
+{
+	return proto_ipv4->listen(netconn, backlog);
+}
+
+static void *do_accept(struct grd_netconn *netconn, void *addr, size_t *addr_len)
+{
+	return proto_ipv4->accept(netconn, addr, addr_len);
 }
 
 static int do_send()
@@ -48,7 +68,11 @@ static int do_disconnect()
 	Socket ¿ò¼Ü
 */
 static struct socket_ops af_inet_socket_ops = {
+	.socket     = do_socket,
 	.connect 	= do_connect,
+	.bind       = do_bind,
+	.listen     = do_listen,
+	.accept     = do_accept,
 	.send		= do_send,
 	.recv		= do_recv,
 	.disconnect	= do_disconnect,

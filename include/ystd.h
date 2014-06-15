@@ -65,6 +65,9 @@ y_handle y_process_create(xstring name, char *cmdline);
 	
 	@param[in] for_who 要等待的进程对象
 	@param[in][out] 可以为NULL，否则回写进程for_who的退出结果（一般是main函数的返回值）
+ 
+	@return
+		See y_wait_result.
 */
 y_wait_result y_process_wait_exit(y_handle for_who, unsigned long * __in __out result);
 
@@ -73,7 +76,7 @@ y_wait_result y_process_wait_exit(y_handle for_who, unsigned long * __in __out r
 
 	消息处理触发函数被调用外，一般还可以携带数据
 
-	@param[in] what 消息对象，用户实际上不直接访问这个结构中的内容。
+	@param[in] what 消息对象，用户实际上不直接访问这个结构中的内容
 
 	@note:
 		该函数的用法举例:
@@ -83,6 +86,19 @@ y_wait_result y_process_wait_exit(y_handle for_who, unsigned long * __in __out r
 		The count of parameters the message attached.
 */
 int y_message_read(struct y_message *what, ...);
+
+/**
+	@brief 写入返回消息
+ 
+	一般用户为了同步消息的返回值，需要写入消息。前提本次写入不能超过对方发送时消息携带的参数个数。
+ 
+	@param[in] what 消息对象，用户实际上不直接访问这个结构中的内容
+	@param[in] wb_count 回写参数个数，不可多于发送时的数量
+ 
+	@return
+		The count of parameters written, < 0 for error!
+*/
+int y_message_writeback(struct y_message *what, int wb_count, ...);
 
 /**
 	@brief 等待线程消息

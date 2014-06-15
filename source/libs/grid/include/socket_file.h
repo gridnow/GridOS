@@ -12,12 +12,19 @@
 #ifndef __SOCKET_FILE_H__
 #define __SOCKET_FILE_H__
 
+#include <list.h>
+#include <ddk/grid.h>
+
 #include "file.h"
 #include "posix.h"
 
 struct socket_ops
 {
-	int (*connect)(const void *addr, size_t addr_len);
+	void *(*socket)(int proto, int type);
+	int (*connect)(struct grd_netconn *netconn, const void *addr, size_t addr_len);
+	int (*bind)(struct grd_netconn *netconn, const void *addr, size_t addr_len);
+	int (*listen)(struct grd_netconn *netconn, int backlog);
+	void *(*accept)(struct grd_netconn *netconn, void *addr, size_t *addr_len);
 	int (*send)();
 	int (*recv)();
 	int (*disconnect)();
@@ -29,6 +36,7 @@ struct socket_ops
 struct socket_file
 {
 	struct socket_ops *ops;
+	struct grd_netconn *netconn;
 };
 
 bool init_socket();

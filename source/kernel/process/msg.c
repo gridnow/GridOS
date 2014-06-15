@@ -311,7 +311,10 @@ try_again:
 		}
 		else
 		{
-			printk("The message is abandoned.\n");
+			/* Remove self from the wakeup queue in other's msg pool */
+			ke_spin_lock(&where->lock);
+			list_del(&wait.list);
+			ke_spin_unlock(&where->lock);
 		}
 	}
 	else
@@ -354,7 +357,7 @@ struct ktm *ktm_prepare_loop()
 
 	The responser acknowledges a synchronous message
 */
-void ktm_ack_sync(struct y_message *what)
+bool ktm_ack_sync(struct y_message *what)
 {
 	struct list_head *pos;
 	struct ke_message_wait *wait = NULL;
@@ -383,7 +386,7 @@ void ktm_ack_sync(struct y_message *what)
 
 	/* 可能msg 对象被销毁了,如果没有被销毁，或者正在销毁，那么wait 是稳定得。 */
 	if (!wait)
-		goto end;
+		goto err;
 	/*
 		Wakeup the sender so it can copy back the result.
 	*/	
@@ -400,8 +403,12 @@ void ktm_ack_sync(struct y_message *what)
 		/* Let the receiver have a chance to get the result */
 		kt_switch(KT_SWITCH_GIVE_CHANCE);
 	}
-end:;
+
+	return true;
 	/* Receiver(This time is myself) will clean the used bit when ACKED this sync msg after return from here */
+
+err:
+	return false;
 }
 
 /**
