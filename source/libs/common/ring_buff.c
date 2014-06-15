@@ -82,12 +82,8 @@ struct ring_buff_cache * ring_buff_head_init(void *cache, size_t length)
 	struct ring_buff_cache *buff = (struct ring_buff_cache *)cache;
 	struct ring_package *first_head = NULL;
 	
-	/* is init ? */
-	if (buff->is_init)
-		return buff;
-	
-	memset((void *)buff, 0, sizeof(struct ring_buff_cache));
 	/* init buff cache head */
+	memset((void *)buff, 0, sizeof(struct ring_buff_cache));
 	buff->is_init           = 1;
 	buff->cache_buff_length = length;
 	buff->curr_read_pos     = sizeof(*buff);
@@ -95,7 +91,7 @@ struct ring_buff_cache * ring_buff_head_init(void *cache, size_t length)
 
 	/* 初始化第一个空间buff */
 	first_head = cache_head_ring_package(buff);
-
+	memset(first_head, 0, sizeof(*first_head));
 	first_head->next_head           = sizeof(struct ring_buff_cache);
 	first_head->prev_head           = sizeof(struct ring_buff_cache);
 	first_head->package_offset      = sizeof(struct ring_buff_cache) + sizeof(struct ring_package);
@@ -103,8 +99,6 @@ struct ring_buff_cache * ring_buff_head_init(void *cache, size_t length)
 	
 	return buff;
 }
-
-
 
 /*
 	@brief 从空buff中分配一个新的buff
@@ -130,9 +124,7 @@ static void *slice_buff(struct ring_buff_cache *cache, struct ring_package *slic
 	cache->curr_write_pos = slice_head->next_head;
 
 	return cache_offset_to_ptr(slice_head->package_offset);
-	
 }
-
 
 /**
 	@brief 分配一个报文头
@@ -191,7 +183,6 @@ void *ring_buff_alloc(struct ring_buff_cache *cache, size_t length)
 
 	return NULL;
 }
-
 
 /**
 	@brief 释放buff 并合并相邻空闲buff

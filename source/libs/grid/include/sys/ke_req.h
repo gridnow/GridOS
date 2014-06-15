@@ -86,8 +86,9 @@ struct sysreq_thread_msg
 	/* INPUT */
 	struct sysreq_common base;
 	int ops;
-#define SYSREQ_THREAD_MSG_SLEEP 1
-#define SYSREQ_THREAD_MSG_SEND 2
+#define SYSREQ_THREAD_MSG_SLEEP		1
+#define SYSREQ_THREAD_MSG_SEND		2
+#define SYSREQ_THREAD_MSG_ACK_SYNC	3
 	struct __send_msg__
 	{
 		ke_handle to_thread;

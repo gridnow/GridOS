@@ -36,7 +36,7 @@ struct ke_message_wait
 };
 
 //msg.c
-void ktm_ack_sync(struct y_message *what);
+bool ktm_ack_sync(struct y_message *what);
 void ktm_delete();
 bool ktm_send(struct ko_thread *to, struct y_message *what);
 struct ktm *ktm_prepare_loop();

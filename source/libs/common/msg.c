@@ -19,13 +19,16 @@
 static struct y_message *message_clean(struct y_message_instance *instance, struct y_message *start, int count)
 {
 	struct y_message * cur = start;
+	count = __add_msg_count__(count);
 	
+	/* 把数据区所占的slot 的flag 清掉，所以循环的是 msg count */
 	while (count > 0)
 	{
 		cur->flags = 0;
 		MSG_GET_NEXT_SLOT(instance, cur);
 		count --;
 	}
+
 	return cur;
 }
 
@@ -94,7 +97,7 @@ static struct y_message *handle_message(struct y_message_instance *instance, str
 	MSG_GET_NEXT_SLOT(instance, next);
 	next = message_clean(instance, next, count);
 	what->flags = 0;
-	
+
 	return next;
 }
 

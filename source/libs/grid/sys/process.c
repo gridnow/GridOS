@@ -48,9 +48,14 @@ static void set_current_mi(struct y_message_instance *mi)
 	current->mi = mi;
 }
 
-static void message_default_sync_ack()
+static void message_default_sync_ack(struct y_message *what)
 {
-	//TODO
+	struct sysreq_thread_msg req;
+	
+	req.base.req_id = SYS_REQ_KERNEL_THREAD_MSG;
+	req.ops			= SYSREQ_THREAD_MSG_ACK_SYNC;
+	req.send.msg	= what;
+	system_call(&req);
 }
 
 static void message_default_wait(struct y_message_instance *message_instance)
@@ -151,6 +156,33 @@ DLLEXPORT bool y_message_send(ke_handle to_thread, struct y_message *what)
 	return system_call(&req);
 }
 
+DLLEXPORT int y_message_writeback(struct y_message *what, int wb_count, ...)
+{
+	int i, count;
+	va_list wb_list;
+	
+	MSG_PDATA_TYPE cur;
+	MSG_DATA_TYPE data;
+	
+	struct y_message_instance *mi;
+
+	mi = get_current_mi();
+	count = what->count;
+	if (wb_count > count)
+		return -1;
+	
+	va_start(wb_list, wb_count);
+	MSG_DATA_START(mi, what, cur);
+	
+	for (i = 0; i < wb_count; i++)
+	{
+		data = va_arg(wb_list, MSG_DATA_TYPE);
+		MSG_DATA_WRITE_NEXT(mi, cur, data, MSG_DATA_TYPE);
+	}
+	
+	return i;
+}
+
 DLLEXPORT int y_message_read(struct y_message *what, ...)
 {
 	int i, count;
@@ -173,7 +205,7 @@ DLLEXPORT int y_message_read(struct y_message *what, ...)
 		*wb = data;
 	}
 
-	return count;
+	return i;
 }
 
 DLLEXPORT y_wait_result y_wait_objects(y_handle * __user sync_objects, int count, int timeout)
@@ -213,8 +245,9 @@ DLLEXPORT y_handle y_event_create(bool manual_reset, bool initial_status)
 	
 	req.base.req_id = SYS_REQ_KERNEL_SYNC;
 	req.ops			= SYSREQ_THREAD_SYNC_EVENT;
-	req.detail.event.ops = 'c';
-	
+	req.detail.event.ops       = 'c';
+	req.detail.event.is_manual = manual_reset;
+	req.detail.event.is_set    = initial_status;
 	return (y_handle)system_call(&req);
 }
 

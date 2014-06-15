@@ -43,6 +43,11 @@ typedef unsigned long MSG_DATA_TYPE;
 	MSG_GET_NEXT_DATA(DESC, CUR); \
 } while (0)
 
+#define MSG_DATA_WRITE_NEXT(DESC, CUR, DATA, TYPE) do { \
+	*(TYPE*)CUR = (DATA); \
+	MSG_GET_NEXT_DATA(DESC, CUR); \
+} while (0)
+
 /**
 	@brief Get next slot
 */

@@ -425,6 +425,19 @@ static bool thread_msg(struct sysreq_thread_msg *req)
 		
 		ke_handle_put(thread, to);
 	}
+	else if (req->ops == SYSREQ_THREAD_MSG_ACK_SYNC)
+	{
+		struct ktm *where;
+		struct y_message *msg = req->send.msg;
+		unsigned long offset;
+
+		/* Translate the msg to kernel space */
+		where = ktm_prepare_loop();
+		offset = (unsigned long)msg - where->map->node.start;
+		msg = (void*)(offset + where->desc.slots);
+		
+		r = ktm_ack_sync(msg);
+	}
 end:
 	return r;
 }

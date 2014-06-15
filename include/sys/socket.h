@@ -21,6 +21,21 @@ struct sockaddr {
   char sa_data[14];
 };
 
+/** For compatibility with BSD code */
+struct in_addr {
+  u32 s_addr;
+};
+
+
+/* members are in network byte order */
+struct sockaddr_in {
+  u8 sin_len;
+  u8 sin_family;
+  u16 sin_port;
+  struct in_addr sin_addr;
+  char sin_zero[8];
+};
+
 typedef u32 socklen_t;
 
 #define AF_LOCAL 	1

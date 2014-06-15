@@ -4,6 +4,7 @@ include $(MY_BUILD_BASE)/config.mk
 
 TARGET = tcpip.so
 DEPENDS = -lhead_so.o -lgrid -lpthread
+CL_INCLUDE  += -I$(MY_BUILD_BASE)/source/libs/grid/include
 ADD_INCLUDE += -I./include -I./include/lwip -I./include/ipv4 -I./include/netif -I./include/arch $(CL_INCLUDE)
 
 #要编译的文件列表
