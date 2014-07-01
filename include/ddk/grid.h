@@ -12,6 +12,8 @@
 #include <list.h>
 #include <pthread.h>
 
+#define NET_F_BLOCK  0x01
+
 /**
 	accept queue for tcp
 */
@@ -23,6 +25,33 @@ struct accept_queue
 	/* 协议栈已经接受的tcp */
 	void *accpeted_protocal_control_block;;
 };
+
+/**
+	recved and send packet message struct for socket layers
+*/
+struct mesg_hd
+{
+	/* list to struct netconn recved or send list */
+	struct list_head list;
+
+	struct iovec
+	{
+		/* msg body */
+		void *msg_base;
+		/* msg total len and current write/read offset */
+		unsigned long msg_len;
+		unsigned long offset;
+
+		/* for msg dest name, always struct socket_inaddr */
+		void *msg_name;
+		int msg_name_len;
+		
+	}*iovec;
+	
+	int iovec_offset;
+	int iovec_count;
+};
+
 
 /* 记录socket与协议栈相关信息 */
 struct grd_netconn
@@ -43,6 +72,10 @@ struct grd_netconn
   	
   	/* struct accep_queue head */
   	struct list_head accep_queue;
+
+	/* send and recved packet msg list head */
+	struct list_head recv_queue;
+	struct list_head send_queue;
 	
 	/* 协议栈线程操作后的返回结果,用于sock等待函数 */
 	int result;
@@ -61,6 +94,8 @@ struct grid_netproto
 	int (*bind)(struct grd_netconn *netconn, void *addr, size_t addr_len);
 	int (*listen)(struct grd_netconn *netconn, int backlog);
 	void *(*accept)(struct grd_netconn *netconn, void *addr, size_t *addr_len);
+	int (*send)(struct grd_netconn *netconn, void *buff, size_t len, int flag);
+	int (*recv)(struct grd_netconn *netconn, void *buff, size_t len, int flag);
 };
 
 #define GRID_GET_NETPROTO "grid_acquire_netproto"

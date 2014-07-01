@@ -70,7 +70,7 @@
 
 
 #define get_cache_head_by_ring_pkt(pkt) \
-	((pkt) - (pkt)->package_offset + sizeof(struct ring_package))
+	((void *)(pkt) - (pkt)->package_offset + sizeof(struct ring_package))
 
 /**
 	@brief 给定一个内存区域,初始化为ring buff
