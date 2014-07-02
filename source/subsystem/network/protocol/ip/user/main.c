@@ -174,6 +174,37 @@ err:
 	return msg;
 }
 
+static void *alloc_recv_msg_hd(void)
+{
+	struct recv_msg_hd *msg;
+	msg = (struct recv_msg_hd *)malloc(sizeof(*msg));
+	if (!msg)
+		goto errmem;
+
+	/* INIT */
+	memset(msg, 0, sizeof(*msg));
+	INIT_LIST_HEAD(&msg->list);
+	return msg;
+	
+errmem:
+	return NULL;
+}
+
+static void free_recv_msg_hd(void *p)
+{
+	struct recv_msg_hd *msg = (struct recv_msg_hd *)p;
+
+	if (msg)
+	{
+		/* detach list */
+		list_del(&msg->list);
+		if (msg->stack_msg)
+			pbuf_free((struct pbuf*)(msg->stack_msg));
+		free(msg);
+		
+	}
+}
+
 /**
 	@brief free msg head
 */
@@ -324,32 +355,13 @@ err:
 static err_t tcp_recved_fn(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
 	struct grd_netconn *netconn = (struct grd_netconn *)arg;
-	struct mesg_hd *msg_hd;
-	struct pbuf *q;
-	int pkt_count = 0;
-
-	/* get pkt counts */
-	for (q = p; q; q = q->next)
-		pkt_count++;
-	
-	msg_hd = alloc_msg_head(pkt_count);
+	struct recv_msg_hd *msg_hd;
+	printf("Tcp recvd fn.\n");
+	msg_hd = alloc_recv_msg_hd();
 	if (!msg_hd)
 		goto err_mm;
-	
-	q = p;
-	for (pkt_count = 0; pkt_count < msg_hd->iovec_count; ++pkt_count)
-	{
-		//(msg_hd->iovec + pkt_count)->msg_base = q->payload;
-		(msg_hd->iovec + pkt_count)->msg_len  = q->len;
-		
-		/* where must come ture zero copy */
-		(msg_hd->iovec + pkt_count)->msg_base = malloc(q->len);
-		if (!((msg_hd->iovec + pkt_count)->msg_base))
-			goto err_mm;
-		
-		//memcpy((msg_hd->iovec + pkt_count)->msg_base, q->payload, q->len);
-		q = q->next;
-	}
+
+	msg_hd->stack_msg = p;
 	
 	GRD_NETCONN_LOCK(netconn);
 	list_add_tail(&msg_hd->list, &netconn->recv_queue);
@@ -357,9 +369,6 @@ static err_t tcp_recved_fn(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t
 
 	/* 调整接收窗口 */
 	tcp_recved(pcb, p->tot_len);
-	
-	/* we free pbuf ? */
-	pbuf_free(p);
 	
 	/* wake up recv threads */
 	y_event_set(netconn->event);
@@ -568,7 +577,12 @@ err:
 
 static void dump_ring_package(void)
 {
+	#define max_test (256 * 1024)/* no cache 直接系统调用，需要一整块 */
+	char test[max_test];
 	cache_package_head_info_debug(global_net_interface.stream_map);
+	//printf("get read package %p,\n", (void *)ring_cache_read_package(global_net_interface.stream_map));
+	/* 触发事件 */
+	y_file_read(global_net_interface.stream_file, &test, sizeof(test));
 }
 /**
 	@brief recv pkt
@@ -576,9 +590,10 @@ static void dump_ring_package(void)
 static int grd_recv(struct grd_netconn *netconn, void *buff, size_t len, int flag)
 {
 	int ret = -EINVAL;
-	int cpy_len, rem_len = len;
-	struct mesg_hd *recv_msg, *next = NULL;
-
+	int copy_len, rem_len = len;
+	struct recv_msg_hd *recv_msg, *next = NULL;
+	struct pbuf *temp, *copy_pbuf;
+	
 	if (flag == 0x03)
 	{
 		dump_ring_package();
@@ -593,40 +608,38 @@ again:
 	/* list all sendmsg and read to user buff */
 	list_for_each_entry_safe(recv_msg, next, &netconn->recv_queue, list)
 	{
-		int times;
-		
-		/* read all message ... */
-		for (times = recv_msg->iovec_offset; times < recv_msg->iovec_count; ++times)
+		int total_len = 0;
+		/* 找到当前应该copy的pbuf位置 */
+		for (temp = recv_msg->stack_msg; temp; temp = temp->next)
 		{
-			
-			/* 可以read 的数据长度, */
-			cpy_len = (rem_len > remain_msg_len(recv_msg)) ? \
-						remain_msg_len(recv_msg) :\
-						rem_len;
-
-			/* cpy to user buff */
-			memcpy(buff + len - rem_len, msg_curr_body(recv_msg), cpy_len);
-			
-			rem_len -= cpy_len;
-			/* 写入成功,调整当前msg head的偏移量 */
-			msg_body_add_len(recv_msg, cpy_len);
-			
-			if (msg_curr_len_eq_offset(recv_msg))
+			total_len += temp->len;
+			if ((recv_msg->offset) <total_len)
 			{
-				/* 释放掉数据 */
-				free(msg_curr_msg_base(recv_msg));
-				/* 当前package已经写完 */
-				recv_msg->iovec_offset += 1;
+				/* 只要找到第一个比起小的 就开始copy */
+				/* 计算应该复制的长度 在当前pbuf */
+				copy_len = rem_len > (total_len - recv_msg->offset) ?\
+							(total_len - recv_msg->offset) : rem_len;
+
+				/* 
+					copy,1.len - rem_len 为开始复制处
+					2.temp->len -(total_len - recv_msg->offset)为pbuf复制处
+				*/
+				memcpy(buff + len -rem_len,\
+						temp->payload +temp->len -(total_len - recv_msg->offset),\
+						copy_len);
+
+				/* 调整msg hd 偏移量 */
+				recv_msg->offset += copy_len;
+				
+				/* copy 完成 调整剩余长度 */
+				rem_len -= copy_len;
+				if (!rem_len)
+					goto out;
 			}
-
-			/* may write more? */
-			if (!rem_len)
-				goto out;
+			
 		}
-
-		/* 前面的一个msg_hd 刚好写完,so 释放掉该msg */
-		list_del(&recv_msg->list);
-		free_msg_head(recv_msg);
+		/* 该msg hd使用完, free掉 */
+		free_recv_msg_hd(recv_msg);
 	}
 
 	/* TODO 是否是阻塞的接受, 需要等待写满用户缓冲空间 */
@@ -849,7 +862,7 @@ static void stream_input(struct y_message *msg)
 		减少一次内存拷贝。
 	*/
 	cache = (struct ring_buff_cache *)(ctx->stream_map);
-	
+	printf("Stream in ....\n");
 	/* 获取可读报文 */
 	while (NULL != (ring_pkt = ring_cache_read_package(cache)))
 	{
@@ -864,7 +877,7 @@ static void stream_input(struct y_message *msg)
 		pb->payload_org = pb->payload = (void *)cache + ring_pkt->package_offset;
 		pb->zero_object = ring_pkt;
 		
-		//printf("Stream in %d\n", pb->len);
+		printf("Stream in %d\n", pb->len);
 		ethernet_input(pb, &ctx->netif);
 	}
 
@@ -904,8 +917,8 @@ static err_t stream_output(struct netif *netif, struct pbuf *p)
 			
 			memcpy(raw_package, q->payload, q->len);
 			
-			//printf("Stream out %d, %x:%x\n", q->len, *((int*)raw_package),
-			//		*((int*)raw_package+1));
+			printf("Stream out %d, %x:%x\n", q->len, *((int*)raw_package),
+					*((int*)raw_package+1));
 			
 			/* 触发事件 */
 			y_file_read(nif->stream_file, &test, sizeof(test));

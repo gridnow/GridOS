@@ -137,7 +137,7 @@ void *ring_buff_alloc(struct ring_buff_cache *cache, size_t length)
 	int found = 0;
 
 	/* length 必须sizeof(long)对齐,在某些嵌入式设备要求指针对齐 */
-	length = ALIGN(length,sizeof(long));
+	//length = ALIGN(length,sizeof(long));
 	
 	/* IS FULL ? */
 	if (cache_is_full(cache))
@@ -322,6 +322,13 @@ void cache_package_head_info_debug(struct ring_buff_cache *cache)
 	struct ring_package *next = cache_head_ring_package(cache);
 	int head_count = 0;
 
+	printf("curr cache %p.\n", (void *)cache);
+	printf("cache cache_buff_length %d,\
+			curr_read_pos %d,\
+			curr_write_pos %d,\
+			curr isint %d\n", cache->cache_buff_length,\
+			cache->curr_read_pos, cache->curr_write_pos,\
+			cache->is_init);
 	do
 	{
 		DEBUG_HEAD_INFO(next);

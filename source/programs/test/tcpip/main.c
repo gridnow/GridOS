@@ -154,14 +154,15 @@ static void *socket_thread(void *unused)
 	while (1)
 	{
 		r = recv(g_fd, (void *)buf, sizeof(buf), 0x01);
-		//printf("链接线程 接收到报文 %d 字节\n", r);
-		//printf("%x, %x, %x,%x, %x, %x,%x, %x, %x, %x.\n", buf[0], buf[1],buf[2],buf[3],buf[4],buf[5],
-		//		buf[6],buf[7],buf[8],buf[9]);
+		printf("链接线程 接收到报文 %d 字节\n", r);
+		printf("%x, %x, %x,%x, %x, %x,%x, %x, %x, %x.\n", buf[0], buf[1],buf[2],buf[3],buf[4],buf[5],
+				buf[6],buf[7],buf[8],buf[9]);
 		
 		memset(buf, 0x23, sizeof(buf));
 		r = send(g_fd, (void *)buf, sizeof(buf), 0x01);
-		//printf("链接线程 发送字节 %d\n", r);
+		printf("链接线程 发送字节 %d\n", r);
 		socket_thread_counts++;
+		
 	}
 	
 	//TODO: close socket
@@ -210,15 +211,16 @@ static void *accept_thread(void *para)
 	while (1)
 	{
 		ret = send(newfd, (void *)buf, sizeof(buf), 0x01);
-		//printf("接收线程 发送字节 %d\n", ret);
+		printf("接收线程 发送字节 %d\n", ret);
 		
 		ret = recv(newfd, (void *)buf, sizeof(buf), 0x01);
-		//printf("接收线程 接收到报文 %d 字节\n", ret);
-		//printf("接收线程 %x, %x, %x,%x, %x, %x,%x, %x, %x, %x.\n", buf[0], buf[1],buf[2],buf[3],buf[4],buf[5],
-		//		buf[6],buf[7],buf[8],buf[9]);
+		printf("接收线程 接收到报文 %d 字节\n", ret);
+		printf("接收线程 %x, %x, %x,%x, %x, %x,%x, %x, %x, %x.\n", buf[0], buf[1],buf[2],buf[3],buf[4],buf[5],
+				buf[6],buf[7],buf[8],buf[9]);
 		
 		memset(buf, 0x45, sizeof(buf));
 		acccept_thread_counts++;
+
 	}
 	
 	return;
