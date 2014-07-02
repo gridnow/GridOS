@@ -139,7 +139,7 @@ static int wait_times = 5000;
 #define msg_body_add_len(msg_hd, len) (((msg_hd)->iovec + (msg_hd)->iovec_offset)->offset += len)
 #define msg_curr_body(msg_hd) (((msg_hd)->iovec + (msg_hd)->iovec_offset)->msg_base +\
 		((msg_hd)->iovec + (msg_hd)->iovec_offset)->offset)
-
+#define msg_curr_msg_base(msg_hd) (((msg_hd)->iovec + (msg_hd)->iovec_offset)->msg_base)
 #define msg_curr_len_eq_offset(msg_hd) (((msg_hd)->iovec + (msg_hd)->iovec_offset)->offset == \
 				((msg_hd)->iovec + (msg_hd)->iovec_offset)->msg_len)
 
@@ -193,12 +193,12 @@ static void free_msg_head(void *msg)
 static int write_more_msg_to_tcp_queue(struct grd_netconn *netconn)
 {
 	u16_t send_len, rem_len, old_len;
-	struct mesg_hd *send_msg, *prev = NULL;
+	struct mesg_hd *send_msg, *next = NULL;
 	
 	old_len = rem_len = tcp_sndbuf((struct tcp_pcb *)(netconn->protocal_control_block));
 	
 	/* list all sendmsg and write to stact pbuf */
-	list_for_each_entry(send_msg, &netconn->send_queue, list)
+	list_for_each_entry_safe(send_msg, next, &netconn->send_queue, list)
 	{
 		int times;
 		
@@ -230,22 +230,14 @@ static int write_more_msg_to_tcp_queue(struct grd_netconn *netconn)
 
 		}
 		
-		if (prev)
-		{
-			/* 前面的一个msg_hd 刚好写完,so 释放掉该msg */
-			list_del(&prev->list);
-			free_msg_head(prev);
-		}
-		prev = send_msg;
+		/* 前面的一个msg_hd 刚好写完,so 释放掉该msg */
+		list_del(&send_msg->list);
+		free_msg_head(send_msg);
+
 	}
 
 err_write:
-	if (prev)
-	{
-		/* 前面的一个msg_hd 刚好写完,so 释放掉该msg */
-		list_del(&prev->list);
-		free_msg_head(prev);
-	}
+
 	return (old_len - rem_len);
 }
 
@@ -347,20 +339,27 @@ static err_t tcp_recved_fn(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t
 	q = p;
 	for (pkt_count = 0; pkt_count < msg_hd->iovec_count; ++pkt_count)
 	{
-		(msg_hd->iovec + pkt_count)->msg_base = q->payload;
+		//(msg_hd->iovec + pkt_count)->msg_base = q->payload;
 		(msg_hd->iovec + pkt_count)->msg_len  = q->len;
+		
+		/* where must come ture zero copy */
+		(msg_hd->iovec + pkt_count)->msg_base = malloc(q->len);
+		if (!((msg_hd->iovec + pkt_count)->msg_base))
+			goto err_mm;
+		
+		//memcpy((msg_hd->iovec + pkt_count)->msg_base, q->payload, q->len);
 		q = q->next;
 	}
-
-	/* we free pbuf ? */
-	pbuf_free(p);
 	
 	GRD_NETCONN_LOCK(netconn);
-	list_add_tail(&netconn->recv_queue, &msg_hd->list);
+	list_add_tail(&msg_hd->list, &netconn->recv_queue);
 	GRD_NETCONN_UNLOCK(netconn);
 
 	/* 调整接收窗口 */
 	tcp_recved(pcb, p->tot_len);
+	
+	/* we free pbuf ? */
+	pbuf_free(p);
 	
 	/* wake up recv threads */
 	y_event_set(netconn->event);
@@ -459,6 +458,7 @@ static err_t tcp_acceptted(void *arg, struct tcp_pcb *newpcb, err_t err)
 	memset(accept, 0, sizeof(*accept));
 	/* init accept and add to netconn accept list */
 	accept->accpeted_protocal_control_block = newpcb;
+	INIT_LIST_HEAD(&accept->list);
 	setup_tcp_fn(newpcb);
 	
 	/* lock netconn and add list head */
@@ -519,7 +519,9 @@ again:
 		goto err;
 	if (netconn_init(new_netconn, newpcb, SOCK_STREAM) == NULL)
 		goto err1;
-
+	
+	tcp_arg(newpcb, new_netconn);
+	
 	return new_netconn;
 	
 wait_accept:
@@ -554,7 +556,7 @@ static int grd_send(struct grd_netconn *netconn, void *buff, size_t len, int fla
 	
 	GRD_NETCONN_LOCK(netconn);
 	/* add to send_queue */
-	list_add_tail(&netconn->send_queue, &msg->list);
+	list_add_tail(&msg->list, &netconn->send_queue);
 	GRD_NETCONN_UNLOCK(netconn);
 
 	/* wakeup ip thread to send */
@@ -564,6 +566,10 @@ err:
 	return ret;
 }
 
+static void dump_ring_package(void)
+{
+	cache_package_head_info_debug(global_net_interface.stream_map);
+}
 /**
 	@brief recv pkt
 */
@@ -571,8 +577,13 @@ static int grd_recv(struct grd_netconn *netconn, void *buff, size_t len, int fla
 {
 	int ret = -EINVAL;
 	int cpy_len, rem_len = len;
-	struct mesg_hd *recv_msg, *prev = NULL;
-	
+	struct mesg_hd *recv_msg, *next = NULL;
+
+	if (flag == 0x03)
+	{
+		dump_ring_package();
+		return -1;
+	}
 	if (!buff || !len)
 		goto err;
 again:
@@ -580,7 +591,7 @@ again:
 	GRD_NETCONN_LOCK(netconn);
 
 	/* list all sendmsg and read to user buff */
-	list_for_each_entry(recv_msg, &netconn->recv_queue, list)
+	list_for_each_entry_safe(recv_msg, next, &netconn->recv_queue, list)
 	{
 		int times;
 		
@@ -602,6 +613,8 @@ again:
 			
 			if (msg_curr_len_eq_offset(recv_msg))
 			{
+				/* 释放掉数据 */
+				free(msg_curr_msg_base(recv_msg));
 				/* 当前package已经写完 */
 				recv_msg->iovec_offset += 1;
 			}
@@ -610,25 +623,15 @@ again:
 			if (!rem_len)
 				goto out;
 		}
-		
-		if (prev)
-		{
-			/* 前面的一个msg_hd 刚好写完,so 释放掉该msg */
-			list_del(&prev->list);
-			free_msg_head(prev);
-		}
-		prev = recv_msg;
+
+		/* 前面的一个msg_hd 刚好写完,so 释放掉该msg */
+		list_del(&recv_msg->list);
+		free_msg_head(recv_msg);
 	}
 
 	/* TODO 是否是阻塞的接受, 需要等待写满用户缓冲空间 */
 out:
-	if (prev)
-	{
-		/* 前面的一个msg_hd 刚好写完,so 释放掉该msg */
-		list_del(&prev->list);
-		free_msg_head(prev);
-		prev = NULL;
-	}
+
 	GRD_NETCONN_UNLOCK(netconn);
 
 	/* 是否需要阻塞等待报文 */
@@ -637,6 +640,7 @@ out:
 		y_event_wait(netconn->event, wait_times);
 		goto again;
 	}
+
 	return (len - rem_len);
 err:
 	return ret;
@@ -865,7 +869,7 @@ static void stream_input(struct y_message *msg)
 	}
 
 	//TODO: 轮询流文件
-
+	
 	return;
 	
 err:
@@ -895,6 +899,9 @@ static err_t stream_output(struct netif *netif, struct pbuf *p)
 			/* 拷贝数据，真是网卡则无需，而是使用0拷贝 */
 			cache = (struct ring_buff_cache *)(nif->stream_map);
 			raw_package = ring_buff_alloc(cache, q->len);
+			if (!raw_package)
+				goto err_package;
+			
 			memcpy(raw_package, q->payload, q->len);
 			
 			//printf("Stream out %d, %x:%x\n", q->len, *((int*)raw_package),
@@ -905,8 +912,10 @@ static err_t stream_output(struct netif *netif, struct pbuf *p)
 		}
 #endif
 	}
-	
 	return ERR_OK;
+err_package:
+	printf("Alloc ring buff failt.\n");
+	return ERR_MEM;
 }
 
 static void nif_startup(struct netif *nif)
@@ -997,6 +1006,7 @@ int dll_main(void)
 
 	return 0;
 }
+
 
 void pbuf_free_zero_object(void* p)
 {

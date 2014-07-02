@@ -123,21 +123,21 @@ err0:
 
 static int acccept_thread_counts = 0;
 static int socket_thread_counts  = 0;
-
+static int g_fd = -1;
 static void *socket_thread(void *unused)
 {
 	struct sockaddr addr;
 	struct sockaddr_in *addr_inet = (struct sockaddr_in *)&addr;
 	socklen_t addrlen;
-	int fd, r;
+	int r;
 	char buf[1000] = {0};
 	
-	fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (fd == -1)
+	g_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (g_fd== -1)
 	{
 		printf("Create socket error.\n");
 	}
-	printf("Socket id is %d.\n", fd);
+	printf("Socket id is %d.\n", g_fd);
 	
 	printf("Connecting....");
 	memset(&addr, 0, sizeof(addr));
@@ -148,18 +148,18 @@ static void *socket_thread(void *unused)
 	addr_inet->sin_port   = 0x123;
 	addr_inet->sin_addr.s_addr = 0x0f24890a;
 	
-	r = connect(fd, &addr, addrlen);
+	r = connect(g_fd, &addr, addrlen);
 	printf("result is %d.\n", r);
 
 	while (1)
 	{
-		r = recv(fd, (void *)buf, sizeof(buf), 0x01);
+		r = recv(g_fd, (void *)buf, sizeof(buf), 0x01);
 		//printf("链接线程 接收到报文 %d 字节\n", r);
 		//printf("%x, %x, %x,%x, %x, %x,%x, %x, %x, %x.\n", buf[0], buf[1],buf[2],buf[3],buf[4],buf[5],
 		//		buf[6],buf[7],buf[8],buf[9]);
 		
 		memset(buf, 0x23, sizeof(buf));
-		r = send(fd, (void *)buf, sizeof(buf), 0x01);
+		r = send(g_fd, (void *)buf, sizeof(buf), 0x01);
 		//printf("链接线程 发送字节 %d\n", r);
 		socket_thread_counts++;
 	}
@@ -205,14 +205,14 @@ static void *accept_thread(void *para)
 	printf("listen result %d\n", ret);
 	
 	newfd = accept(fd, &addr, &addrlen);
-	printf("接受 result %d\n", newfd);
+	printf("接受 result newfd %d\n", newfd);
 
 	while (1)
 	{
 		ret = send(newfd, (void *)buf, sizeof(buf), 0x01);
 		//printf("接收线程 发送字节 %d\n", ret);
 		
-		ret = recv(fd, (void *)buf, sizeof(buf), 0x01);
+		ret = recv(newfd, (void *)buf, sizeof(buf), 0x01);
 		//printf("接收线程 接收到报文 %d 字节\n", ret);
 		//printf("接收线程 %x, %x, %x,%x, %x, %x,%x, %x, %x, %x.\n", buf[0], buf[1],buf[2],buf[3],buf[4],buf[5],
 		//		buf[6],buf[7],buf[8],buf[9]);
@@ -270,9 +270,15 @@ int main()
 		socket_counts = socket_thread_counts;
 		
 		/* waits 1s */
-		y_event_wait(hevent, 1000);
+		y_event_wait(hevent, 10000);
 		printf("accept thread counts %d,socket thread counts %d.\n",
 				acccept_thread_counts - accept_counts, socket_thread_counts - socket_counts);
+		if ((acccept_thread_counts - accept_counts) == 0)
+		{
+			recv(g_fd, NULL, 0, 0x03);
+			//return;
+		}
+			
 	}
 	y_event_wait(hevent, 1000000000);
 	return 0;

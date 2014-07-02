@@ -27,7 +27,7 @@ struct accept_queue
 };
 
 /**
-	recved and send packet message struct for socket layers
+	send packet message struct for socket layers
 */
 struct mesg_hd
 {
@@ -52,6 +52,15 @@ struct mesg_hd
 	int iovec_count;
 };
 
+/* 接收mesg struct */
+struct recv_msg_hd
+{
+	struct list_head list;
+	
+	void *stack_msg;
+	/* 当前消息读取偏移量 */
+	int offset;
+};
 
 /* 记录socket与协议栈相关信息 */
 struct grd_netconn
