@@ -49,14 +49,14 @@ static void *do_accept(struct grd_netconn *netconn, void *addr, size_t *addr_len
 	return proto_ipv4->accept(netconn, addr, addr_len);
 }
 
-static int do_send()
+static int do_send(struct grd_netconn *netconn, void *buff, size_t len, int flag)
 {
-	return -ENOSYS;
+	return proto_ipv4->send(netconn, buff, len, flag);
 }
 
-static int do_recv()
+static int do_recv(struct grd_netconn *netconn, void *buff, size_t len, int flag)
 {
-	return -ENOSYS;
+	return proto_ipv4->recv(netconn, buff, len, flag);
 }
 
 static int do_disconnect()

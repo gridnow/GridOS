@@ -174,11 +174,29 @@ err:
 
 DLLEXPORT ssize_t send(int sockfd, const void *buf, size_t len, int flags)
 {
-	return -ENOSYS;
+	struct file *filp;
+	struct socket_file *sf;
+	
+	/* Translate fd to standard file */
+	if (NULL == (filp = posix_fd_translate(sockfd)))
+		return -EINVAL;
+
+	sf = file_get_detail(filp);
+
+	return sf->ops->send(sf->netconn, buf, len, flags);
 }
 
 DLLEXPORT ssize_t recv(int sockfd, void *buf, size_t len, int flags)
 {
-	return -ENOSYS;
+	struct file *filp;
+	struct socket_file *sf;
+	
+	/* Translate fd to standard file */
+	if (NULL == (filp = posix_fd_translate(sockfd)))
+		return -EINVAL;
+
+	sf = file_get_detail(filp);
+
+	return sf->ops->recv(sf->netconn, buf, len, flags);
 }
 

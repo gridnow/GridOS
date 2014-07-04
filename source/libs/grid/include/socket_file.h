@@ -25,8 +25,8 @@ struct socket_ops
 	int (*bind)(struct grd_netconn *netconn, const void *addr, size_t addr_len);
 	int (*listen)(struct grd_netconn *netconn, int backlog);
 	void *(*accept)(struct grd_netconn *netconn, void *addr, size_t *addr_len);
-	int (*send)();
-	int (*recv)();
+	int (*send)(struct grd_netconn *netconn, void *buff, size_t len, int flag);
+	int (*recv)(struct grd_netconn *netconn, void *buff, size_t len, int flag);
 	int (*disconnect)();
 };
 
