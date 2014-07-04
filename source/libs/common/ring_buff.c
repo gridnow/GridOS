@@ -11,8 +11,8 @@
 			"head pos size %d\n"\
 			"head pos offset %d\n"\
 			"=====================\n",\
-			head->prev_head, head->next_head, head->valid_flag,\
-			head->package_size, head->package_offset)
+			(int)(head->prev_head), (int)(head->next_head), head->valid_flag,\
+			(int)(head->package_size), (int)(head->package_offset))
 			
 
 #define req_len_is_gt_package_len(curr_head, length) \
@@ -103,6 +103,17 @@ struct ring_buff_cache * ring_buff_head_init(void *cache, size_t length)
 	return buff;
 }
 
+/**
+	@brief 
+		处理循环buff中间由于有未被释放的报文,以及循环buff
+		尾部当前空buff长度不能满足请求,跳到头部分配,这时候
+		我们当前的可读pos也应该跟着向前移动
+*/
+static inline void handle_small_free_package_at_tail(struct ring_buff_cache *cache, void *obj)
+{
+	if (cache_read_pos_eq_write_pos(cache))
+			cache->curr_read_pos = ptr_to_cache_offset(obj);
+}
 /*
 	@brief 从空buff中分配一个新的buff
 	
@@ -129,8 +140,8 @@ static void *slice_buff(struct ring_buff_cache *cache, struct ring_package *slic
 		并且这时候的read pos也和write pos指向相同的package,
 		则也应该将read pos 向前移动指向curr
 	*/
-	if (small && cache_read_pos_eq_write_pos(cache))
-			cache->curr_read_pos = ptr_to_cache_offset(slice_head);
+	if (small)
+			handle_small_free_package_at_tail(cache, (void *)slice_head);
 	
 	/* 调整下一个可用buff 空间 */
 	cache->curr_write_pos = slice_head->next_head;
@@ -178,8 +189,8 @@ void *ring_buff_alloc(struct ring_buff_cache *cache, size_t length)
 				并且这时候的read pos也和write pos指向相同的package,
 				则也应该将read pos 向前移动指向curr
 			*/
-			if (small && cache_read_pos_eq_write_pos(cache))
-				cache->curr_read_pos = ptr_to_cache_offset(curr);
+			if (small)
+				handle_small_free_package_at_tail(cache, (void *)curr);
 			
 			/* 调整下一个可写buff */
 			cache->curr_write_pos = curr->next_head;
@@ -348,8 +359,8 @@ void cache_package_head_info_debug(struct ring_buff_cache *cache)
 	printf("cache cache_buff_length %d,\
 			curr_read_pos %d,\
 			curr_write_pos %d,\
-			curr isint %d\n", cache->cache_buff_length,\
-			cache->curr_read_pos, cache->curr_write_pos,\
+			curr isint %d\n", (int)(cache->cache_buff_length),\
+			(int)(cache->curr_read_pos), (int)(cache->curr_write_pos),\
 			cache->is_init);
 	do
 	{

@@ -187,6 +187,7 @@ static void *alloc_recv_msg_hd(void)
 	return msg;
 	
 errmem:
+	printf("alloc recv msg hd failt.\n");
 	return NULL;
 }
 
@@ -201,7 +202,7 @@ static void free_recv_msg_hd(void *p)
 		if (msg->stack_msg)
 			pbuf_free((struct pbuf*)(msg->stack_msg));
 		free(msg);
-		
+		//printf("free recv msg hd.\n");
 	}
 }
 
@@ -356,7 +357,7 @@ static err_t tcp_recved_fn(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t
 {
 	struct grd_netconn *netconn = (struct grd_netconn *)arg;
 	struct recv_msg_hd *msg_hd;
-	printf("Tcp recvd fn.\n");
+
 	msg_hd = alloc_recv_msg_hd();
 	if (!msg_hd)
 		goto err_mm;
@@ -584,23 +585,16 @@ static void dump_ring_package(void)
 	/* 触发事件 */
 	y_file_read(global_net_interface.stream_file, &test, sizeof(test));
 }
+
 /**
 	@brief recv pkt
 */
 static int grd_recv(struct grd_netconn *netconn, void *buff, size_t len, int flag)
 {
-	int ret = -EINVAL;
-	int copy_len, rem_len = len;
+	int copy_len = 0, rem_len = len;
 	struct recv_msg_hd *recv_msg, *next = NULL;
-	struct pbuf *temp, *copy_pbuf;
+	struct pbuf *temp;
 	
-	if (flag == 0x03)
-	{
-		dump_ring_package();
-		return -1;
-	}
-	if (!buff || !len)
-		goto err;
 again:
 	
 	GRD_NETCONN_LOCK(netconn);
@@ -612,6 +606,10 @@ again:
 		/* 找到当前应该copy的pbuf位置 */
 		for (temp = recv_msg->stack_msg; temp; temp = temp->next)
 		{
+			/* 首先判断是否还可以复制? */
+			if (!rem_len)
+					goto out;
+		
 			total_len += temp->len;
 			if ((recv_msg->offset) <total_len)
 			{
@@ -624,27 +622,42 @@ again:
 					copy,1.len - rem_len 为开始复制处
 					2.temp->len -(total_len - recv_msg->offset)为pbuf复制处
 				*/
-				memcpy(buff + len -rem_len,\
-						temp->payload +temp->len -(total_len - recv_msg->offset),\
+				#define buff_may_write_pos(buff) (buff + len - rem_len)
+				#define recv_msg_curr_read_pos(recv_msg, pbuf) \
+					((pbuf->payload) + (pbuf)->len - (total_len - recv_msg->offset))
+					
+				#if 1
+				memcpy(buff_may_write_pos(buff),\
+						recv_msg_curr_read_pos(recv_msg, temp),\
 						copy_len);
+				#endif
+
+				/* copy 完成 调整剩余长度 */
+				rem_len -= copy_len;
 
 				/* 调整msg hd 偏移量 */
 				recv_msg->offset += copy_len;
 				
-				/* copy 完成 调整剩余长度 */
-				rem_len -= copy_len;
-				if (!rem_len)
-					goto out;
+				/* 
+					判断当前recv msg 的pbuf是否读取完成
+					1.小于则说明用户buff没有空间了，这时候
+					直接退出
+				*/
+				
+				if (recv_msg->offset < total_len)
+					goto out;	
+				
 			}
 			
 		}
+
 		/* 该msg hd使用完, free掉 */
 		free_recv_msg_hd(recv_msg);
 	}
 
 	/* TODO 是否是阻塞的接受, 需要等待写满用户缓冲空间 */
 out:
-
+	
 	GRD_NETCONN_UNLOCK(netconn);
 
 	/* 是否需要阻塞等待报文 */
@@ -655,8 +668,7 @@ out:
 	}
 
 	return (len - rem_len);
-err:
-	return ret;
+
 }
 
 DLLEXPORT struct grid_netproto grid_acquire_netproto = {
@@ -862,7 +874,7 @@ static void stream_input(struct y_message *msg)
 		减少一次内存拷贝。
 	*/
 	cache = (struct ring_buff_cache *)(ctx->stream_map);
-	printf("Stream in ....\n");
+	//printf("Stream in ....\n");
 	/* 获取可读报文 */
 	while (NULL != (ring_pkt = ring_cache_read_package(cache)))
 	{
@@ -877,8 +889,9 @@ static void stream_input(struct y_message *msg)
 		pb->payload_org = pb->payload = (void *)cache + ring_pkt->package_offset;
 		pb->zero_object = ring_pkt;
 		
-		printf("Stream in %d\n", pb->len);
+		//printf("Stream in %d\n", pb->len);
 		ethernet_input(pb, &ctx->netif);
+		
 	}
 
 	//TODO: 轮询流文件
@@ -917,14 +930,15 @@ static err_t stream_output(struct netif *netif, struct pbuf *p)
 			
 			memcpy(raw_package, q->payload, q->len);
 			
-			printf("Stream out %d, %x:%x\n", q->len, *((int*)raw_package),
-					*((int*)raw_package+1));
-			
+			//printf("Stream out %d, %x:%x\n", q->len, *((int*)raw_package),
+			//		*((int*)raw_package+1));
+			//cache_package_head_info_debug(global_net_interface.stream_map);
 			/* 触发事件 */
 			y_file_read(nif->stream_file, &test, sizeof(test));
 		}
 #endif
 	}
+	
 	return ERR_OK;
 err_package:
 	printf("Alloc ring buff failt.\n");
