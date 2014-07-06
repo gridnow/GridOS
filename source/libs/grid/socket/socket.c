@@ -14,8 +14,9 @@
 #include "socket_file.h"
 
 /* TODO sock file lock */
-#define SOCK_FILE_LOCK(sock_file)
-#define SOCK_FILE_UNLOCK(sock_file)
+#define SOCK_FILE_INIT_LOCK(sock_file)  pthread_spin_init(&sock_file->socket_lock, 0)
+#define SOCK_FILE_LOCK(sock_file)       pthread_spin_lock(&sock_file->socket_lock)
+#define SOCK_FILE_UNLOCK(sock_file)     pthread_spin_unlock(&sock_file->socket_lock)
 
 bool init_socket()
 {
@@ -45,6 +46,8 @@ DLLEXPORT int socket(int domain, int type, int protocol)
 			}
 			sf = file_get_detail(filp);
 			memset(sf, 0, sizeof(struct socket_file));
+			SOCK_FILE_INIT_LOCK(sf);
+			
 			af_inet_file_init_ops(filp);
 
 			if (NULL == (sf->netconn = sf->ops->socket(type, protocol)))
@@ -152,6 +155,8 @@ DLLEXPORT int accept(int sockfd, const struct sockaddr *addr, socklen_t *addr_le
 	
 	sfnew = file_get_detail(filp);
 	memset(sfnew, 0, sizeof(struct socket_file));
+	SOCK_FILE_INIT_LOCK(sfnew);
+	
 	af_inet_file_init_ops(filp);
 
 	sfnew->netconn = sfold->ops->accept(sfold->netconn, (void *)addr, (size_t *)addr_len);

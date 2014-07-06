@@ -37,6 +37,7 @@ struct socket_file
 {
 	struct socket_ops *ops;
 	struct grd_netconn *netconn;
+	pthread_spinlock_t socket_lock;
 };
 
 bool init_socket();
