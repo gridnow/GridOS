@@ -153,7 +153,7 @@ static void *socket_thread(void *unused)
 
 	while (1)
 	{
-	
+
 		r = recv(fd, (void *)buf, sizeof(buf), 0x01);
 		if (r != sizeof(buf))
 		{
@@ -163,7 +163,7 @@ static void *socket_thread(void *unused)
 		//printf("链接线程 接收到报文 %d 字节\n", r);
 		//printf("%x, %x, %x,%x, %x, %x,%x, %x, %x, %x.\n", buf[0], buf[1],buf[2],buf[3],buf[4],buf[5],
 		//		buf[6],buf[7],buf[8],buf[9]);
-		
+	
 		memset(buf, 0x23, sizeof(buf));
 		r = send(fd, (void *)buf, sizeof(buf), 0x01);
 		if (r != sizeof(buf))
@@ -220,6 +220,7 @@ static void *accept_thread(void *para)
 
 	while (1)
 	{
+
 		ret = send(newfd, (void *)buf, sizeof(buf), 0x01);
 		if (ret != sizeof(buf))
 		{
@@ -237,9 +238,7 @@ static void *accept_thread(void *para)
 		//printf("接收线程 接收到报文 %d 字节\n", ret);
 		//printf("接收线程 %x, %x, %x,%x, %x, %x,%x, %x, %x, %x.\n", buf[0], buf[1],buf[2],buf[3],buf[4],buf[5],
 		//		buf[6],buf[7],buf[8],buf[9]);
-		//ret = recv(newfd, (void *)buf, 1, 0x01);
-		//printf("接收线程 接收到 ret %d 字节。\n", ret);
-		//printf("接收线程 %x, %x.\n", buf[0], buf[1]);
+
 		memset(buf, 0x45, sizeof(buf));
 		acccept_thread_counts++;
 	}
@@ -296,7 +295,7 @@ int main()
 		y_event_wait(hevent, 1000);
 		printf("accept thread counts %d,socket thread counts %d.\n",
 				acccept_thread_counts - accept_counts, socket_thread_counts - socket_counts);
-		if ((acccept_thread_counts - accept_counts) == 0)
+		if ((socket_thread_counts - socket_counts) == 0)
 		{
 			break;
 		}

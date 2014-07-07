@@ -85,7 +85,8 @@ struct grd_netconn
 	/* send and recved packet msg list head */
 	struct list_head recv_queue;
 	struct list_head send_queue;
-	
+	/* 用于协议栈线程释放pbuf */
+	struct list_head wait_free_queue;
 	/* 协议栈线程操作后的返回结果,用于sock等待函数 */
 	int result;
 };

@@ -10,6 +10,7 @@
 #include <compiler.h>
 #include <types.h>
 #include <stdio.h>
+#include <pthread.h>
 
 #include <sys/mman.h>
 #include "malloc.h"
@@ -17,9 +18,11 @@
 #include "cl_string.h"
 
 #define GLOBAL_BLOCK_SIZE (1024*1024*32)
-#define LOCK_MALLOC()
-#define UNLOCK_MALLOC()
+#define MALLOC_LOCK_INIT()  pthread_spin_init(&malloc_lock, 0)
+#define LOCK_MALLOC()       pthread_spin_lock(&malloc_lock)
+#define UNLOCK_MALLOC()     pthread_spin_unlock(&malloc_lock)
 static void *global_block;
+static pthread_spinlock_t malloc_lock;
 
 bool init_malloc()
 {
@@ -30,6 +33,7 @@ bool init_malloc()
 
 	ret = memalloc_init_allocation(global_block, GLOBAL_BLOCK_SIZE);
 
+	MALLOC_LOCK_INIT();
 	return ret;
 }
 
