@@ -91,7 +91,11 @@ void __init __noreturn hal_main()
 	while (1) 
 	{
 		kt_schedule_driver();
-		dumy_idle_ops(0);	
+		/* If have no process, sleep */
+		if (!kt_schedule_running_count())
+			dumy_idle_ops(0);
+		else
+			kt_schedule();
 	}
 }
 

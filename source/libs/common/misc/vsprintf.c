@@ -240,8 +240,6 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr,
 {
 	if (!ptr && *fmt != 'K')
 		return string(buf, end, "(null)", spec);
-	if (ptr < (void*)0x10000)
-		return string(buf, end, "(force null)", spec);
 
 	switch (*fmt) {
 	case 'V':
@@ -444,12 +442,6 @@ DLLEXPORT int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 	char *str, *end, c;
 	int read;
 	struct printf_spec spec = {0};
-
-	/* WHY? */
-	if (buf < (char*)0x1000 || fmt < (char*) 0x1000)
-	{
-		return 0;
-	}
 	
 	/* Reject out-of-range values early.  Large positive sizes are
 	   used for unknown buffer sizes. */

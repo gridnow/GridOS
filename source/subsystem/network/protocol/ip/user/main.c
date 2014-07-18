@@ -110,14 +110,14 @@
 
 struct net_interface
 {
-	/* About worker */
-	pthread_t worker;
-
 	/* About netif */
 	struct netif netif;
+
+	/* About worker */
+	pthread_t worker;
 	
 	/* Counter */
-	unsigned long dropped;
+	unsigned long rx_drop, tx_drop;
 	
 	/* Input contex */
 	y_handle stream_file;
@@ -939,7 +939,7 @@ static void stream_input(struct y_message *msg)
 	
 err:
 	printf("pbuf ·ÖÅäÊ§°Ü\n");
-	ctx->dropped++;
+	ctx->rx_drop++;
 }
 
 static err_t stream_output(struct netif *netif, struct pbuf *p)
@@ -981,8 +981,8 @@ static err_t stream_output(struct netif *netif, struct pbuf *p)
 	
 	return ERR_OK;
 err_package:
-	printf("Alloc ring buff failt.\n");
-	dump_ring_package();
+	/* System may cached to may pbuf(by IP reassembly or recved pbuf yet not handled) */
+	
 	return ERR_MEM;
 }
 

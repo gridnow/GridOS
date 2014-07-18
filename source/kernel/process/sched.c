@@ -55,7 +55,7 @@ static struct ko_thread *select_next(struct kc_cpu *cpu, struct ko_thread **prev
  */
 static void __schedule(int preempt)
 {
-	struct ko_thread *prev, *next, *last;
+	struct ko_thread *prev, *next;
 	struct kc_cpu *cpu;
 
 	/* Acquiring current cpu, interrupt disabled so it's safe to use raw version */
@@ -97,11 +97,27 @@ void kt_schedule()
 	return;
 }
 
+int kt_schedule_running_count()
+{
+	int count;
+	struct kc_cpu *cpu;
+	unsigned long flags;
+
+	raw_local_irq_save(flags);
+	
+	/* Acquiring current cpu, interrupt disabled so it's safe to use raw version */
+	cpu = kc_get_raw();
+	count = cpu->running_count;
+	raw_local_irq_restore(flags);
+	
+	return count - 1;
+}
+
 void kt_schedule_driver()
 {
 	unsigned long flags;
 
-	struct ko_thread *prev, *next, *last;
+	struct ko_thread *prev, *next;
 	struct kc_cpu *cpu;
 
 	raw_local_irq_save(flags);
