@@ -33,7 +33,7 @@ static void file_thread(void *para)
 	printk("Copy ok.\n");
 	while(1)
 	{
-		kt_schedule();
+		kt_sleep(KT_STATE_WAITING_MSG);
 	}
 	
 }

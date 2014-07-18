@@ -228,13 +228,15 @@ static void *accept_thread(void *para)
 			break;
 		}
 		//printf("接收线程 发送字节 %d\n", ret);
-		
+#if 0
 		ret = recv(newfd, (void *)buf, sizeof(buf), 0x01);
 		if (ret != sizeof(buf))
 		{
 			printf("接收线程 recv ret %d.\n", ret);
 			break;
 		}
+#endif
+		
 		//printf("接收线程 接收到报文 %d 字节\n", ret);
 		//printf("接收线程 %x, %x, %x,%x, %x, %x,%x, %x, %x, %x.\n", buf[0], buf[1],buf[2],buf[3],buf[4],buf[5],
 		//		buf[6],buf[7],buf[8],buf[9]);

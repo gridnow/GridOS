@@ -44,10 +44,10 @@ struct ko_thread
 struct kt_thread_creating_context
 {
 	unsigned long stack_pos;
-	void* stack0;
+	void *stack0;
 	unsigned long stack0_size;
-	void* fate_entry;
-	void* thread_entry;
+	void *fate_entry;
+	void *thread_entry;
 	int priority, cpl;
 	unsigned long para;
 	unsigned long flags;

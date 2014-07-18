@@ -6,6 +6,7 @@
 *   线程管理
 */
 #include <ystd.h>
+#include <stdio.h>
 
 #include <linkage.h>
 #include <bitops.h>
@@ -28,7 +29,6 @@ static asmregparm __noreturn void kernel_thread_fate_entry(unsigned long (*threa
 	if (thread_entry)
 		ka_call_dynamic_module_entry(thread_entry, para);
 	
-	printk("Kernel level thread die ,entry %x.\n", thread_entry);
 	kt_delete_current();
 }
 
@@ -114,6 +114,7 @@ struct ko_thread *kt_create(struct ko_process *where, struct kt_thread_creating_
 {
 	void *teb = NULL;
 	struct ko_thread *p = NULL;
+	char name[32];
 	
 	/* Handle stack */
 	ctx->cpl = where->cpl;
@@ -170,6 +171,8 @@ struct ko_thread *kt_create(struct ko_process *where, struct kt_thread_creating_
 	kt_arch_init_thread(p, ctx);
 	p->process	= where;
 	p->teb		= teb;
+	sprintf(name, "e:%p", ctx->thread_entry);
+	cl_object_set_name(p, name);
 	if (ctx->flags & KT_CREATE_RUN)
 		kt_wakeup(p);
 	
@@ -186,7 +189,7 @@ void __noreturn kt_delete_current()
 {
 	//TODO
 	TODO("");
-	while (1) kt_schedule();
+	while (1) kt_sleep(KT_STATE_KILLING);
 }
 
 struct ko_thread *kt_create_kernel(void *entry, unsigned long para)
