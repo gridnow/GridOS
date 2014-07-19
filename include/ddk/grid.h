@@ -29,7 +29,7 @@ struct accept_queue
 /**
 	send packet message struct for socket layers
 */
-struct mesg_hd
+struct send_msg_hd
 {
 	/* list to struct netconn recved or send list */
 	struct list_head list;
@@ -87,6 +87,8 @@ struct grd_netconn
 	struct list_head send_queue;
 	/* 用于协议栈线程释放pbuf */
 	struct list_head wait_free_queue;
+	/* 最多可以缓存多少个报文 */
+	int rx_queue_limit;
 	/* 协议栈线程操作后的返回结果,用于sock等待函数 */
 	int result;
 };
