@@ -275,6 +275,12 @@ static int write_more_msg_to_tcp_queue(struct grd_netconn *netconn)
 			/* 写入成功,调整当前msg head的偏移量 */
 			msg_body_add_len(send_msg, send_len);
 
+			/*
+				写完未send msg分以下两种情况:
+				1.当前send msg的偏移等于msg len,表示协议栈还可以写入报文
+				2.当前send msg的偏移量小于msg len,表示协议栈不能在写入报文了,
+					这时提前退出
+			*/
 			if (msg_curr_len_bigthan_offset(send_msg))
 				goto err_no_len_to_write;
 
