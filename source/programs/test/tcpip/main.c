@@ -228,7 +228,7 @@ static void *accept_thread(void *para)
 			break;
 		}
 		//printf("接收线程 发送字节 %d\n", ret);
-#if 0
+#if 1
 		ret = recv(newfd, (void *)buf, sizeof(buf), 0x01);
 		if (ret != sizeof(buf))
 		{

@@ -28,7 +28,13 @@
 
 #define DEFAULT_ACCEPT_LEN   4
 
+#define NETCONN_MAX_RX_QUEUE  10
+
+#define err_in_ip_stack_write       (1 << 1)
+#define err_in_ip_stack_tcpout      (1 << 2)
+
 #define NET_CONNET_IS_BLOCK(netconn) ((netconn->flag) & NET_F_BLOCK)
+#define netconn_rx_queue_is_full(netconn) ((netconn)->rx_queue_limit == NETCONN_MAX_RX_QUEUE)
 
 /* netconn lock */
 #define GRD_NETCONN_LOCK_INIT(netconn)   pthread_spin_init(&netconn->netconn_lock, 0)
@@ -149,32 +155,32 @@ static int wait_times = 5000;
 	@brief alloc send msg
 	TODO, must alloc from memery cache
 */
-static void *alloc_msg_head(int msg_count)
+static void *alloc_send_msg_head(int msg_count)
 {
-	struct mesg_hd *msg;
+	struct send_msg_hd *send_msg;
 
-	msg = (struct mesg_hd *)malloc(sizeof(*msg));
-	if (!msg)
+	send_msg = (struct send_msg_hd *)malloc(sizeof(*send_msg));
+	if (!send_msg)
 		goto err;
-	memset(msg, 0, sizeof(*msg));
+	memset(send_msg, 0, sizeof(*send_msg));
 	
-	msg->iovec = malloc(sizeof(struct iovec) * msg_count);
-	if (!msg->iovec)
+	send_msg->iovec = malloc(sizeof(struct iovec) * msg_count);
+	if (!send_msg->iovec)
 		goto err1;
-	memset(msg->iovec, 0, sizeof(struct iovec) * msg_count);
+	memset(send_msg->iovec, 0, sizeof(struct iovec) * msg_count);
 	
-	msg->iovec_count  = msg_count;
-	msg->iovec_offset = 0;
-	INIT_LIST_HEAD(&msg->list);
-	return msg;
+	send_msg->iovec_count  = msg_count;
+	send_msg->iovec_offset = 0;
+	INIT_LIST_HEAD(&send_msg->list);
+	return send_msg;
 	
 err1:
 	printf("malloc mesg iovec error.\n");
-	free(msg);
-	msg = NULL;
+	free(send_msg);
+	send_msg = NULL;
 err:
 	printf("malloc mesg hd error.\n");
-	return msg;
+	return send_msg;
 }
 
 static void *alloc_recv_msg_hd(void)
@@ -218,23 +224,29 @@ static void free_recv_msg_hd(void *p)
 /**
 	@brief free msg head
 */
-static void free_msg_head(void *msg)
+static void free_send_msg_head(struct send_msg_hd *msg)
 {
 	if (msg)
 	{
-		free(((struct mesg_hd *)msg)->iovec);
-		free(msg);	
+		list_del(&msg->list);
+		free(msg->iovec);
+		free((void *)msg);	
 	}
 	return;
 }
 
 /**
 	@brief write msg to stack tcp queue
+	@return
+		> 0 成功 < 0出错
+	@note:
+		调用者要判断是否调用成功,一般调用错误,都是由于协议栈出错了
+		所以要进行错误处理
 */
 static int write_more_msg_to_tcp_queue(struct grd_netconn *netconn)
 {
 	u16_t send_len, rem_len, old_len;
-	struct mesg_hd *send_msg, *next = NULL;
+	struct send_msg_hd *send_msg, *next = NULL;
 	
 	old_len = rem_len = tcp_sndbuf((struct tcp_pcb *)(netconn->protocal_control_block));
 
@@ -248,7 +260,7 @@ static int write_more_msg_to_tcp_queue(struct grd_netconn *netconn)
 		{
 			/* may write more? */
 			if (!rem_len)
-				goto err_write;
+				goto err_no_len_to_write;
 			
 			/* 可以发送的数据长度, */
 			send_len = (rem_len > remain_msg_len(send_msg)) ? \
@@ -263,8 +275,14 @@ static int write_more_msg_to_tcp_queue(struct grd_netconn *netconn)
 			/* 写入成功,调整当前msg head的偏移量 */
 			msg_body_add_len(send_msg, send_len);
 
+			/*
+				写完未send msg分以下两种情况:
+				1.当前send msg的偏移等于msg len,表示协议栈还可以写入报文
+				2.当前send msg的偏移量小于msg len,表示协议栈不能在写入报文了,
+					这时提前退出
+			*/
 			if (msg_curr_len_bigthan_offset(send_msg))
-				goto err_write;
+				goto err_no_len_to_write;
 
 			/* 当前package已经写完 */
 			send_msg->iovec_offset += 1;
@@ -272,14 +290,18 @@ static int write_more_msg_to_tcp_queue(struct grd_netconn *netconn)
 		}
 		//printf("sen len %d, rem_len %d.\n", send_len, rem_len);
 		/* 前面的一个msg_hd 刚好写完,so 释放掉该msg */
-		list_del(&send_msg->list);
-		free_msg_head(send_msg);
+		free_send_msg_head(send_msg);
 
 	}
+	
+err_no_len_to_write:
+
+	return (old_len - rem_len);
 
 err_write:
 	//printf("hhh sen len %d, rem_len %d.\n", send_len, rem_len);
-	return (old_len - rem_len);
+	/* 调用tcp_write 出错,所以这时候,调用者应该处理错误 */
+	return -1;
 }
 
 
@@ -318,7 +340,7 @@ static void *netconn_init(struct grd_netconn *netconn, void *pcb, int type)
 	
 	netconn->protocal_control_block = pcb;
 	netconn->net_types				= type;
-	
+	netconn->rx_queue_limit         = 0;
 	if (Y_INVALID_HANDLE == (netconn->event = y_event_create(false, false)))
 		goto err1;
 	return netconn;
@@ -366,32 +388,47 @@ err:
 static err_t tcp_recved_fn(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
 	struct grd_netconn *netconn = (struct grd_netconn *)arg;
-	struct recv_msg_hd *msg_hd, *next;
+	struct recv_msg_hd *recv_msg, *next;
 
-	msg_hd = alloc_recv_msg_hd();
-	if (!msg_hd)
+	GRD_NETCONN_LOCK(netconn);
+	/* rx queue is full? */
+	if (netconn_rx_queue_is_full(netconn))
+	{
+		GRD_NETCONN_LOCK(netconn);
+		goto rx_queue_full;
+	}
+	recv_msg = alloc_recv_msg_hd();
+	if (!recv_msg)
 		goto err_mm;
 
-	msg_hd->stack_msg = p;
+	recv_msg->stack_msg = p;
 	
-	GRD_NETCONN_LOCK(netconn);
+	list_add_tail(&recv_msg->list, &netconn->recv_queue);
+	netconn->rx_queue_limit += 1;
 	
-	list_add_tail(&msg_hd->list, &netconn->recv_queue);
+	/* 
+		释放掉wait free queue中的msg head
+		TODO 上面的分配可以考虑从wait free queue来分配,如果满足
+	*/
+	list_for_each_entry_safe(recv_msg, next, &netconn->wait_free_queue, list)
+		free_recv_msg_hd((void *)recv_msg);
 	
-	/* 释放掉wait free queue中的msg head */
-	list_for_each_entry_safe(msg_hd, next, &netconn->wait_free_queue, list)
-		free_recv_msg_hd((void *)msg_hd);
-	
-	GRD_NETCONN_UNLOCK(netconn);
-
 	/* 调整接收窗口 */
 	tcp_recved(pcb, p->tot_len);
 
 	/* wake up recv threads */
 	y_event_set(netconn->event);
-
+	GRD_NETCONN_UNLOCK(netconn);
 	return ERR_OK;
+	
+rx_queue_full:
+	/* drop,调整接收窗口 */
+	tcp_recved(pcb, p->tot_len);
+	pbuf_free(p);
+	return ERR_OK;
+	
 err_mm:
+	GRD_NETCONN_UNLOCK(netconn);
 	return ERR_MEM;
 }
 
@@ -402,15 +439,23 @@ static err_t tcp_send_fn(void *arg, struct tcp_pcb *pcb, u16_t len)
 	GRD_NETCONN_LOCK(netconn);
 	
 	/* 是否真的写的报文到协议栈 */
-	if (write_more_msg_to_tcp_queue(netconn))
+	if (write_more_msg_to_tcp_queue(netconn) < 0)
 	{
-		/* 如果队列为空,则要通过阻塞的线程一下 */
+		
+		netconn->result = err_in_ip_stack_write;
+	}
+	else
+	{
+		/*
+			阻塞send的时候,有可能有线程在等待发送完成,so
+			如果队列为空,则要wake up thread
+		*/
 		if (list_empty(&netconn->send_queue))
 			y_event_set(netconn->event);
 	}
 
 	GRD_NETCONN_UNLOCK(netconn);
-	/* TODO 需要唤醒阻塞模式的socket, 如果发送成功 */
+
 	return ERR_OK;
 }
 
@@ -574,7 +619,7 @@ err:
 */
 static int grd_send(struct grd_netconn *netconn, void *buff, size_t len, int flag)
 {
-	struct mesg_hd *msg;
+	struct send_msg_hd *msg;
 	int ret = -ENOMEM;
 	
 	if (!buff)
@@ -584,7 +629,7 @@ static int grd_send(struct grd_netconn *netconn, void *buff, size_t len, int fla
 	}
 	
 	/* alloc send msg */
-	msg = alloc_msg_head(1);
+	msg = alloc_send_msg_head(1);
 	if (!msg)
 	{
 		printf("grd send msg head error.\n");
@@ -603,7 +648,7 @@ static int grd_send(struct grd_netconn *netconn, void *buff, size_t len, int fla
 	ret = send_send_msg_to_ip_thread(netconn);
 
 	/* 是否全部写入,否则就要等待完成 */
-	if (ret != len)
+	if ((ret != len) && (flag & NET_F_BLOCK))
 	{
 		while (!(list_empty(&netconn->send_queue)))
 		{
@@ -612,6 +657,13 @@ static int grd_send(struct grd_netconn *netconn, void *buff, size_t len, int fla
 
 		/* 全部发送完成啦 */
 		ret = len;
+	}
+	else if (ret !=len)
+	{
+		/* 非阻塞,并且还没有发送完成,所以删除该msg后 退出 */
+		GRD_NETCONN_LOCK(netconn);
+		free_send_msg_head(msg);
+		GRD_NETCONN_UNLOCK(netconn);
 	}
 err:
 	return ret;
@@ -681,6 +733,8 @@ again:
 					判断当前recv msg 的pbuf是否读取完成
 					1.小于则说明用户buff没有空间了，这时候
 					直接退出
+					这里offset要么等于total_len 这时候,表示recv_msg一个iovce使用完
+					小于total_len 表示用户空间已满,这时候需要返回
 				*/
 				
 				if (recv_msg->offset < total_len)
@@ -692,6 +746,7 @@ again:
 
 		/* 该msg hd使用完, 添加到wait free queue中,供协议栈线程释放 */
 		add_recv_msg_to_free_wait_queue(netconn, recv_msg);
+		netconn->rx_queue_limit -= 1;
 	}
 	
 	/* TODO 是否是阻塞的接受, 需要等待写满用户缓冲空间 */
@@ -847,12 +902,12 @@ static void do_send(struct y_message *msg)
 	/* write to tcp queue */
 	GRD_NETCONN_LOCK(netconn);
 	ret = write_more_msg_to_tcp_queue(netconn);
-	GRD_NETCONN_UNLOCK(netconn);
 
 	/* send out */
 	if (tcp_output(netconn->protocal_control_block) < 0)
-		printf("Do send @ tcp_out erro.\n");
-	
+		netconn->result = err_in_ip_stack_tcpout;
+
+	GRD_NETCONN_UNLOCK(netconn);
 	y_message_writeback(msg, 1, ret);
 	return;
 }
@@ -982,7 +1037,7 @@ static err_t stream_output(struct netif *netif, struct pbuf *p)
 	return ERR_OK;
 err_package:
 	/* System may cached to may pbuf(by IP reassembly or recved pbuf yet not handled) */
-	
+	dump_ring_package();
 	return ERR_MEM;
 }
 
