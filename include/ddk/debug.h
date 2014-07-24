@@ -79,7 +79,7 @@ extern void hal_do_panic();
 /**
 	@brief BUG 表示一个不应该去的流程.
 */
-#define BUG()	\
+#define BUG() \
 	do {	\
 		PRINT("文件%s中的函数%s第%d行不应该执行,程序BUG.\n", __FILE__, __FUNCTION__, __LINE__);	\
 		hal_do_panic();	\
@@ -132,7 +132,7 @@ extern void hal_do_panic();
 #define dev_info(dev, format, arg...) PRINT("dev_inf："format, ##arg)
 #define dev_dbg dev_info
 #define dev_warn dev_info
-#define dev_PRINT(level, dev, format, arg...) PRINT("设备信息："format, ##arg)
+#define dev_printk(level, dev, format, arg...) PRINT("设备信息："format, ##arg)
 #define dev_err dev_info
 #define dev_trace(format, arg...) PRINT("设备跟踪："format, ##arg)
 #define dev_WARN(dev, format, arg...) PRINT("设备警告(%s.%d):"format"\n", __FUNCTION__, __LINE__, ##arg)

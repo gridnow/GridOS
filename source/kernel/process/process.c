@@ -33,7 +33,7 @@ static void file_thread(void *para)
 	printk("Copy ok.\n");
 	while(1)
 	{
-		kt_schedule();
+		kt_sleep(KT_STATE_WAITING_MSG);
 	}
 	
 }
@@ -49,15 +49,12 @@ static bool object_init(real_object_t *obj)
 	
 	/* 
 		Although init_process will call it, but it dose not matter for a page disappeared
-		created in walk as root table.
+		created in walk as root table, and we will reset it for init_process...
 	 */
 	km_walk_init(&p->mem_ctx);
 	km_arch_ctx_init(&p->mem_ctx);
 
 	return true;
-
-err:
-	return false;
 }
 
 static struct cl_object_ops process_object_ops = {
@@ -150,16 +147,18 @@ bool kp_init()
 {	
 	cl_object_type_register(&process_type);
 	
-	/* Core process */
 	init_process = kp_create(KP_CPL0, "操作系统核心进程");
-	if (!init_process) 
+	/* Core process */
+	if (!init_process)
 		goto err;
 	km_walk_init_for_kernel(&init_process->mem_ctx);
 
 	kt_init();
-		
+
 	kp_exe_init();
 	ke_srv_init();
+	/*内核标准输入初始化服务函数*/
+	//session_init(1);
 	return true;
 err:
 	return false;
@@ -195,17 +194,23 @@ void ke_startup_driver_process(void *physical_data, size_t size)
 		Elf64_Ehdr *hdr64 = (Elf64_Ehdr*)physical_data;
 		entry_address = hdr64->e_entry;
 	}
+	else
+	{
+		printk("不识别的驱动文件格式.\n");
+		goto end;
+	}
 
 	/* 64kb offset is not base */
 	base = entry_address & (~0xffff);
 	// TODO: size of the map should contain bss, and notify system that bss should not be allocated for normal use */
-	
+
 	/* Map physical to base */
 	if (km_map_physical(HAL_GET_BASIC_PHYADDRESS(physical_data), size + 0x60000/*BSS?*/,
 					base | KM_MAP_PHYSICAL_FLAG_WITH_VIRTUAL | KM_MAP_PHYSICAL_FLAG_NORMAL_CACHE) == NULL)
 		goto err;
 
 	 ((void(*)())entry_address)(&ddk);
+end:
 	return;
 err:
 	printk("驱动包影射到内核空间失败，可能是地址冲突，要影射的地址范围为%d@%x.\n", size, base);

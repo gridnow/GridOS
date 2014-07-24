@@ -10,6 +10,7 @@
 #define HAL_CONSOLE_H
 
 #include <ddk/compatible.h>
+#include <screen.h>
 
 /* 循环缓存,暂存当前屏幕输出数据 */
 #define CONSOLE_BUFFER_SIZE 4 * 1024
@@ -63,11 +64,10 @@ struct hal_console_ops
 	int (*read)(char *buffer, int size);
 	int (*write)(char *buffer, int size);
 };
-
 static inline void get_screen_resolution(int *w, int *h, int *bpp)
 {
-	*w = 1024;
-	*h = 768;
+	*w = main_screen.width;
+	*h = main_screen.height;
 }
 
 void console_write(char *string, int size);

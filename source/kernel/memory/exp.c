@@ -66,6 +66,7 @@ static struct ko_section *ks_get_by_vaddress_unlock(struct ko_process *where, un
 
 static bool restore_file(struct ko_process *who, struct ko_section *where, unsigned long address)
 {
+	int r;
 	void *db_addr;
 	uoffset pos;
 	bool ret = false;
@@ -79,8 +80,10 @@ static bool restore_file(struct ko_process *who, struct ko_section *where, unsig
 	mem_dst = kp_get_mem(who);
 	mem_src = kp_get_mem(kp_get_system());
 
-	if (km_page_share(mem_dst, address, mem_src, (unsigned long)db_addr, KM_PROT_READ) != KM_PAGE_SHARE_RESULT_OK)
+	if (KM_PAGE_SHARE_RESULT_OK != (r = km_page_share(mem_dst, address, mem_src, (unsigned long)db_addr, where->prot)))
+	{
 		goto end1;
+	}
 
 	ret = true;
 
@@ -91,10 +94,36 @@ end:
 	return ret;
 }
 
+static bool ks_restore(struct ko_process *who, struct ko_section *where, unsigned long address)
+{
+	switch(where->type & KS_TYPE_MASK)
+	{
+		case KS_TYPE_FILE:
+			return restore_file(who, where, address);
+		default:
+			TRACE_UNIMPLEMENTED("");
+	}
+	
+	return false;
+}
+
 static bool refill_null(struct ko_thread *current, struct ko_section *where, unsigned long address, unsigned long code)
 {
 	printk("Uninited refill handler.\n");
 	return false;
+}
+
+static bool refill_share(struct ko_thread *current, struct ko_section *where, unsigned long address, unsigned long code)
+{
+	unsigned long source_address;
+	struct ko_section *src = where->priv.share.src;
+	
+	source_address = where->priv.share.offset + src->node.start;
+	source_address += address - where->node.start;
+	
+	return ks_restore_share(KT_GET_KP(current), where,
+					 where->priv.share.src_process, src,
+					 address, source_address, 0);
 }
 
 static bool refill_exe(struct ko_thread *current, struct ko_section *where, unsigned long address, unsigned long code)
@@ -114,7 +143,7 @@ static bool refill_exe(struct ko_thread *current, struct ko_section *where, unsi
 	*/
 	if (unlikely(address >= detailed->node.start/*mapped base*/ + detailed->priv.share.size/*file size*/))
 	{
-		unsigned long phy;
+//		unsigned long phy;
 
 		//printk("    BSS like segment virtual base %p, address %p \n", detailed->node.start, address);
 
@@ -210,8 +239,8 @@ static bool refill_file(struct ko_thread *current, struct ko_section *where, uns
 	{
 		if (!(where->prot & KM_PROT_WRITE))
 			goto end;
-		TODO("COW");
-		goto end;
+		//TODO("COW");
+		//goto end;
 	}
 
 	r = restore_file(KT_GET_KP(current), where, address);
@@ -257,20 +286,52 @@ bool ks_exception(struct ko_thread *thread, unsigned long error_address, unsigne
 		ret = exception_handler[ks->type & KS_TYPE_MASK](thread, ks, error_address, code);
 	else
 		ret = false;
-	
+
+	if (ret == false)
+		ks_show_by_process(where);
 	return ret;
 }
 
-bool ks_restore(struct ko_process *who, struct ko_section *where, unsigned long address)
+bool ks_restore_share(struct ko_process *dst_process, struct ko_section *dst_section,
+					  struct ko_process *src_process, struct ko_section *src_section,
+					  unsigned long to, unsigned long src, page_prot_t prot_overwrite)
 {
-	switch(where->type & KS_TYPE_MASK)
+	int ret;
+	struct km *dst_mem, *src_mem;
+	page_prot_t prot;
+	
+	/*
+		In EXE case, we must assign read mode first for COW.
+	*/
+	if (prot_overwrite)
+		prot = prot_overwrite;
+	else
+		prot = dst_section->prot;
+	
+share_again:
+	dst_mem = kp_get_mem(dst_process);
+	src_mem = kp_get_mem(src_process);
+	ret = km_page_share(dst_mem, to,
+						src_mem, src,
+						prot);
+	kp_put_mem(dst_mem);
+	kp_put_mem(src_mem);
+	
+	if (ret != KM_PAGE_SHARE_RESULT_OK)
 	{
-	case KS_TYPE_FILE:
-		return restore_file(who, where, address);
-	default:
-		TRACE_UNIMPLEMENTED("");
+		if (ret == KM_PAGE_SHARE_RESULT_ERR)
+			goto err;
+		else if (ret == KM_PAGE_SHARE_RESULT_SRC_INVALID)
+		{
+			if (ks_restore(src_process, src_section, src) == false)
+				goto err;
+			goto share_again;
+		}
 	}
 	
+	return true;
+	
+err:
 	return false;
 }
 
@@ -290,9 +351,8 @@ bool __init ks_exception_init()
 	exception_handler[KS_TYPE_PRIVATE]	= refill_private;
 	exception_handler[KS_TYPE_STACK]	= refill_private;
 	exception_handler[KS_TYPE_FILE]		= refill_file;
-//	exception_handler[KS_TYPE_SHARE]	= refill_share;
+	exception_handler[KS_TYPE_SHARE]	= refill_share;
 	exception_handler[KS_TYPE_KERNEL]	= refill_kernel;
-
 	return true;
 }
 

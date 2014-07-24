@@ -12,5 +12,11 @@
 
 DLLEXPORT int getch()
 {
-	return 0;
+	unsigned long key = 0;
+
+	int ret = stdin_read(&key);
+	if (ret < 0)
+		return ret;
+	//printf("getch %d, %d\n", ret, key);
+	return key;
 }

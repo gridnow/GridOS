@@ -6,7 +6,7 @@ LAST_INCLUDE +=-I$(MY_BUILD_BASE)/source/libs/
 
 
 #要编译的文件列表
-OBJS	= thread.o process.o exe.o sched.o sleep.o sync.o 
+OBJS	= thread.o process.o exe.o sched.o sleep.o sync.o msg.o debug.o 
 PARTS	=
 
 all:  subs_parts $(OBJS)

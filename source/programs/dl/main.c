@@ -632,13 +632,13 @@ static int dl_build_image_context(xstring first_name)
 		return ENOENT;
 	}
 	
-	early_print("Loading dependency...\n");
+	//early_print("Loading dependency...\n");
 	load_dependencies();
 
-	early_print("Relocating...\n");
+	//early_print("Relocating...\n");
 	relocation();
 
-	early_print("Starting up...\n");
+	//early_print("Starting up...\n");
 	return startup();
 }
 
@@ -646,7 +646,7 @@ static int dl_build_image_context(xstring first_name)
 /**
 	@brief get a symbol
 */
-bool __weak ki_get_symbol(struct elf_context * elf, const char *name, unsigned long * address, bool search_other)
+bool ki_get_symbol(struct elf_context * elf, const char *name, unsigned long * address, bool search_other)
 {
 	bool ret = false;
 	struct image *what = container_of(elf, struct image, exe_desc);

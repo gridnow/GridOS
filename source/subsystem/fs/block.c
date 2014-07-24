@@ -221,8 +221,8 @@ bool fss_db_init(void)
 #ifdef _MSC_VER
 	cache_desc()->db_cache = (char*)malloc(cache_desc()->cache_size);
 #else
-	cache_desc()->db_cache = km_alloc_virtual(cache_desc()->cache_size, KM_PROT_READ | KM_PROT_WRITE);
-	printf("fss_db_cache = %x", cache_desc()->db_cache);
+	cache_desc()->db_cache = km_alloc_virtual(cache_desc()->cache_size, KM_PROT_READ | KM_PROT_WRITE, NULL);
+	printf("fss_db_cache = %x", (unsigned int)cache_desc()->db_cache);
 #endif
 	if (cache_desc()->db_cache == NULL)
 		goto err1;
@@ -232,7 +232,7 @@ bool fss_db_init(void)
 	cache_desc()->db_stack = (unsigned long *)malloc(cache_desc()->db_count * sizeof(unsigned long));
 #else
 	cache_desc()->db_stack = (unsigned long *)km_valloc(cache_desc()->db_count * sizeof(unsigned long));
-	printf(", fss_db_stack = %x.\n", cache_desc()->db_stack);
+	printf(", fss_db_stack = %x.\n", (unsigned int)cache_desc()->db_stack);
 #endif
 	if (cache_desc()->db_stack == NULL)	
 		goto err2;

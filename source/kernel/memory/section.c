@@ -16,6 +16,7 @@
 #include "section.h"
 #include "page.h"
 #include "exe.h"
+#include <thread.h>
 
 static void remove_from_space(struct ko_process *who, struct ko_section *p)
 {
@@ -119,7 +120,7 @@ static struct cl_object_type section_type = {
 	.free_space	= free_space,
 };
 
-struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsigned long base, unsigned long size, page_prot_t prot)
+struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsigned long base, size_t size, page_prot_t prot)
 {
 	struct ko_section *p;
 	
@@ -130,7 +131,7 @@ struct ko_section *ks_create(struct ko_process *where, unsigned long type, unsig
 	p->node.size 	= size;
 	p->node.start 	= base;
 	p->prot			= prot;
-	if (km_vm_create(where, &p->node, type == KS_TYPE_KERNEL) == false)
+	if (km_vm_create(where, &p->node, type) == false)
 		goto err1;
 	
 	return p;
@@ -149,6 +150,26 @@ void ks_close(struct ko_process *who, struct ko_section *ks)
 void ks_open_by(struct ko_process *who, struct ko_section *ks)
 {
 	cl_object_open(who, ks);
+}
+
+/*
+	@brief Link tow sections together
+ */
+void ks_share(struct ko_process *from, struct ko_section *where,
+			  struct ko_process *to, struct ko_section *dst, int offset)
+{
+	cl_object_inc_ref(where);
+	
+	/* 
+		No need to increase the reference counter of process,
+		because it will not be deleted if it has section with reference counter.
+	*/
+	dst->type					= KS_TYPE_SHARE;
+	dst->priv.share.src			= where;
+	dst->priv.share.offset		= offset;
+	dst->priv.share.src_process = from;
+	
+	
 }
 
 /**
@@ -238,12 +259,19 @@ void __init ks_init()
 	/* Trim the memory mapping, i386 is full mapping */
 	km_arch_trim(); 
 	ks_exception_init();
+#ifdef __arm__
+	printk("ks_init currently not supported arm for virtual memory access.\n");
+#else
 	km_valloc_init();
+	
+	/* Message system need virtual memory */
+	ktm_init();
+#endif
 }
 
 //------------test-----------------
 #include <kernel/ke_event.h>
-#include <thread.h>
+
 struct ke_event ev;
 static void test_thread(unsigned long para)
 {
@@ -259,7 +287,10 @@ void kernel_test()
 	//for (i = 0; i < 34; i++)
 	//	kt_create_kernel(test_thread, i);
 	fss_main();
-
+	nss_main();
+	//初始化输入设备
+	session_init();	
+	session_create_input_device();
 	/* we have timer tick to switch preemptly */
 #if 0
 	/* Startup first disk file */

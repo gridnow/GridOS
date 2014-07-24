@@ -5,6 +5,9 @@
 *   Wuxin
 *   线程管理
 */
+#include <ystd.h>
+#include <stdio.h>
+
 #include <linkage.h>
 #include <bitops.h>
 
@@ -15,7 +18,7 @@
 #include "process.h"
 #include "cpu.h"
 #include <thread.h>
-
+#include <kernel/ke_thread.h>
 #include <string.h>
 
 static struct ko_thread *init_thread;
@@ -26,7 +29,6 @@ static asmregparm __noreturn void kernel_thread_fate_entry(unsigned long (*threa
 	if (thread_entry)
 		ka_call_dynamic_module_entry(thread_entry, para);
 	
-	printk("Kernel level thread die ,entry %x.\n", thread_entry);
 	kt_delete_current();
 }
 
@@ -40,6 +42,8 @@ static bool object_init(real_object_t *obj)
 	struct ko_thread *thread = (struct ko_thread *)obj;
 	INIT_LIST_HEAD(&thread->queue_list);
 	spin_lock_init(&thread->ops_lock);
+	
+	ktm_msg_init(thread);
 
 	return true;
 }
@@ -106,23 +110,34 @@ end:
 /**
 	@brief Create a thread
 */
-struct ko_thread * kt_create(struct ko_process * where, struct kt_thread_creating_context *ctx)
-{	
+struct ko_thread *kt_create(struct ko_process *where, struct kt_thread_creating_context *ctx)
+{
+	void *teb = NULL;
 	struct ko_thread *p = NULL;
+	char name[32];
 	
 	/* Handle stack */
 	ctx->cpl = where->cpl;
 	if (ctx->cpl == KP_USER)
 	{
 		struct ko_section *ks;
-		int stack_size = KT_THREAD_FIRST_STACK_SIZE;
+		int stack_top, stack_size;
 		
 		//TODO: 一般，不是第一个线程无需这么大的堆栈
-
-		ks = ks_create(where, KS_TYPE_STACK, 0, stack_size, KM_PROT_READ|KM_PROT_WRITE);
-		if (!ks)
+		stack_top = stack_size = KT_THREAD_FIRST_STACK_SIZE;
+		/* Create the thread stack */
+		if (NULL == (ks = ks_create(where, KS_TYPE_STACK, 0, stack_size, KM_PROT_READ|KM_PROT_WRITE)))
 			goto err0;
-		ctx->stack_pos = ks->node.start + stack_size;
+		
+		/* Make space for TEB */
+		stack_top -= sizeof(struct y_thread_environment_block);
+		teb = (void*)(ks->node.start + stack_top);
+		
+		/* 占用太多资源? */
+		if (stack_top < 0)
+			goto err1;
+		
+		ctx->stack_pos = ks->node.start + stack_top;
 	}
 	if (!ctx->stack0_size/* If caller give a specific stack(driver system will), we do not need to create */)
 	{
@@ -154,7 +169,10 @@ struct ko_thread * kt_create(struct ko_process * where, struct kt_thread_creatin
 	p = cl_object_create(&thread_type);
 	if (!p)	goto err1;
 	kt_arch_init_thread(p, ctx);
-	p->process = where;
+	p->process	= where;
+	p->teb		= teb;
+	sprintf(name, "e:%p", ctx->thread_entry);
+	cl_object_set_name(p, name);
 	if (ctx->flags & KT_CREATE_RUN)
 		kt_wakeup(p);
 	
@@ -171,7 +189,7 @@ void __noreturn kt_delete_current()
 {
 	//TODO
 	TODO("");
-	while (1) kt_schedule();
+	while (1) kt_sleep(KT_STATE_KILLING);
 }
 
 struct ko_thread *kt_create_kernel(void *entry, unsigned long para)
@@ -208,5 +226,19 @@ bool kt_init()
 {
 	cl_object_type_register(&thread_type);
 	init_idle_thread(kc_get_raw(), &init_thread);
+	
 	return true;
+}
+
+/*************************************************************
+Interface  
+*************************************************************/
+ke_thread ke_current()
+{
+	return (ke_thread)kt_current();
+}
+
+ke_thread ke_create_kernel(void *entry, void *para)
+{
+	return (ke_thread)kt_create_kernel(entry, (unsigned long)para);
 }

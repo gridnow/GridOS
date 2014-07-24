@@ -4,7 +4,7 @@ NORMAL_APP=yes
 include $(MY_BUILD_BASE)/config.mk
 
 OBJS					= main.o
-TARGET					= startup
+TARGET					= baxi
 DEPENDS					+=-lgrid.so -lhead_exe.o
 PARTS					= cmd
 all: subs_parts $(OBJS)

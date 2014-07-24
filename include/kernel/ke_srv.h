@@ -41,18 +41,28 @@ struct ke_srv_info
 */
 struct sysreq_common
 {
-	unsigned long req_id;
+	unsigned int req_id;
 };
 
 bool ke_srv_register(const struct ke_srv_info *info);
 
 /**
+	@brief 句柄和对象都不想要了，在接口函数中使用
+
+	@note
+		对象一定是被转换过，并且句柄没有被put 过。
+*/
+void ke_handle_and_object_destory(ke_handle handle, void *kobject);
+
+/**
 	@brief Handler part
 */
-int ke_handle_put(ke_handle handle, void *kobject);
+void ke_handle_put(ke_handle handle, void *kobject);
 void *ke_handle_translate(ke_handle handle);
 bool ke_handle_delete(ke_handle handle);
 ke_handle ke_handle_create(void *kobject);
+
+int ke_srv_null_sysxcal(void *req);
 
 #endif
 /** @} */

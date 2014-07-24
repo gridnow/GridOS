@@ -25,6 +25,16 @@ DLLEXPORT void hal_wmb();
 DLLEXPORT void hal_rmb();
 #endif
 
+/*
+ * Convert a physical address to a Page Frame Number and back
+ */
+#define	__phys_to_pfn(paddr)	((unsigned long)((paddr) >> PAGE_SHIFT))
+#define	__pfn_to_phys(pfn)	((phys_addr_t)(pfn) << PAGE_SHIFT)
+#define SZ_1K				0x00000400
+#define SZ_2K				0x00000800
+#define SZ_4K				0x00001000
+#define SZ_16K				0x00004000
+
 /*************************************************************/
 /* LOCK for drivers */
 /*************************************************************/

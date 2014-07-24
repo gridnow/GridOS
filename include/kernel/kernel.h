@@ -10,10 +10,11 @@
 #define KE_H
 
 typedef unsigned int page_prot_t;
-#define KM_PROT_READ	(1 << 0)
-#define KM_PROT_WRITE	(1 << 1)
-#define KM_MAP_DEVICE	(1 << 16)
-#define KM_MAP_ANON		(1 << 17)
+#define KM_PROT_READ			(1 << 0)
+#define KM_PROT_WRITE			(1 << 1)
+#define KM_MAP_DEVICE			(1 << 16)
+#define KM_MAP_ANON				(1 << 17)
+#define KM_MAP_ARCH_SPECIAL		(1 << 31/*Arch special map */)
 
 #define Y_SYNC_MAX_OBJS_COUNT 64
 #define KE_SYNC_WAIT_INFINITE (-1UL)
@@ -23,9 +24,10 @@ typedef unsigned int page_prot_t;
 typedef enum
 {
 	KE_WAIT_OK = 0,
-	KE_WAIT_TIMEDOUT,
-	KE_WAIT_ABANDONED,
-}kt_sync_wait_result;
+	KE_WAIT_TIMEDOUT	= -1,
+	KE_WAIT_ABANDONED	= -2,
+	KE_WAIT_ERROR		= -3,
+} kt_sync_wait_result;
 
 /*******************************************************/
 /* About thread */
@@ -44,5 +46,9 @@ typedef enum
 */
 signed long ke_sleep_timeout(signed long timeout);
 
+/*******************************************************/
+/* ÔÓÏî                                                                         */
+/*******************************************************/
+void ke_panic(char *why);
 #endif
 /** @} */

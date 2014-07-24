@@ -156,7 +156,7 @@ void hal_arch_init(int step)
 			
 			/* X86 has fb */
 			x86_bootloader_get_video_info(&fb, &w, &h, &bpp);
-			hal_fb_register_simple(fb, w, h, bpp);
+			hal_fb_register_simple(fb, w, h, bpp, 1);
 		}
 		break;
 	case HAL_ARCH_INIT_PHASE_LATE:

@@ -8,15 +8,7 @@ CPU_SPEICAL_LIBS =
 
 ADD_INCLUDE = -I../include $(HAL_INCLUDE)
 
-#CPU Special
-ifeq ($(ARCH),arm)
-CPU_SPECIAL_LIBS_PART = ../../../drivers/hal/arch/arm/lib
-CPU_SPEICAL_LIBS += $(CPU_SPECIAL_LIBS_PART)/memzero.o \
-					$(CPU_SPECIAL_LIBS_PART)/lib1funcs.o \
-					$(CPU_SPECIAL_LIBS_PART)/findbit.o
-endif
-
-#本模块要用CPU特有的指令
+#本模块要用CPU特有的指令,所以要西安包含hal 的头文件
 
 all:  subs_parts $(OBJS)
 	$(LD) -r -o ../cpu.o *.o $(CPU_SPEICAL_LIBS) $(ARCH_LD_FLAGS)

@@ -7,9 +7,12 @@
  */
 
 #include <kernel/ke_event.h>
+#include <kernel/ke_memory.h>
 
 #include <sync.h>
 #include <thread.h> 
+
+#include "object.h"
 
 static kt_sync_status satisfied(struct kt_sync_base *sync, struct ko_thread * thread)
 {
@@ -32,7 +35,7 @@ static struct kt_sync_ops sync_ops = {
 	.signaled	= signaled,
 };
 
-static void set_event(struct ke_event * p)
+static int set_event(struct ke_event * p)
 {
 	unsigned int count = 1;
 
@@ -44,6 +47,7 @@ static void set_event(struct ke_event * p)
 	count = kt_sync_wakeup(TO_SYNC(p), count);
 
 	KE_SYNC_OBJ_UNLOCK(p);
+	return count;
 }
 
 static void reset_event(struct ke_event * p)
@@ -64,9 +68,23 @@ void ke_event_init(struct ke_event *event, bool manual_reset, bool initial_statu
 	event->manual_reset			= manual_reset;
 }
 
-void ke_event_set(struct ke_event *event)
+struct ke_event *ke_event_object_create(bool manual_reset, bool initial_status)
 {
-	set_event(event);
+	struct ke_event *event;
+	void *tmp_addr = km_valloc(sizeof(*event) + sizeof(struct cl_object));
+	if (!tmp_addr)
+		return NULL;
+	
+	/* We have to construct an object for user handle to use */
+	event = tmp_addr + sizeof(struct cl_object);
+	ke_event_init(event, manual_reset, initial_status);
+	
+	return event;
+}
+
+int ke_event_set(struct ke_event *event)
+{
+	return set_event(event);
 }
 
 void ke_event_reset(struct ke_event *event)

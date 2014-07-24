@@ -2,12 +2,10 @@
 #define SESSION_SYS_REQ
 
 /* System call to session layer */
+#include <ddk/input.h>
 #include "syscall.h"
 
-struct ifi_package
-{
-	
-};
+
 
 struct sysreq_session_stdio
 {

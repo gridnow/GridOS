@@ -35,7 +35,8 @@ static ssize_t append_stream_file(ke_handle handle, void *user_buffer, lsize_t o
 	if (ret)
 		return ret;
 #endif	
-	ret = sys_write(handle, user_buffer, old_file_size, append_bytes);
+	ret = sys_write(handle, user_buffer, 
+		old_file_size, BUF_BLOCK_SIZE);
 	return ret;
 }
 
@@ -64,10 +65,15 @@ static bool update_dirty_buffer_block(struct stdio_file *file)
 		 情况2：非fO_APPEND模式下，如果file->pos > file->size，写入数据超过文件大小部分追加到文件尾部
 	*/
 	if (file->flags & O_APPEND || pos > fsize)
+	{
 		size = append_stream_file(file_get_from_detail(file)->handle, file->block->base, fsize, pos - fsize);
+	}
 	else
+	{
 		/* 将buffer block的BUF_BLOCK_OFFSET(file->pos)字节写入file的file->pos-BUF_BLOCK_OFFSET(file->pos)开始处 */
-		size = sys_write(file_get_from_detail(file)->handle, file->block->base, pos - BUF_BLOCK_OFFSET(pos), BUF_BLOCK_OFFSET(pos));
+		size = sys_write(file_get_from_detail(file)->handle, file->block->base, pos - BUF_BLOCK_OFFSET(pos), 
+			BUF_BLOCK_SIZE);
+	}
 
 	if (size < 0)
 		goto end;
@@ -76,6 +82,11 @@ static bool update_dirty_buffer_block(struct stdio_file *file)
 	file->block->flags &= (~BUF_BLOCK_DIRTY_FLAG);
 	ret = true;
 end:
+	if (ret != true)
+	{
+		/* 写入失败，告知系统延迟写! */
+		//TODO
+	}
 	return ret;
 }
 
@@ -91,16 +102,14 @@ static bool swap_out_buffer_block(struct buffer_block *block)
 	bool ret;
 	
 	ret = update_dirty_buffer_block(block->file);
-	if (true == ret)
-	{
-		/* 解除原file和该buffer block的关系，但不能影响到原file的其他属性 */
-		block->file->block		= NULL;
-		block->file				= NULL;
-		block->access_count		= 0;
-		block->flags			= 0;
-		block->valid_size		= 0;
-		block->pre_id			= 0;
-	}
+
+	/* 解除原file和该buffer block的关系，但不能影响到原file的其他属性 */
+	block->file->block		= NULL;
+	block->file				= NULL;
+	block->access_count		= 0;
+	block->flags			= 0;
+	block->valid_size		= 0;
+	block->pre_id			= 0;
 	
 	return ret;
 }
@@ -421,7 +430,7 @@ static int stdio_fclose(struct file *filp)
 	}
 	UNLOCK_FILE(file);
 
-	file_delete(filp);
+	filp_delete(filp);
 	
 	return ret;
 }

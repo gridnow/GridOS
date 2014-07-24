@@ -36,7 +36,7 @@ bool km_page_map_range(struct km *mem_dst, unsigned long start_va, unsigned long
 	long i;
 	struct km_walk_ctx dst_ctx;
 	unsigned long physical_address = physical_pfn << PAGE_SHIFT;
-
+ 
 	KM_WALK_INIT(mem_dst, &dst_ctx);
 	
 	if (unlikely(km_walk_to(&dst_ctx, start_va) == false))
@@ -150,7 +150,9 @@ int km_page_share(struct km *dst, unsigned long dst_addr, struct km *src, unsign
 
 		/* Read src one by one */
 		if (unlikely(km_pte_read_and_next(&src_ctx, &pte) == false))
+		{
 			goto end;
+		}
 
 		/* Not a valid pte */
 		if (KE_PAGE_INVALID_PTE(pte))
@@ -163,7 +165,9 @@ int km_page_share(struct km *dst, unsigned long dst_addr, struct km *src, unsign
 		pte &= ~PAGE_FLAG_MASK;
 		pte |= km_arch_get_flags(prot) | PAGE_FLAG_FROM_OTHER;
 		if (unlikely(km_pte_write_and_next(&dst_ctx, pte) == false))
+		{
 			goto end;
+		}
  	}
  	r = KM_PAGE_SHARE_RESULT_OK;
 	

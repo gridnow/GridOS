@@ -19,35 +19,52 @@
 #include <asm/abicall.h>
 
 #include <kernel/ke_srv.h>
+#include <kernel/ke_event.h>
 
 #include "../source/subsystem/fs/include/fss.h"
 #include "../source/libs/grid/include/sys/ke_req.h"
 
+
 bool ke_validate_user_buffer(void * buffer, size_t size, bool rw)
 {
+	//TODO
 	return true;
 }
 
-static struct ko_section *map_file(struct ko_process *to, xstring name, page_prot_t prot, unsigned long *map_size)
+
+static struct ko_section *create_file_map(struct ko_process *to, void *fp, size_t size, page_prot_t prot)
 {
 	struct ko_section *ks_file;
-	unsigned long size;
-	void *fp;
-	
-	fp = fss_open(kt_current()->current_dir, name);
-	if (!fp) goto end;
-	
-	*map_size = size = fss_get_size(fp);
-	ks_file = ks_create(to, KS_TYPE_FILE, NULL, size, prot);
-	if (!ks_file)
-		goto err1;
+
+	if (NULL == (ks_file = ks_create(to, KS_TYPE_FILE, NULL, size, prot)))
+		goto err0;
 	ks_file->priv.file.file = fp;
 	
 	return ks_file;
 	
+err0:
+	return NULL;
+}
+
+static struct ko_section *map_file(struct ko_process *to, xstring name, page_prot_t prot, size_t __out *size)
+{
+	void *fp;
+	size_t map_size;
+	struct ko_section *map;
+
+	//TODO: 此处应该使用to 的原始启动路径来做当前路径
+	if (NULL == (fp = fss_open(kt_current()->current_dir, name)))
+		goto err0;
+	map_size = fss_get_size(fp);
+	if (NULL == (map = create_file_map(to, fp, map_size, prot)))
+		goto err1;
+	if (size)
+		*size = map_size;
+	return map;
+	
 err1:
 	fss_close(fp);
-end:
+err0:
 	return NULL;
 }
 
@@ -207,7 +224,6 @@ static ke_handle process_ld(struct sysreq_process_ld *req)
 		{
 			void *ctx;
 			int ctx_size;
-			unsigned long size;
 			struct ko_section *file_section;
 			
 			ctx_size		= req->context_length;
@@ -220,7 +236,7 @@ static ke_handle process_ld(struct sysreq_process_ld *req)
 				goto ld_3_err;
 			if (ctx_size > kp_exe_get_context_size())
 				goto ld_3_err;
-			if ((file_section = map_file(kp_get_file_process(), module_name, KM_PROT_READ, &size)) == NULL)
+			if ((file_section = map_file(kp_get_file_process(), module_name, KM_PROT_READ, NULL)) == NULL)
 				goto ld_3_err;
 			if (kp_exe_create_from_file(module_name, file_section, ctx, NULL) == NULL)
 				goto ld_3_err;
@@ -241,7 +257,7 @@ static ke_handle process_ld(struct sysreq_process_ld *req)
 /**
 	@brief Create a new user thread
 */
-static ke_handle thread_create(struct sysreq_thread_create * req)
+static ke_handle thread_create(struct sysreq_thread_create *req)
 {
 	ke_handle h;
 	struct ko_thread *t;
@@ -266,10 +282,180 @@ err:
 	return KE_INVALID_HANDLE; 
 }
 
+/**
+	@brief Thread synchronizing operation
+ 
+	@return kt_sync_wait_result
+*/
+static int thread_sync_ops(struct sysreq_thread_sync *req)
+{
+	int i;
+	int ops = req->ops;
+
+	switch(ops)
+	{
+		/* 等待同步对象 */
+		case SYSREQ_THREAD_SYNC_WAIT_OBJS:
+		{
+			int count = req->detail.wait_objs.count;
+			struct kt_sync_base *sync_objs[Y_SYNC_MAX_OBJS_COUNT];
+			y_handle sync_handles[Y_SYNC_MAX_OBJS_COUNT];
+			kt_sync_wait_result ret = KE_WAIT_ERROR;
+			
+			if (count > Y_SYNC_MAX_OBJS_COUNT)
+				goto wait_end;
+			
+			for (i = 0; i < count; i++)
+			{
+				sync_handles[i] =(ke_handle)req->detail.wait_objs.sync_objects[i];
+				sync_objs[i] = ke_handle_translate(sync_handles[i]);
+				if (!sync_objs[i])
+					goto unwind_translate;
+			}
+			ret = kt_wait_objects(kt_current(), count, sync_objs,
+							req->detail.wait_objs.wait_all,
+							req->detail.wait_objs.timeout, NULL);
+
+unwind_translate:
+			for (i = 0; i < count; i++)
+			{
+				if (sync_objs[i])
+					ke_handle_put(sync_handles[i], sync_objs[i]);
+			}
+wait_end:
+			return ret;
+		}
+		case SYSREQ_THREAD_SYNC_WAIT_MS:
+		{
+			TODO("");
+			break;	
+		}
+
+		case SYSREQ_THREAD_SYNC_EVENT:
+		{
+			ke_handle hevent;
+			struct ke_event *event;
+			
+			switch (req->detail.event.ops)
+			{
+				case 's':
+				{
+					/* 唤醒线程，返回唤醒数量 */
+					int count;
+					
+					hevent = req->detail.event.event;
+					if (!(event = ke_handle_translate(hevent)))
+						goto invalid_handle;
+					count = ke_event_set(event);
+					ke_handle_put(hevent, event);
+					
+					return count;
+				}
+				case 'c':
+				{
+					/* Create event, return handle */
+					if (!(event = ke_event_object_create(req->detail.event.is_manual, req->detail.event.is_set)))
+						goto invalid_handle;
+					if (KE_INVALID_HANDLE == (hevent = ke_handle_create(event)))
+					{
+						km_vfree(event);
+						goto invalid_handle;
+					}
+				
+					return hevent;
+				}
+				case 'd':
+				{
+					/* delete the event, cause everybody wakeup */
+#if 0
+					hevent = req->detail.event.event;
+					if (!(event = ke_handle_translate(hevent)))
+						goto invalid_handle;
+					ke_handle_and_object_destory(hevent, event);
+#else
+					TODO("事件对象用户模型还缺少cl_object的封装，无法销毁对象");
+#endif
+					return 0;
+				}
+			}
+			break;
+		}
+	}
+	
+invalid_handle:
+	return KE_INVALID_HANDLE;
+}
+
+/**
+	@brief Thread message slot managing
+*/
+static bool thread_msg(struct sysreq_thread_msg *req)
+{
+	bool r = false;
+	struct ktm *msg;
+	
+	if (req->ops == SYSREQ_THREAD_MSG_SLEEP)
+	{
+		msg = ktm_prepare_loop();
+		if (msg == NULL)
+		{
+			req->slot_base = NULL;
+			req->slot_buffer_size = 0;
+		}
+		else
+		{
+			kt_sleep(KT_STATE_WAITING_MSG);
+
+			req->slot_base			= (void*)msg->map->node.start;
+			req->slot_buffer_size	= msg->desc.slot_buffer_size;
+			r = true;
+		}
+	}
+	else if (req->ops == SYSREQ_THREAD_MSG_SEND)
+	{
+		struct y_message *what = req->send.msg;
+		ke_handle thread = req->send.to_thread;
+		struct ko_thread *to;
+		
+		/* Translate thread */
+		if (!(to = ke_handle_translate(thread)))
+			goto end;
+		
+		r = ktm_send(to, what);
+		
+		ke_handle_put(thread, to);
+	}
+	else if (req->ops == SYSREQ_THREAD_MSG_ACK_SYNC)
+	{
+		struct ktm *where;
+		struct y_message *msg = req->send.msg;
+		unsigned long offset;
+
+		/* Translate the msg to kernel space */
+		where = ktm_prepare_loop();
+		offset = (unsigned long)msg - where->map->node.start;
+		msg = (void*)(offset + where->desc.slots);
+		
+		r = ktm_ack_sync(msg);
+	}
+end:
+	return r;
+}
+
+/**
+	@brief Get the TEB in current thread
+*/
+static void *thread_teb(struct sysreq_thread_msg *req)
+{
+	struct ko_thread *kt = kt_current();
+	
+	return kt->teb;
+}
+
 /************************************************************************/
 /* MISC                                                                 */
 /************************************************************************/
-static void misc_draw_screen(struct sysreq_misc_draw_screen * req)
+static void misc_draw_screen(struct sysreq_misc_draw_screen *req)
 {
 	extern void video_draw_pixel(int x, int y, unsigned int clr);
 	extern void video_draw_bitmap(int x, int y, int width, int height, int bpp, void * user_bitmap);
@@ -285,7 +471,7 @@ static void misc_draw_screen(struct sysreq_misc_draw_screen * req)
 
 /**
 */
-static void kernel_printf(struct sysreq_process_printf * req)
+static void kernel_printf(struct sysreq_process_printf *req)
 {
 	printk("%s", req->string);
 }
@@ -293,7 +479,7 @@ static void kernel_printf(struct sysreq_process_printf * req)
 /************************************************************************/
 /* MEMORY                                                               */
 /************************************************************************/
-static ke_handle memory_virtual_alloc(struct sysreq_memory_virtual_alloc * req)
+static ke_handle memory_virtual_alloc(struct sysreq_memory_virtual_alloc *req)
 {
 	unsigned long base, sz, type;
 
@@ -325,6 +511,15 @@ err1:
 	TODO("分配内存段错误，须回收");
 err0:
 	return KE_INVALID_HANDLE;
+}
+
+/*
+	未实现的系统函数使用该函数初始化
+*/
+int ke_srv_null_sysxcal(void *req)
+{
+	printk("this syscall dont support!\n");
+	return -1;
 }
 
 /**
@@ -389,13 +584,13 @@ bool ke_srv_register(const struct ke_srv_info * info)
 void ke_srv_init()
 {
 	kernel_entry[SYS_REQ_KERNEL_THREAD_CREATE - SYS_REQ_KERNEL_BASE]	= (void*) thread_create;
-	//kernel_entry[SYS_REQ_KERNEL_THREAD_WAIT - SYS_REQ_KERNEL_BASE]		= (void*) thread_wait;
+	kernel_entry[SYS_REQ_KERNEL_SYNC - SYS_REQ_KERNEL_BASE]				= (void*) thread_sync_ops;
 	kernel_entry[SYS_REQ_KERNEL_PROCESS_CREATE - SYS_REQ_KERNEL_BASE]	= (void*) process_create;
 	kernel_entry[SYS_REQ_KERNEL_PROCESS_STARTUP - SYS_REQ_KERNEL_BASE]		= (void*) process_startup;
 	kernel_entry[SYS_REQ_KERNEL_PROCESS_HANDLE_EXE - SYS_REQ_KERNEL_BASE]	= (void*) process_ld;
 	//kernel_entry[SYS_REQ_KERNEL_WAIT - SYS_REQ_KERNEL_BASE]				= (void*) process_wait;
-
-
+	kernel_entry[SYS_REQ_KERNEL_THREAD_MSG - SYS_REQ_KERNEL_BASE]			= (void*) thread_msg;
+	kernel_entry[SYS_REQ_KERNEL_THREAD_TEB - SYS_REQ_KERNEL_BASE]			= (void*) thread_teb;
 	/* Misc */
 	kernel_entry[SYS_REQ_KERNEL_PRINTF - SYS_REQ_KERNEL_BASE]			= (void*) kernel_printf;
 	kernel_entry[SYS_REQ_KERNEL_MISC_DRAW_SCREEN - SYS_REQ_KERNEL_BASE] = (void*) misc_draw_screen;
@@ -405,3 +600,19 @@ void ke_srv_init()
 
 	ke_srv_register(&ke_srv);
 }
+
+
+/************************************************************************/
+/* 杂项对外模块API                                                              */
+/************************************************************************/
+
+void *ke_map_file(void *fp, size_t map_size, page_prot_t prot)
+{
+	struct ko_section *map;
+
+	map = create_file_map(KP_CURRENT(), fp, map_size, prot);
+	if (map)
+		return (void*)map->node.start;
+	return NULL;
+}
+

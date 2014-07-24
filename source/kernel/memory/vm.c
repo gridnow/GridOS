@@ -22,17 +22,17 @@ static unsigned long alloc_virtual_space(struct list_head * usage_list,
 								   unsigned long range_start, unsigned long range_len,
 								   unsigned long desired, unsigned long size)
 {
-	struct list_head * section_list;
+	struct list_head *section_list;
 	struct km_vm_node *pS = NULL, *pP = NULL;
 	unsigned long start = NULL;
-	bool found = true;
 	
 	/* 首先要定位到的位置，自动的则在区间内部找，手动的则在特定位置找 */
 	if (desired)
 		start = desired;
 	else
 		start = range_start;
-	
+
+	//printk("start %x, desired %x, range start %x.\n", start, desired, range_start);
 	list_for_each(section_list, usage_list)
 	{
 		pS = list_entry(section_list, struct km_vm_node, node);
@@ -139,7 +139,7 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 	{
 		case KP_CPL0:
 			if (start)
-				*start = HAL_GET_BASIC_KADDRESS(0) + CONFIG_HAL_KERNEL_MEM_LEN;
+				*start = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET) + CONFIG_HAL_KERNEL_MEM_LEN;
 			if (size)
 				*size = CONFIG_HAL_KERNEL_VM_LEN - PAGE_SIZE;
 			break;
@@ -153,11 +153,12 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 			if (size)
 			{
 #if defined(__i386__) || defined (__arm__)
-				*size = HAL_GET_BASIC_KADDRESS(0) - user_start;
+				*size = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET) - user_start;
+				/* For big kernel sharing creation */
 				if (is_type_kernel)
 				{
 					*desired_size = *size;
-					*desired_start = HAL_GET_BASIC_KADDRESS(0);
+					*desired_start = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET);
 					*start = *desired_start;
 				}
 #elif defined(__mips64__)
@@ -165,7 +166,7 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 				if (is_type_kernel)
 				{
 					*desired_size = *size;
-					*desired_start = HAL_GET_BASIC_KADDRESS(0);
+					*desired_start = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET);
 					*start = *desired_start;
 				}
 #else
@@ -181,17 +182,19 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 	*desired_size = ALIGN(*desired_size, PAGE_SIZE);
 }
 
-bool km_vm_create(struct ko_process *where, struct km_vm_node *node, int is_type_kernel)
+bool km_vm_create(struct ko_process *where, struct km_vm_node *node, unsigned long type)
 {
 	bool r = false;
 	unsigned long range_start, range_len;
-
+	int is_type_kernel = type == KS_TYPE_KERNEL || type == KS_TYPE_DEVICE;
+	
 	get_vm_range(where->cpl, &range_start, &range_len, &node->start, &node->size, is_type_kernel);
 
 	KP_LOCK_PROCESS_SECTION_LIST(where);
 	if ((node->start = alloc_virtual_space(&where->vm_list, range_start, range_len, node->start, node->size)) == NULL)
 	{
-		//printk("node start = %x, node size = %dkb.\n", node->start, node->size/1024);
+		//printk("node start = %x, node size = %dkb, RANGE start = %x, size = %dkb.\n", node->start, node->size/1024,
+		//	range_start, range_len / 1024);
 		goto end1;
 	}
 	
@@ -226,7 +229,6 @@ unsigned long km_vm_create_sub(struct ko_process *where, struct km_vm_node *pare
 {
 	unsigned long base;
 	unsigned long range_start, range_size;
-	unsigned long flags;
 
 	range_size = parent->size;
 	range_start = parent->start;
@@ -267,10 +269,8 @@ void *km_map_physical(unsigned long physical, unsigned long size, unsigned long 
 	if (flags & KM_MAP_PHYSICAL_FLAG_NORMAL_CACHE)
 		map_flags = KM_PROT_READ | KM_PROT_WRITE;
 
-	ks = ks_create(kp_get_system(), KS_TYPE_DEVICE, base, size, map_flags);
-	if (!ks)
+	if ((ks = ks_create(kp_get_system(), KS_TYPE_DEVICE, base, size, map_flags)) == NULL)
 		goto err;	
-	
 	if (km_page_map_range(&kp_get_system()->mem_ctx, ks->node.start,
 						  ks->node.size, physical >> PAGE_SHIFT, map_flags) == false)
 		goto err1;
@@ -283,7 +283,26 @@ err:
 	return NULL;
 }
 
-void *km_alloc_virtual(unsigned long size, page_prot_t prot)
+void *km_map_physical_arch(unsigned long pfn, unsigned long vaddress, unsigned long size, unsigned long arch_flags)
+{
+	/* arch spccial is set by us */
+	if (arch_flags & KM_MAP_ARCH_SPECIAL)
+		return NULL;
+
+	/* TODO: Check the vaddress's valid range, should be located in consulted area */
+	TODO("Vritual Address should be checked to see if in valid range");
+	
+	/* Map it */
+	if (km_page_map_range(&kp_get_system()->mem_ctx, 
+							vaddress, size, 
+							pfn, 
+							arch_flags | KM_MAP_ARCH_SPECIAL) == false)
+		return NULL;
+	printk("Mapped pfn %x at %p,size = %d.\n", pfn, vaddress, size);
+	return (void*)vaddress;
+}
+
+void *km_alloc_virtual(unsigned long size, page_prot_t prot, void **__out kernel_space_object)
 {
 	struct ko_section *ks;
 	unsigned long base = 0;
@@ -291,7 +310,8 @@ void *km_alloc_virtual(unsigned long size, page_prot_t prot)
 	ks = ks_create(kp_get_system(), KS_TYPE_PRIVATE, base, size, prot);
 	if (!ks)
 		goto err;
-	
+	if (kernel_space_object)
+		*kernel_space_object = ks;
 	return (void*)ks->node.start;
 	
 err:

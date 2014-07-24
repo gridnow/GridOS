@@ -23,10 +23,10 @@ static spinlock_t kernel_vm_object_lock;
 
 bool __init km_valloc_init()
 {
-	kernel_vm_object = km_alloc_virtual(KE_VIRTUAL_MEMORY_SIZE, KM_PROT_READ | KM_PROT_WRITE);
+	kernel_vm_object = km_alloc_virtual(KE_VIRTUAL_MEMORY_SIZE, KM_PROT_READ | KM_PROT_WRITE, NULL);
 	if (!kernel_vm_object)
 		goto err;
-	
+	printf("Kernel VM memory area is %dkb@%x.\n", KE_VIRTUAL_MEMORY_SIZE / 1024, kernel_vm_object);
 	spin_lock_init(&kernel_vm_object_lock);
 	memalloc_init_allocation(kernel_vm_object, KE_VIRTUAL_MEMORY_SIZE);
 	return true;

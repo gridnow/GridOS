@@ -1,25 +1,26 @@
-
+#include <ddk/input.h>
 #include <types.h>
 #include "session.h"
 
 static size_t text_read(struct ifi_package * input)
 {
-//	return ifi_read_input(input);
+	return ifi_read_input((void *)input, IFI_DEV_STD_IN);
 }
 
 static size_t text_write(unsigned char * buffer, size_t size)
 {
-	return printk("%s", buffer);
+	//return printk("%s", buffer);
+	return 0;
 }
 
 static size_t dummy_read(struct ifi_package * input)
 {
-
+	return 0;
 }
 
 static size_t dummy_write(unsigned char * buffer, size_t size)
 {
-
+	return 0;
 }
 
 static struct sau_stdio_interface builtin_stdio[] =
@@ -47,5 +48,5 @@ int sau_read(struct ifi_package * input)
 
 int sau_write(char * buffer, size_t size)
 {
-	return sau_get_stdio_handler()->write(buffer, size);	
+	return sau_get_stdio_handler()->write((unsigned char *)buffer, size);	
 }

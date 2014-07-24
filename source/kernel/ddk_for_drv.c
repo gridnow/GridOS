@@ -14,6 +14,7 @@
 #include <ddk/debug.h>
 #include <ddk/irq.h>
 #include <ddk/vfs.h>
+#include <ddk/net.h>
 #include <ddk/input.h>
 #include <ddk/ddk_for_linux.h>
 
@@ -31,7 +32,29 @@
 static void input_event(struct ddk_input_handle *handle, unsigned int event_type,
 						unsigned int event_code, int value)
 {
-	printk("type = %x.\n", event_type);
+	switch(event_type)
+	{
+		case DDK_INPUT_EV_KEY:
+			//是输入键还是弹起键
+			if(value == 1)
+				ifi_input_stream(IFI_DEV_STD_IN, &event_code, 1);
+			break;
+		default:
+				//printk("type = %d,code = %d, value = %d\n", event_type, event_code, value);
+			break;
+	}
+	
+	//printk("type = %x.\n", event_type);
+#if 0
+	{
+		extern struct ko_thread *tmsg;
+		MSG_MAKE(2, MSG_FLAGS_ADDRESS, 0x8004b0);
+		if (tmsg)
+		{
+			printk("Send result %d.\n", ktm_send(tmsg, pmsg));
+		}
+	}
+#endif
 }
 
 /************************************************************************/
@@ -127,9 +150,10 @@ static void wakeup_thread(void *ko_thread)
 
 static void *yield_current_for(void *pre_ko_thread, int pre_is_run, void *next_ko_thread)
 {
-	unsigned long flags;
-	struct ko_thread *pre = pre_ko_thread, *next = next_ko_thread;
+	struct ko_thread *next = next_ko_thread;
+
 #if 0
+	struct ko_thread *pre = pre_ko_thread, 
 	printk("pre_ko_thread(%d) = %x,  next_ko_thread = %x.\n",
 		   pre_is_run, pre_ko_thread, next_ko_thread);
 #endif
@@ -143,6 +167,8 @@ static void *yield_current_for(void *pre_ko_thread, int pre_is_run, void *next_k
 	kt_wakeup_driver(next);
 	
 	kt_schedule_driver();
+
+	return NULL;
 }
 
 static void goto_idle()
@@ -176,10 +202,12 @@ static void *input_register_handle(void *drv_input_handle)
 
 	handle->drv_handle	= drv_input_handle;
 	handle->event		= input_event;
+
+	return handle;
 }
 
 struct ddk_for_linux ddk = {
-	.printk					= /*printk*/ddk_printk,
+	.printk					= ddk_printk,
 	.allocate_physical_bulk = allocate_physical_bulk,
 	
 	.setup_irq_handler		= setup_irq_handler,
@@ -201,6 +229,9 @@ struct ddk_for_linux ddk = {
 	/* DSS's File Operation */
 	.fss_vfs_register		= fss_vfs_register,
 	.fss_ops_wait			= fss_ops_wait,
+
+	/* DSS's NSS */
+	.nss_hwmgr_register		= nss_hwmgr_register,
 
 	/* INPUT */
 	.input_register_handle	= input_register_handle,

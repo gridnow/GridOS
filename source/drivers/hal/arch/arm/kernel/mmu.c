@@ -8,8 +8,10 @@
  */
 
 #include <stddef.h>
-
 #include <string.h>
+#include <ddk/compatible.h>
+#include <ddk/debug.h>
+#include <kernel/ke_memory.h>
 
 #include <asm/cputype.h>
 #include <asm/cp15.h>
@@ -412,11 +414,7 @@ static void __init build_mem_type_table(void)
 }
 
 #include <asm/tlbflush.h>
-/*
- * Convert a physical address to a Page Frame Number and back
- */
-#define	__phys_to_pfn(paddr)	((unsigned long)((paddr) >> PAGE_SHIFT))
-#define	__pfn_to_phys(pfn)	((phys_addr_t)(pfn) << PAGE_SHIFT)
+
 /* to align the pointer to the (next) page boundary */
 #define PAGE_ALIGN(addr) ALIGN(addr, PAGE_SIZE)
 
@@ -437,7 +435,7 @@ int h2c(char *p,unsigned long hex)
 {
 	int i;
 	int j=((sizeof(void*))*8)/4;						//*8 means bits,/4 means a char represent 4 bits
-	unsigned long mask,old=hex;
+	unsigned long old=hex;
 	
 	j--;												//j-- means goto the end of the string
 	for(i=j;i>=0;i--)
@@ -455,17 +453,6 @@ int h2c(char *p,unsigned long hex)
 	*(p+j)='h';
 	j++;												//point to the next usable position
 	return j;
-}
-
-static void __init alloc_init_pte(pgd_t *pgd, unsigned long addr,
-								  unsigned long end, unsigned long pfn,
-								  const struct mem_type *type)
-{
-//	pte_t *pte = early_pte_alloc(pmd, addr, type->prot_l1);
-//	do {
-//		set_pte_ext(pte, pfn_pte(pfn, __pgprot(type->prot_pte)), 0);
-//		pfn++;
-//	} while (pte++, addr += PAGE_SIZE, addr != end);
 }
 
 static void __init alloc_init_section(pgd_t *pgd, unsigned long addr,
@@ -493,7 +480,7 @@ static void __init alloc_init_section(pgd_t *pgd, unsigned long addr,
 	调试设备映射：
 		1，把调试设备（串口）地址得物理地址与逻辑地址做一致性映射。
 */
-static bool __init create_mapping(struct map_desc *md)
+static void __init create_mapping(struct map_desc *md)
 {
 	unsigned long phys, addr,  end;
 	const struct mem_type *type;
@@ -515,6 +502,28 @@ static bool __init create_mapping(struct map_desc *md)
 		phys += next - addr;
 		addr = next;
 	} while (pgd++, addr != end);
+}
+
+
+/**
+	@brief Map the given physical range
+ 
+	@note
+	Must be called with basic page module inited.
+ */
+int __init arm_bsp_create_map(struct map_desc *desc, int nr)
+{
+	int i;
+	void *vaddress;
+	
+	for (i = 0; i < nr; i++,desc++)
+	{
+		vaddress = km_map_physical_arch(desc->pfn, desc->virtual, desc->length, desc->type);
+		if (!vaddress || (unsigned long)vaddress != desc->virtual)
+			return -1;
+	}
+	
+	return 0;
 }
 
 /* Goto paging mode */
@@ -540,15 +549,15 @@ void __init early_paging_init()
 	arch_enable_mmu(PHYS_OFFSET + ((unsigned long)kernel_pgd & 0xfffffff));
 }
 
-void __init arm_bsp_create_map(struct map_desc *desc, int nr)
-{
-	
-}
-
 void __init paging_init()
 {
 	/* Init mem_type_table again, because information is cleaned after goto pagin by __mmap_switched */
 	build_mem_type_table();
+}
+
+void *__init hal_arm_get_init_pgtable()
+{
+	return kernel_pgd;
 }
 
 void __init mmu_map_debug_device()

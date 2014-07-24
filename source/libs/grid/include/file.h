@@ -62,7 +62,41 @@ static inline struct file *file_get_from_detail(void *detail_file)
 }
 
 struct file *file_new(int detail_size);
-void file_delete(struct file *filp);
-ke_handle file_open(struct file *filp, const char *path, int oflags);
+void filp_delete(struct file *filp);
+ke_handle filp_open(struct file *filp, const char *path, int oflags);
+
+
+/************************************************************************/
+/* INTERFACE                                                            */
+/************************************************************************/
+struct __dirstream;
+
+/**
+	@brief Read a file
+
+	@return The bytes system has read, < 0 for error code
+ */
+ssize_t sys_read(struct file *filp, void *user_buffer, uoffset file_pos, ssize_t n_bytes);
+
+/**
+	@brief 读取目录的一块
+
+	@return
+		本次读取了多少字节，并且返回下一次要从哪个文件编号开始读取。
+		失败的话，返回小于0.
+*/
+ssize_t sys_readdir(struct __dirstream *dirp, int *next);
+
+/**
+	@brief Write a file
+	
+	@return The bytes of data been written, < 0 for error code
+ */
+ssize_t sys_write(ke_handle file, void *user_buffer, uoffset file_pos, ssize_t n_bytes);
+
+/**
+	@brief Close the kernel handle for this file
+*/
+int sys_close(ke_handle handle);
 
 #endif

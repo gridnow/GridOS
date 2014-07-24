@@ -9,6 +9,7 @@
 #include <Windows.h>
 #endif
 
+#include <kernel/kernel.h>
 #include "syscall.h"
 
 /************************************************************************/
@@ -23,7 +24,7 @@ struct sysreq_file_open
 	/* INPUT */
 	struct sysreq_common base;
 	xstring	__user name;
-	bool			exclusive;		/* 是否是独占打开 */
+	bool			exclusive;							/* 是否是独占打开 */
 	unsigned int	file_type;
 
 	/* OUTPUT */
@@ -51,14 +52,9 @@ struct sysreq_file_close
 {
 	/* INPUT */
 	struct sysreq_common base;
-	struct __close_file__
-	{
-		void *		subsystem_object;
-		int			fd;
-	}file;	
 
 	/* OUTPUT */
-	int				result_code;
+	ke_handle file;
 };
 
 /**
@@ -89,9 +85,7 @@ struct sysreq_file_io
 	
 	/* OUTPUT */
 	lsize_t		current_size;
-	size_t		result_size;
 };
-
 
 /**
 	@brief Request package for fstat
@@ -127,23 +121,77 @@ struct sysreq_file_ftruncate
 	/* OUTPUT */
 	int			result_code;
 };
-/************************************************************************/
-/* INTERFACE                                                            */
-/************************************************************************/
-struct file;
 
 /**
-	@brief Read a file
+	@brief Request package for readdir
+*/
+struct sysreq_file_readdir
+{
+	/* INPUT */
+	struct sysreq_common base;	
+	int start_entry;									/* 读取目录那一块，0 表示开始*/
+	ke_handle dir;
 
-	@return The bytes system has read, < 0 for error code
- */
-ssize_t sys_read(struct file *filp, void *user_buffer, uoffset file_pos, ssize_t n_bytes);
+	struct dirent_buffer
+	{
+		unsigned short name_length;
+		unsigned short entry_type;
+		xchar name[0];
 
-/**
-	@brief Write a file
+		/* Note that he dirrent_buffer should be accessed in "short" boundary */
+	} __user *buffer;									/* 传入一片内存，文件子系统负责填充每项*/	
+	int max_size;
 	
-	@return The bytes of data been written, < 0 for error code
- */
-ssize_t sys_write(ke_handle file, void *user_buffer, uoffset file_pos, ssize_t n_bytes);
+	/* OUTPUT */
+	int next_entry;										/* 为-1表示已经没有内核可以读取了*/
+};
+
+/**
+	@brief Request package for file notification
+*/
+struct sysreq_file_notify
+{
+	/* INPUT */
+	struct sysreq_common base;
+	int ops;
+#define SYSREQ_FILE_OPS_REG_FILE_NOTIFY 	1
+#define SYSREQ_FILE_OPS_UNREG_FILE_NOTIFY	2
+	ke_handle 		file;
+	union __notify_ops
+	{
+		/* 注册关心的事件 ,如果一个事件已经被监听，那么再次注册则替换回调函数  */
+		struct __reg_file_notify_info
+		{
+			unsigned long mask;							/* See y_file_event_type_t */			
+			void *func;
+			void *para;
+		} reg;
+
+		/* 反注册 */
+		struct __unreg_file_notify_info
+		{
+			unsigned long mask;							/* See y_file_event_type_t */			
+		} unreg;		
+	} ops_private;
+	
+};
+
+/**
+	@brief Request package for file map/unmap
+*/
+struct sysreq_file_map
+{
+	/* INPUT */
+	struct sysreq_common base;
+	int ops;
+#define SYSREQ_FILE_OPS_MAP    1
+#define SYSREQ_FILE_OPS_UNMAP  2
+	ke_handle 		file;
+	page_prot_t		prot;
+
+	/* OUTPUT */
+	void *map_base;
+	size_t map_size;
+};
 
 #endif

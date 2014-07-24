@@ -100,6 +100,10 @@ typedef unsigned int bool;
 #define __out
 #define __user 
 
+/* Should move to kernel standard typedef */
+typedef unsigned long y_handle;
+#define Y_INVALID_HANDLE (-1UL)
+
 END_C_DECLS;
 
 #endif

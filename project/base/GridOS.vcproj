@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="GridOS"
 	ProjectGUID="{D2A6FB2B-A81D-4AA6-8324-165DAB71BD77}"
+	RootNamespace="GridOS"
 	>
 	<Platforms>
 		<Platform
@@ -1662,6 +1663,144 @@
 						</File>
 					</Filter>
 				</Filter>
+				<Filter
+					Name="network"
+					>
+					<File
+						RelativePath="..\..\source\subsystem\network\main.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)8.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)8.xdc"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)8.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)8.xdc"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\source\subsystem\network\Makefile"
+						>
+					</File>
+					<Filter
+						Name="protocol"
+						>
+						<Filter
+							Name="ip"
+							>
+							<Filter
+								Name="user"
+								>
+								<File
+									RelativePath="..\..\source\subsystem\network\protocol\ip\user\main.c"
+									>
+									<FileConfiguration
+										Name="Debug|Win32"
+										>
+										<Tool
+											Name="VCCLCompilerTool"
+											ObjectFile="$(IntDir)\$(InputName)9.obj"
+											XMLDocumentationFileName="$(IntDir)\$(InputName)9.xdc"
+										/>
+									</FileConfiguration>
+									<FileConfiguration
+										Name="Release|Win32"
+										>
+										<Tool
+											Name="VCCLCompilerTool"
+											ObjectFile="$(IntDir)\$(InputName)9.obj"
+											XMLDocumentationFileName="$(IntDir)\$(InputName)9.xdc"
+										/>
+									</FileConfiguration>
+								</File>
+								<File
+									RelativePath="..\..\source\subsystem\network\protocol\ip\user\Makefile"
+									>
+								</File>
+								<Filter
+									Name="src"
+									>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\etharp.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\hash.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\init.c"
+										>
+										<FileConfiguration
+											Name="Debug|Win32"
+											>
+											<Tool
+												Name="VCCLCompilerTool"
+												ObjectFile="$(IntDir)\$(InputName)1.obj"
+												XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+											/>
+										</FileConfiguration>
+										<FileConfiguration
+											Name="Release|Win32"
+											>
+											<Tool
+												Name="VCCLCompilerTool"
+												ObjectFile="$(IntDir)\$(InputName)1.obj"
+												XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+											/>
+										</FileConfiguration>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\Makefile"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\memp.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\netif.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\pbuf.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\tcp.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\tcp_in.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\tcp_out.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\timers.c"
+										>
+									</File>
+									<File
+										RelativePath="..\..\source\subsystem\network\protocol\ip\user\src\udp.c"
+										>
+									</File>
+								</Filter>
+							</Filter>
+						</Filter>
+					</Filter>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="libs"
@@ -1670,27 +1809,37 @@
 					Name="common"
 					>
 					<File
-						RelativePath="..\..\source\libs\common\bitrev.c"
-						>
-					</File>
-					<File
 						RelativePath="..\..\source\libs\common\blkbuf.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\source\libs\common\crc32.c"
-						>
-					</File>
-					<File
-						RelativePath="..\..\source\libs\common\crc32defs.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\source\libs\common\crc32table.h"
+						RelativePath="..\..\source\libs\common\i2p.c"
 						>
 					</File>
 					<File
 						RelativePath="..\..\source\libs\common\malloc.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)1.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)1.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\source\libs\common\msg.c"
 						>
 						<FileConfiguration
 							Name="Debug|Win32"
@@ -1719,10 +1868,6 @@
 							>
 						</File>
 						<File
-							RelativePath="..\..\source\libs\common\include\bitrev.h"
-							>
-						</File>
-						<File
 							RelativePath="..\..\source\libs\common\include\bits.h"
 							>
 						</File>
@@ -1731,7 +1876,11 @@
 							>
 						</File>
 						<File
-							RelativePath="..\..\source\libs\common\include\crc32.h"
+							RelativePath="..\..\source\libs\common\include\cl_atomic.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\common\include\cl_fname.h"
 							>
 						</File>
 						<File
@@ -1743,7 +1892,15 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\source\libs\common\include\i2p.h"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\common\include\memalloc.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\common\include\message.h"
 							>
 						</File>
 						<File
@@ -1939,7 +2096,15 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\source\libs\grid\include\env.h"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\grid\include\file.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\include\getopt_int.h"
 							>
 						</File>
 						<File
@@ -1995,6 +2160,10 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\source\libs\grid\string\strcat.c"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\grid\string\strchr.c"
 							>
 						</File>
@@ -2007,7 +2176,23 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\source\libs\grid\string\strlen.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\string\strncmp.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\string\strncpy.c"
+							>
+						</File>
+						<File
 							RelativePath="..\..\source\libs\grid\string\strnlen.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\libs\grid\string\strrchr.c"
 							>
 						</File>
 					</Filter>
@@ -2250,6 +2435,76 @@
 						>
 					</File>
 				</Filter>
+				<Filter
+					Name="baxi"
+					>
+					<File
+						RelativePath="..\..\source\programs\baxi\main.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)10.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)10.xdc"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)10.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)10.xdc"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\source\programs\baxi\Makefile"
+						>
+					</File>
+					<Filter
+						Name="cmd"
+						>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\_null.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\cat.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\cd.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\cmd.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\cmd.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\cp.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\ls.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\Makefile"
+							>
+						</File>
+						<File
+							RelativePath="..\..\source\programs\baxi\cmd\rm.c"
+							>
+						</File>
+					</Filter>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -2413,6 +2668,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\include\ddk\grid.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\include\ddk\input.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\include\ddk\io.h"
 					>
 				</File>
@@ -2422,6 +2685,10 @@
 				</File>
 				<File
 					RelativePath="..\..\include\ddk\little_endian.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\include\ddk\net.h"
 					>
 				</File>
 				<File
@@ -2441,6 +2708,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\include\ddk\swab.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\include\ddk\topology.h"
 					>
 				</File>
@@ -2452,58 +2723,6 @@
 					RelativePath="..\..\include\ddk\vfs.h"
 					>
 				</File>
-				<Filter
-					Name="net"
-					>
-					<File
-						RelativePath="..\..\include\ddk\net\define.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\etherdevice.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\ethtool.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\features.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\if.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\mii.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\netdevice.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\include\ddk\net\rt.h"
-						>
-					</File>
-					<Filter
-						Name="ip"
-						>
-						<File
-							RelativePath="..\..\include\ddk\net\ip\in.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\include\ddk\net\ip\ip.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\include\ddk\net\ip\socket.h"
-							>
-						</File>
-					</Filter>
-				</Filter>
 				<Filter
 					Name="pci"
 					>

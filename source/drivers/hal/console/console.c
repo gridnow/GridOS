@@ -15,7 +15,7 @@
 #define DOTFNT_CHAR_LINE_HEIGHT	15		//pixel count of the HEIGHT of a line
 #define DOTFNT_ENG_CHAR_WIDTH	16		//ÓÃÓÚ¶ÏÐÐ
 
-#define WHITE_PIX -1
+#define WHITE_PIX 0xffffffff
 #define BLACK_PIX 0
 
 #define PGDN_STEP 5

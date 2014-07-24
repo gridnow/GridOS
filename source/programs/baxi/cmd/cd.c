@@ -21,7 +21,6 @@ static int cd(int argc, char * argv[])
 		return EINVAL;
 	
 	r = chdir(argv[1]);
-	printf("ret is %d\n", r);
 	return r;
 } 
 

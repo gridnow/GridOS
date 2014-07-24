@@ -58,7 +58,6 @@ kt_sync_wait_result kt_wait_objects(struct ko_thread * who, int count, struct kt
 	int i;
 	
 	kt_sync_wait_result status = KE_WAIT_ABANDONED;
-	int ready_count	= 0;
 	bool waiter_added			= false;
 	struct thread_wait			static_wait_node[KE_SYNC_STATIC_WAIT_NODE_COUNT];
 	struct thread_wait *		waited_node[Y_SYNC_MAX_OBJS_COUNT] = {0};
@@ -81,11 +80,12 @@ check_satisfied:
 	{
 		kt_sync_status sync_status;
 		
-		sync_status = objects[i]->ops->signaled(objects[i], who);								/*有没有被触发?*/
+		sync_status = objects[i]->ops->signaled(objects[i], who);							/*有没有被触发?*/
 		if (sync_status == KE_SYNC_SIGNALED_OK)
 		{
 			status = KE_WAIT_OK;
-			*id = i;
+			if (id)
+				*id = i;
 			objects[i]->ops->satisfied(objects[i] ,who);									/*告诉对象,我们等到了*/
 			goto out2;
 		}
@@ -185,8 +185,7 @@ out3:
 
 kt_sync_wait_result kt_wait_object(struct ko_thread * who, struct kt_sync_base *p, unsigned int timeout)
 {
-	int id;
-	return kt_wait_objects(who, 1, &p, false, timeout, &id);
+	return kt_wait_objects(who, 1, &p, false, timeout, NULL);
 }
 
 /**

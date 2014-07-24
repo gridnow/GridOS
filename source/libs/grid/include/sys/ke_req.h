@@ -33,11 +33,77 @@ struct sysreq_thread_delete
 	ke_handle thread;
 };
 
-struct sysreq_thread_wait
+struct sysreq_thread_sync
 {
 	/* INPUT */
 	struct sysreq_common base;
-	unsigned int ms;
+	int ops;
+	
+	/* Sub operations */
+
+#define SYSREQ_THREAD_SYNC_WAIT_OBJS 	2
+#define SYSREQ_THREAD_SYNC_WAIT_MS	 	3
+
+	/* Major operations */
+#define SYSREQ_THREAD_SYNC_EVENT 100
+
+	union
+	{
+		/* Wakeup all objects */
+		struct __wakeup__
+		{
+			y_handle * __user sync_objects;
+			int count;
+		} wakeup;
+
+		/* Wait on objects or all of them */
+		struct __wait_objs__
+		{
+			y_handle * __user sync_objects;
+			int count;
+			int wait_all;
+			int timeout;/* in ms */
+		} wait_objs;
+
+		/* Sleep ms */
+		struct __wait_ms__
+		{
+			int ms;
+		} wait_ms;
+
+		/* */
+		struct __event__
+		{
+			y_handle event;
+			char ops;
+			char is_manual, is_set;
+		} event;
+	} detail;
+};
+
+struct sysreq_thread_msg
+{
+	/* INPUT */
+	struct sysreq_common base;
+	int ops;
+#define SYSREQ_THREAD_MSG_SLEEP		1
+#define SYSREQ_THREAD_MSG_SEND		2
+#define SYSREQ_THREAD_MSG_ACK_SYNC	3
+	struct __send_msg__
+	{
+		ke_handle to_thread;
+		void *msg;
+	} send;
+	
+	/* OUTPUT */
+	void *slot_base;
+	int slot_buffer_size;
+};
+
+struct sysreq_thread_teb
+{
+	/* Input */
+	struct sysreq_common base;
 };
 
 /**

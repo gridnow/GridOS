@@ -25,9 +25,10 @@ static bool handle_exe(char * cmdline)
 
 	/* Cmdline 一般保存的是用户的直接输入，启动一个程序时没有绝对路径，因此加上 */
 	char str[128];
-again:
+
+	//TODO: 获取合适的路径
 	memset(str, 0, sizeof(str));
-	strcat(str, "0:/YunOS/Systemi386/");
+	strcat(str, "0:/os/i386/");
 	strcat(str, cmdline);
 	if ((process = y_process_create(cmdline, str)) == Y_INVALID_HANDLE)
 	{
@@ -44,13 +45,13 @@ static int dummy(int argc, char * argv[])
 	return 0;
 }
 
-static struct cmd CMD_ENTRY cmd__head = {
+struct cmd CMD_ENTRY cmd__head = {
 	.name = NULL,
 	.desc = NULL,
 	.func = dummy,
 };
 
-struct cmd *command_find(char * name)
+struct cmd *command_find(char * name, int try_binary)
 {
 	int name_length = strlen(name);
 	struct cmd * p = &cmd__head;
@@ -60,6 +61,7 @@ struct cmd *command_find(char * name)
 	{
 		int raw_len = strlen(p->name);		
 
+		/* printf("匹配命令:%s.\n", p->name); */
 		if (!strncmp(p->name, name, raw_len)/* 名字部分要满足 */ && 
 			p->name[raw_len] == 0/* DST 确定是找完了的 */)
 		{
@@ -77,7 +79,7 @@ struct cmd *command_find(char * name)
 	} 
 
 	/* May be exe file */
-	if (handle_exe(name))
+	if (try_binary == true && handle_exe(name))
 		return &cmd__head;
 	return NULL;
 }

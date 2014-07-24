@@ -56,5 +56,8 @@ void fss_map_destroy(struct fss_file *file)
 
 int fss_map_init()
 {
-	
+	return 0;
 }
+
+
+

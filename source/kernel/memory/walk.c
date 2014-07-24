@@ -14,17 +14,6 @@
 
 #include <sync.h>
 
-void *km_get_sub_table(unsigned long *table, int sub_id)
-{
-	unsigned long sub_table_phy;
-	
-	sub_table_phy = KM_PAGE_PHY_FROM_ENTRY(table[sub_id], sub_id);
-	if (sub_table_phy == NULL)
-		return NULL;
-	//TODO: to support non-identical mapping tables
-	return (void*)HAL_GET_BASIC_KADDRESS(sub_table_phy);
-}
-
 /**
 	@brief Walk to a given virtual address
  
@@ -77,6 +66,9 @@ void *km_walk_alloc_table(struct km_walk_ctx *ctx)
 	p = km_page_alloc_kerneled(1);
 	if (!p) goto end;
 	memset(p, 0, PAGE_SIZE);
+	
+	/* The arch may also want to clean it */
+	arch_clean_pte_table(p);
 	
 end:
 	return p;
