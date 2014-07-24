@@ -1,7 +1,5 @@
-
 #include <types.h>
-#include <ddk/log.h>
-#include <kernel/ke_lock.h>
+#include <ddk/debug.h>
 
 #include "pci.h"
 

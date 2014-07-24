@@ -24,7 +24,7 @@ void fak_arch_x86_dump_register(struct pt_regs *regs)
 #define STACK_DUMP_COUNT 20
 	int i;
 	unsigned long *sp = (unsigned long*)regs->sp;
-	printk("\n寄存器：EAX=%h,EBX=%h,ECX=%h,EDX=%h,ESI=%h,EDI=%h,EIP=%h,ESP=%h,EBP=%h.",
+	printk("\n寄存器：EAX=%x,EBX=%x,ECX=%x,EDX=%x,ESI=%x,EDI=%x,EIP=%x,ESP=%x,EBP=%x.",
 		regs->ax,regs->bx,regs->cx,regs->dx,regs->si,regs->di,regs->ip,regs->sp,regs->bp);
 
 #if 0
@@ -33,7 +33,7 @@ void fak_arch_x86_dump_register(struct pt_regs *regs)
 	{
 		if((i%6)==0)
 			printk("\n    ");
-		printk("%h(%h) ",sp[i],i);
+		printk("%x(%x) ",sp[i],i);
 	}
 	printk("\n  \n");
 #endif
@@ -108,7 +108,7 @@ void _do_spurious_interrupt_bug(struct pt_regs *regs, long error_code)
 }
 asmregparm void _do_general_protection(struct pt_regs *regs, long error_code)
 {
-	printk(DEBUG_PREFIX"一般保护错误,程序无法运行,错误代码 %h.", error_code);
+	printk(DEBUG_PREFIX"一般保护错误,程序无法运行,错误代码 %x.", error_code);
 	fak_arch_x86_dump_register(regs);	
 	fak_thread_want_die();
 }
@@ -144,11 +144,11 @@ void __init arch_trap_init()
 	set_intr_gate(15, &spurious_interrupt_bug);
 	set_intr_gate(16, &coprocessor_error);
 	set_intr_gate(17, &alignment_check);
-#if 0
+
 #ifdef CONFIG_X86_MCE
 	set_intr_gate_ist(18, &machine_check, MCE_STACK);
 #endif
-#endif
+
 	set_intr_gate(19, &simd_coprocessor_error);
 	/* Reserve all the builtin and the syscall vector: */
 	for (i = 0; i < FIRST_EXTERNAL_VECTOR; i++)

@@ -1,11 +1,11 @@
 #include <compiler.h>
 #include <limits.h>
 #include <stdarg.h>
-#include <string.h>
 #include <ctype.h>
 #include <stdio.h>
 
 #include "digits.h"
+#include "cl_string.h"
 
 struct va_format {
 	const char *fmt;
@@ -211,7 +211,7 @@ static char *string(char *buf, char *end, const char *s, struct printf_spec spec
 
 	/* 字符串地址根本有可能是错误的 */
 	if ((unsigned long)s < 0x10000)
-		s = "(null)";
+		s = "(force null)";
 
 	len = strnlen(s, spec.precision);
 
@@ -442,7 +442,7 @@ DLLEXPORT int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 	char *str, *end, c;
 	int read;
 	struct printf_spec spec = {0};
-
+	
 	/* Reject out-of-range values early.  Large positive sizes are
 	   used for unknown buffer sizes. */
 	if ((int) size < 0)

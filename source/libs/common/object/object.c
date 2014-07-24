@@ -5,11 +5,12 @@
 *   Wuxin
 *   对象管理器
 */
-#include <string.h>
+#include <types.h>
 
+#include "cl_string.h"
 #include "object.h"
 
-static void object_free_handler(void * para, void *base, size_t size)
+static void object_free_handler(void *para, void *base, size_t size)
 {
 	struct cl_object_type * type = para;
 	type->free_space(type, base, size, COMMON_OBJECT_MEMORY_TYPE_OBJ);
@@ -19,7 +20,7 @@ static void object_free_handler(void * para, void *base, size_t size)
 	@brief 创立一个指定类型的对象	
 */
 void *cl_object_create(struct cl_object_type *type)
-{
+{	
 	struct cl_object *object;
 	bool expaned_memory = false;
 
@@ -40,31 +41,74 @@ again:
 			}			
 		}
 		object = NULL;
-		goto end;
+		goto err;
 	}
-	memset(object, 0, type->size);
+	memset(object, 0, type->size + sizeof(struct cl_object));	
 	object->type = type;
-	object->ref.counter++;
+	list_add_tail(&object->list, &type->unname_objects);
+	
 	if (type->ops->init)
-		type->ops->init((real_object_t*)(object + 1));
+	{
+		if (type->ops->init((real_object_t*)(object + 1)) == false)
+		{
+			goto err;
+		}
+	}
 
-end:
-	return object + 1;	
+	return object + 1;
+
+err:
+	if (object)	
+		cl_object_delete(object);
+	return NULL;
+}
+
+void cl_object_delete(void *object)
+{
+	struct cl_object *p = TO_CL_OBJECT(object);
+	struct cl_object_type *type = p->type;
+
+	list_del(&p->list);
+	cl_bkb_dealloc(&type->obj_allocator, p);
+}
+
+void cl_object_open(void *by, void *object)
+{
+	cl_object_inc_ref(object);
+//	if (p->type->ops->open)
+//		p->type->ops->open(by, object);
+}
+
+int cl_object_get_ref_counter(void *object)
+{
+	struct cl_object *p = TO_CL_OBJECT(object);
+	return p->ref.counter;
+}
+
+void cl_object_dec_ref(void *object)
+{
+	struct cl_object *p = TO_CL_OBJECT(object);
+	cl_atomic_dec(&p->ref);
+}
+
+void cl_object_inc_ref(void *object)
+{
+	struct cl_object *p = TO_CL_OBJECT(object);
+	cl_atomic_inc(&p->ref);
 }
 
 /**
 	@brief 关闭对对象的使用
  */
-void cl_object_close(void *object)
+void cl_object_close(void *by, void *object)
 {
-	//TODO: Decrease the counter 
-}
+	struct cl_object *p = TO_CL_OBJECT(object);
 
-void cl_object_dec_ref(void *object)
-{
-	//TODO
-}
-void cl_object_inc_ref(void *object)
-{
-	//TODO
+	cl_object_dec_ref(object);
+	if (p->type->ops->close)
+		p->type->ops->close(by, object);
+
+	/* Should be deleted? */
+	if (cl_object_get_ref_counter(object) <= 0)
+		cl_object_delete(object);
 }

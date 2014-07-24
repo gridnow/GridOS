@@ -12,12 +12,10 @@
 #include <stdarg.h>
 #include <list.h>
 
-#include <kernel/ke_lock.h>
 #include <ddk/compatible.h>
-
 #include <ddk/slab.h>
 #include <ddk/obj.h>
-#include <ddk/log.h>
+#include <ddk/debug.h>
 
 #include "object.h"
 
@@ -82,12 +80,12 @@ static void free_space(struct cl_object_type *type, void *base, size_t size, enu
 
 static bool object_close(real_object_t *obj)
 {
-
+	return true;
 }
 
-static void object_init(real_object_t *obj)
+static bool object_init(real_object_t *obj)
 {
-	
+	return true;
 }
 
 static struct cl_object_ops device_object_ops = {

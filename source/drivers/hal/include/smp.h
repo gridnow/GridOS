@@ -9,7 +9,15 @@
 #ifndef HAL_SMP_H
 #define HAL_SMP_H
 
-extern int raw_smp_processor_id();
+#include "preempt.h"
+
+static inline int raw_smp_processor_id()
+{
+	//TODO to support smp
+	return 0;
+}
 #define smp_processor_id() raw_smp_processor_id()
+#define get_cpu()		({ preempt_disable(); smp_processor_id(); })
+#define put_cpu()		preempt_enable()
 
 #endif

@@ -15,7 +15,7 @@
 /**
 *	Ïß³ÌÇÐ»»´úÂë
 */
-#define x86_thread_switch_to(prev, next)					\
+#define x86_thread_switch_to(prev, next, last)					\
 do {															\
 	/*															\
 	* Context-switching clobbers all registers, so we clobber	\
@@ -42,6 +42,7 @@ do {															\
 		     /* output parameters */							\
 		     : [prev_sp] "=m" (prev->arch_thread.ctx.sp),		\
 		       [prev_ip] "=m" (prev->arch_thread.ctx.ip),		\
+			   "=a" (last),										\
 		      													\
 			 /* clobbered output registers: */					\
 			 "=b" (ebx), "=c" (ecx), "=d" (edx),				\

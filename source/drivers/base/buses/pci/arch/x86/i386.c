@@ -1,5 +1,5 @@
 #include <ddk/types.h>
-#include <ddk/log.h>
+#include <ddk/debug.h>
 #include <ddk/io.h>
 #include <ddk/irq.h>
 #include <ddk/resource.h>
@@ -12,7 +12,6 @@
 
 #include <list.h>
 #include <errno.h>
-#include <string.h>
 
 #include <pci.h>
 

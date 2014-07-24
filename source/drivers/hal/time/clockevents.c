@@ -53,6 +53,13 @@ void clockevents_register_device(struct clock_event_device *dev)
 	raw_spin_lock_irqsave(&clockevents_lock, flags);
 
 	list_add(&dev->list, &clockevent_devices);
+	
+	//TODO: to support more clockevent devices	
+	if (dev->features & CLOCK_EVT_FEAT_PERIODIC)
+	{
+		dev->set_mode(CLOCK_EVT_MODE_PERIODIC, dev);
+		dev->event_handler = tick_handle_periodic;
+	}
 
 	raw_spin_unlock_irqrestore(&clockevents_lock, flags);
 }

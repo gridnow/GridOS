@@ -1,5 +1,5 @@
 #include <types.h>
-#include <ddk/log.h>
+#include <ddk/debug.h>
 #include <ddk/pci/pci_regs.h>
 #include <ddk/delay.h>
 
@@ -951,8 +951,7 @@ int pci_try_set_mwi(struct pci_dev *dev)
  *
  * Disables PCI Memory-Write-Invalidate transaction on the device
  */
-DLLEXPORT void 
-pci_clear_mwi(struct pci_dev *dev)
+void pci_clear_mwi(struct pci_dev *dev)
 {
 	u16 cmd;
 	

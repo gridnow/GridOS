@@ -4,7 +4,7 @@ include ../hal_include.mk
 ADD_INCLUDE +=$(HAL_INCLUDE) -include hal_config.h
 
 #要编译的文件列表
-OBJS = screen.o pixel.o dotfnt.o cursor.o
+OBJS = screen.o pixel.o dotfnt.o cursor.o console.o
 PARTS = 
 
 all:  subs_parts $(OBJS)

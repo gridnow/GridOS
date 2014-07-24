@@ -4,6 +4,27 @@
 #include <types.h>
 #include <ddk/irq.h>
 
+/* 
+	DPC Interrupt 
+*/
+enum
+{
+	HI_DPC_IRQ  = 0,
+	TIMER_SOFTIRQ,
+	
+	NR_DPC_IRQS = BITS_PER_LONG
+};
+struct dpc_irq_action
+{
+	void (*action)(struct dpc_irq_action *);
+};
+//dpc.c
+extern void raise_dpc_irq(unsigned int nr);
+extern void open_dpc_irq(int nr, void (*action)(struct dpc_irq_action *));
+
+/*
+	IRQ Chip
+*/
 struct irq_chip;
 struct irq_desc;
 
@@ -44,44 +65,6 @@ struct irq_chip {
 	unsigned long	flags;
 };
 
-/*
- * IRQ line status.
- *
- * Bits 0-7 are the same as the IRQF_* bits in linux/interrupt.h
- *
- * IRQ_TYPE_NONE		- default, unspecified type
- * IRQ_TYPE_EDGE_RISING		- rising edge triggered
- * IRQ_TYPE_EDGE_FALLING	- falling edge triggered
- * IRQ_TYPE_EDGE_BOTH		- rising and falling edge triggered
- * IRQ_TYPE_LEVEL_HIGH		- high level triggered
- * IRQ_TYPE_LEVEL_LOW		- low level triggered
- * IRQ_TYPE_LEVEL_MASK		- Mask to filter out the level bits
- * IRQ_TYPE_SENSE_MASK		- Mask for all the above bits
- * IRQ_TYPE_DEFAULT		- For use by some PICs to ask irq_set_type
- *				  to setup the HW to a sane default (used
- *                                by irqdomain map() callbacks to synchronize
- *                                the HW state and SW flags for a newly
- *                                allocated descriptor).
- *
- * IRQ_TYPE_PROBE		- Special flag for probing in progress
- *
- * Bits which can be modified via irq_set/clear/modify_status_flags()
- * IRQ_LEVEL			- Interrupt is level type. Will be also
- *				  updated in the code when the above trigger
- *				  bits are modified via irq_set_irq_type()
- * IRQ_PER_CPU			- Mark an interrupt PER_CPU. Will protect
- *				  it from affinity setting
- * IRQ_NOPROBE			- Interrupt cannot be probed by autoprobing
- * IRQ_NOREQUEST		- Interrupt cannot be requested via
- *				  request_irq()
- * IRQ_NOTHREAD			- Interrupt cannot be threaded
- * IRQ_NOAUTOEN			- Interrupt is not automatically enabled in
- *				  request/setup_irq()
- * IRQ_NO_BALANCING		- Interrupt cannot be balanced (affinity set)
- * IRQ_MOVE_PCNTXT		- Interrupt can be migrated from process context
- * IRQ_NESTED_TRHEAD		- Interrupt nests into another thread
- * IRQ_PER_CPU_DEVID		- Dev_id is a per-cpu variable
- */
 enum {
 	IRQ_TYPE_NONE		= 0x00000000,
 	IRQ_TYPE_EDGE_RISING	= 0x00000001,
@@ -106,6 +89,7 @@ enum {
 	IRQ_NOTHREAD		= (1 << 16),
 	IRQ_PER_CPU_DEVID	= (1 << 17),
 };
+
 #ifndef ARCH_IRQ_INIT_FLAGS
 # define ARCH_IRQ_INIT_FLAGS	0
 #endif
@@ -145,7 +129,6 @@ enum {
 #define IRQF_NO_THREAD		0x00010000
 #define IRQF_EARLY_RESUME	0x00020000
 #define IRQF_TIMER		(__IRQF_TIMER | IRQF_NO_SUSPEND | IRQF_NO_THREAD)
-
 
 /* IRQ action */
 struct irqaction {
@@ -246,20 +229,18 @@ extern int setup_irq(unsigned int irq, struct irqaction *new);
 extern int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	irq_handler_t thread_fn,
 	unsigned long flags, const char *name, void *dev);
-static inline int request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
-	const char *name, void *dev)
-{
-	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
-}
+
 extern void disable_irq_nosync(unsigned int irq);
  
 //chip.c
 extern void	irq_set_chip_and_handler_name(unsigned int irq, struct irq_chip *chip,
 	irq_flow_handler_t handle, const char *name);
+extern void handle_level_irq(unsigned int irq, struct irq_desc *desc);
 
 //handle.c
 extern irqreturn_t no_action(int cpl, void *dev_id);
-extern void handle_level_irq(unsigned int irq, struct irq_desc *desc);
 
+//hal.c private data, used by arch to link irq event to driver subsystem
+extern int (*external_irq_handler)(void *pt_regs, int irq);
 
 #endif

@@ -10,15 +10,12 @@
 
 #include <ddk/compiler.h>
 
-#ifndef __weak
-#define __weak				__attribute__((weak))
-#endif
-
-#define __aligned(x)		__attribute__((aligned(x)))
-#define notrace				__attribute__((no_instrument_function))
-#define __always_inline		inline __attribute__((always_inline))
-#define barrier()			__asm__ __volatile__("": : :"memory")
-#define __maybe_unused		__attribute__((unused))
+#define __aligned(x)			__attribute__((aligned(x)))
+#define notrace					__attribute__((no_instrument_function))
+#define barrier()				__asm__ __volatile__("": : :"memory")
+#define __maybe_unused			__attribute__((unused))
+#define __attribute_const__		__attribute__((__const__))
+#define __exception				__attribute__((section(".exception.text")))
 
 #define __bitwise
 #define RELOC_HIDE(ptr, off)					\
@@ -54,13 +51,6 @@
 #endif
 
 #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
-
-/* 一些内嵌代码导出*/
-#ifdef NEED_EXPORT
-#define STATIC
-#else
-#define STATIC static
-#endif
 
 /* 最上层的编译器定义*/
 #include_next <compiler.h>

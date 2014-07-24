@@ -13,6 +13,7 @@
 */
 #ifndef _STRING_H
 #define _STRING_H
+
 #include <types.h>
 
 BEGIN_C_DECLS;
@@ -62,6 +63,20 @@ void *memcpy(void *dst, const void *src, unsigned long size);
 char *strcpy(char *__restrict dest, __const char *__restrict src);
 
 /**
+	@brief 拷贝最多指定长度的字符串
+
+	把从src地址开始且含有NULL结束符的字符串赋值到以dest开始的地址空间，
+	src和dest所指内存区域不可以重叠且dest必须有足够的空间来容纳src的字符串。
+	该函数终止的条件是在已经达到长度len或拷贝的字符串的过程中src字符串遇到了结束符'\0'。
+
+	@param[in] dest 目标缓冲区地址，用户层保证有足够的内存保存src所指向的字符串
+	@param[in] src  源缓冲区地址
+
+	@return 目标串的地址。
+*/
+char *strncpy (char *dest, const char *src, int len);
+
+/**
 	@brief 从字符的头部到尾部搜索一个字符
 
 	查找字符串中首次出现某字符的位置，从左向由搜索。
@@ -71,7 +86,9 @@ char *strcpy(char *__restrict dest, __const char *__restrict src);
 
 	@return 返回字符首次出现的位置指针，如果字符串中不存在要搜索的字符则返回NULL。
 */
-char * strchr(const char *str, int ch);
+char *strchr(const char *str, int ch);
+
+char *strrchr(const char *str, int ch);
 
 /**
 	@brief 比较两个字符串的内容是否一样
@@ -138,6 +155,11 @@ size_t strnlen(const char *s, size_t maxlen);
 		当cs<ct时，返回值<0；当cs=ct时，返回值=0；当cs>ct时，返回值>0。
 */
 int memcmp(const void *cs, const void *ct, size_t count);
+
+/**
+	@brief Append one NULL-terminated string to another
+*/
+char *strcat(char *dst, const char *src);
 
 END_C_DECLS;
 

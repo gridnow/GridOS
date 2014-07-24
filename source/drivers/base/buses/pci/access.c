@@ -1,6 +1,5 @@
-#include <types.h>
-#include <kernel/ke_lock.h>
 
+#include <types.h>
 #include "pci.h"
 
 #include <ddk/pci/pci.h>

@@ -2,7 +2,7 @@
  * legacy.c - traditional, old school PCI bus probing
  */
 #include <ddk/types.h>
-#include <ddk/log.h>
+#include <ddk/debug.h>
 #include <ddk/io.h>
 #include <ddk/irq.h>
 #include <ddk/resource.h>

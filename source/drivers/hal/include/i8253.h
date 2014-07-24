@@ -2,7 +2,7 @@
 #define HAL_I8253_H
 
 #include <param.h>
-#include <lock.h>
+#include <spinlock.h>
 #include <ddk/compatible.h>
 
 /* i8253A PIT registers */

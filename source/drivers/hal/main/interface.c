@@ -1,5 +1,5 @@
 #include <types.h>
-#include <asm/cpufeature.h>
+
 /************************************************************************/
 /* IRQ                                                                  */
 /************************************************************************/
@@ -108,12 +108,12 @@ DLLEXPORT void hal_writel(u32 val, volatile void *addr)
 /* BARRIER                                                              */
 /************************************************************************/
 #include <asm/barrier.h>
-DLLEXPORT void hal_wmb()
+void hal_wmb()
 {
 	wmb();
 }
 
-DLLEXPORT void hal_rmb()
+void hal_rmb()
 {
 	rmb();
 }

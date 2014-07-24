@@ -1,0 +1,60 @@
+
+ifi抽象层对象设计说明：
+1.ifi层负责具体输入设备的中间层转发功能.从ddk_for_driver.c中输入事件函数
+	input_even中获取原始数据经过处理后,保存在ifi层缓冲区中供上层应用来读取.
+
+2.该模块对外提供供驱动输入输出操作的API,以及供上层系统调用提供输入输出的的API
+
+3.具体见目录下ddk/input.h文件
+
+ifi抽象数据结构说明：
+1.每个具体的物理设备(例如：键盘,鼠标)在ifi层都由一个struct ifi_device结构表示.
+
+2.该数据结构中提供供驱动调用输入输出原始数据的函数：
+		int (*ifi_input_stream)(struct ifi_device *dev, void *data, int len);
+		int (*ifi_output_stream)(struct ifi_device *dev);
+		
+3.该数据结构中提供供上层系统调用输入输出数据的函数操作：
+	typedef struct ifi_dev_ops
+	{
+			//重设备读入用户空间,返回实际的读取长度
+			int (*ifi_dev_read)(struct ifi_device * dev, void * _user data, int len);
+			//往设备写入数据,返回实际写入的长度
+			int (*ifi_dev_write)(struct ifi_device * dev, void * _user data, int len);
+	}ifi_dev_ops_t;
+
+4.ifi抽象数据结构都将通过dev_list链表链接到dev_hd内.
+
+5.ifi数据结构提供设备销毁功能函数,在检测到设备退出的时候.够核心模块调用销毁该设备.
+	
+ifi抽象层对外函数说明：
+1.提供创建抽象设备函数接口.调用者提供设备的名称以及设备存储缓冲区大小(byte)
+		struct ifi_device * ifi_device_create(void);
+
+2.提供驱动将原始数据输入到设备缓冲区函数接口.调用者提供设备类型,原始数据,数据长度(byte).
+		int ifi_input_stream(unsigned int type, void * buf, size_t size);
+
+3.提供上层系统调用读取设备数据函数接口.调用者提供数据存储缓冲区以及设备类型
+		int ifi_read_input(struct ifi_package * input, unsigned int type);
+
+4.提供基于设备类型获取设备抽象数据结构函数接口.调用者提供设备类型
+		struct ifi_device * get_ifi_dev_by_devtype(int type);
+
+ifi抽象层函数封装与调用流程:
+1.上层应用调用流程：
+	a.上层应用通过系统调用,调用int ifi_read_input(struct ifi_package * input, int type)
+
+	b.ifi_read_input根据设备类型type来获取该设备在ifi层的对象
+
+	c.通过ifi层对象的struct ifi_device *dev->dev_ops->ifi_dev_read 回调函数来读取ifi层缓冲区数据.
+	
+2.驱动调用交给ifi层流程：
+	a.input_even事件调用int ifi_input_stream(int type, void * buf, size_t size).
+	
+	b.ifi_input_stream根据设备类型type来获取该设备在ifi层的对象
+	
+	c.通过ifi层对象的struct ifi_device *dev->ifi_input_stream 回调函数将数据存储于ifi层缓冲区.	
+
+
+
+

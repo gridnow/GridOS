@@ -7,7 +7,6 @@
 */
 
 #include "object.h"
-#include "string.h"
 
 /**
 	@brief Register type
@@ -15,8 +14,11 @@
 void cl_object_type_register(struct cl_object_type *type)
 {
 	/* Init allocator */
-	memset(&type->obj_allocator, 0, sizeof(type->obj_allocator));
-	type->obj_allocator.name =(xstring)type->name;
-	type->obj_allocator.node_size = type->size + sizeof(struct cl_object);
+	cl_bkb_init(&type->obj_allocator, type->name, type->size + sizeof(struct cl_object));
+	cl_bkb_init(&type->node_allocator, type->name, 0);
+	INIT_LIST_HEAD(&type->unname_objects);
+	
+	/* Name allocator. TODO: Using tree mode will not use this one */
+	cl_bkb_init(&type->name_allocator, type->name, CL_OBJECT_NAME_SLOTE_LENGTH);
 }
 

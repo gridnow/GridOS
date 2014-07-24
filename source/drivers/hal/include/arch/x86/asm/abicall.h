@@ -4,6 +4,7 @@
 #define ka_call_dynamic_module_entry(entry, ...) \
 	({	unsigned long __res;								\
 	__res = (unsigned long)entry(__VA_ARGS__); \
+		__res ; \
 })
 
 

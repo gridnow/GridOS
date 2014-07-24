@@ -12,23 +12,21 @@
 /*
 	负责把THREAD_ENTRY和PARA传入FATE_ENTRY,并且设置EFLAGS,一个LongJMP to fate entry(应为可能是在用户级，也有可能在内核级
 */
-static void __attribute__((noreturn)) first_time_entry()  
+static void __noreturn first_time_entry()
 {
 	struct ko_thread *who;	
 	unsigned long _sp;
 	unsigned long _ds,_cs;
 	who = kt_arch_get_current();
 	
-	if (who->process->cpl == KP_CPL0)
+	if (who->process->cpl != KP_USER)
 	{
 		_ds = __KERNEL_DS;
 		_cs = __KERNEL_CS;
 		_sp = who->arch_thread.ctx.sp0;
-		printk("Ring 0 stack is %x.\n", _sp);
 	}
 	else
 	{
-		printk("\nring 3...who->arch_thread.ctx.cr2 :%h.\n",who->arch_thread.ctx.cr2);
 		_ds = __USER_DS;
 		_cs = __USER_CS;
 		_sp = who->arch_thread.ctx.debugreg6;
@@ -66,7 +64,7 @@ static void __attribute__((noreturn)) first_time_entry()
 			 /* input parameters: */						
 		     : [reg_ss]  "r" (_ds),
 			   [reg_sp]  "r" (_sp), 
-			   [EFLAGS]  "i" (ARCH_THREAD_ARCH_X86_32_DEFAULT_EFLAGS & (~X86_EFLAGS_IF)), 
+			   [EFLAGS]  "i" (ARCH_THREAD_ARCH_X86_32_DEFAULT_EFLAGS), 
 			   [reg_cs]  "r" (_cs),
 		       [reg_ip]  "r" (who->arch_thread.ctx.cr2),
 		       
@@ -78,9 +76,24 @@ static void __attribute__((noreturn)) first_time_entry()
 	while(1);
 }
 
-asmregparm void arch_thread_switch(struct ko_thread *prev_p, struct ko_thread *next_p)
+asmregparm struct ko_thread *arch_thread_switch(struct ko_thread *prev_p, struct ko_thread *next_p)
 {
+	struct tss_struct *tss = &init_tss;
+
+	/*
+	* Reload esp0.
+	*/
+	tss->x86_tss.sp0 = kt_arch_get_sp0(next_p);
+
 	stts();
+
+#if 0
+	printk(".Real arch arch_thread_switch prev = %x, next = %x, next_sp = %x, pre sp = %x.\n",
+		   prev_p, next_p,
+		   next_p->arch_thread.ctx.sp,
+		   prev_p->arch_thread.ctx.sp);
+#endif
+	return prev_p;
 }
 
 /**
@@ -115,8 +128,25 @@ void kt_arch_init_thread(struct ko_thread * thread, struct kt_thread_creating_co
 	thread->arch_thread.ctx.ptrace_dr7		= (unsigned long)ctx->thread_entry;
 }
 
-void kt_arch_switch(struct ko_thread * prev, struct ko_thread * next)
-{ 
-	x86_thread_switch_to(prev, next);
+static void dump_memory(unsigned long base, int size)
+{
+	int i = 0;
+	unsigned char *p = (unsigned char*)base;
+	
+	while (size > 0)
+	{
+		printk("%08x:", p);
+		for (i = 0; i < 16 && size > 0; i++, size--)
+			printk("%02x ", *p++);
+		printk("\n");
+	}
 }
 
+void kt_arch_switch(struct ko_thread *prev, struct ko_thread *next)
+{
+	struct ko_thread * last;
+
+	x86_thread_switch_to(prev, next, last);
+	
+	//printk("kt_arch_switch sp %x... %x \n", &last, __builtin_return_address(0));
+}

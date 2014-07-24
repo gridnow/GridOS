@@ -31,6 +31,7 @@ typedef unsigned char		u8;									/**< 无符号8位数据 */
 typedef   signed char		s8;									/**< 有符号8位数据 */
 typedef unsigned short		__u16;								/**< 无符号16位数据，建议不用该版本，仅仅为了兼容一些传统软件 */
 typedef unsigned short		u16;								/**< 无符号16位数据 */
+typedef   signed short		s16;								/**< 无符号16位数据 */
 typedef unsigned int		__u32;								/**< 无符号32位数据，建议不用该版本，仅仅为了兼容一些传统软件 */
 typedef unsigned int		u32;								/**< 无符号32位数据 */
 typedef signed   int		s32;								/**< 有符号32位数据 */
@@ -52,12 +53,25 @@ typedef signed long long s64;									/**< x86-32平台上的有符号64位数据 */
 		typedef signed long long s64;
 		#define BITS_PER_LONG 32
 	#endif
+
+#elif defined(__arm__)
+typedef unsigned long long	u64;								/**< ARM 平台上的无符号64位数据 */
+typedef signed long long s64;									/**< ARM 平台上的有符号64位数据 */
+#define BITS_PER_LONG		32									/**< ARM 平台上，一个long型变量是32位 */
+
 #else
 #error "平台的数据类型没有定义"
 #endif
-/* 变态的off_t */
+
+/* 变态的off_t*/
+#if BITS_PER_LONG == 32
 typedef s64			off_t;
+#else 
+typedef s64			off_t;
+#endif
 typedef s64			loff_t;
+typedef u64			uoffset;
+typedef u64			lsize_t;
 
 /* 位类型 */
 #define BITS_PER_BYTE              8
@@ -85,6 +99,10 @@ typedef unsigned int bool;
 #define __in
 #define __out
 #define __user 
+
+/* Should move to kernel standard typedef */
+typedef unsigned long y_handle;
+#define Y_INVALID_HANDLE (-1UL)
 
 END_C_DECLS;
 

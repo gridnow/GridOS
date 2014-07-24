@@ -155,7 +155,7 @@ static unsigned long allocate_page(unsigned int count)
 	struct list_head *list;
 	struct km_cluster_head *head; 
 	unsigned long page = NULL;
-	bool tried_new_cluster = false, tried_next_node = false;
+	bool tried_new_cluster = false;
 
 	/* Case 0, Fast: Current cluster have page? */
 	ram = km_get_current_cluster();
@@ -252,11 +252,10 @@ void km_page_dealloc_kerneled(void *kernel_page, unsigned long size)
 /**
 	@brief 释放普通页
 */
-void km_page_dealloc(unsigned long phy_page, unsigned long size)
+void km_page_dealloc(unsigned long phy_page)
 {
 	unsigned long page = (unsigned long)phy_page;
-	unsigned int count = KM_PAGE_ROUND_COUNT(size);
-	deallocate_page(page, count);
+	deallocate_page(page, 1);
 }
 
 /**
@@ -336,7 +335,7 @@ bool km_insert_ram(unsigned long start, unsigned long size, int node)
 	struct km_cluster *ram;
 	unsigned long page_count, bitmap_size, flags, t;
 	int i;
-	bool r = false;	
+	bool r = false;
 
 	/* Must meet the boundary */
 	if (start & (PAGE_SIZE - 1)) goto out;	
@@ -360,7 +359,7 @@ bool km_insert_ram(unsigned long start, unsigned long size, int node)
 		if (!mem_node) goto insert_end;
 		list_add_tail(&mem_node->nodes, &km_global.ram_nodes);
 	}
-
+	
 	/* 把这个内存区域分解成一个一个CLUSTER，并找到对应的Cluster链表并插入 */
 	i = (size + KM_CLUSTER_SIZE - 1) / KM_CLUSTER_SIZE;
 	for (; i > 0; i--)
@@ -385,7 +384,7 @@ bool km_insert_ram(unsigned long start, unsigned long size, int node)
 
 		/* Insert to the cluster list */
 		list_add_tail(&ram->nodes, &mem_node->clusters);
-#ifdef __i386__
+#if defined (__i386__) || defined (__arm__)
 		printk("Cluster(%x.%d) page count is %d(map page %d), start is %p, end pfn %x.\n", ram, i, page_count, bitmap_size, start, ram->end_pfn);
 #endif
 		/* We serach next cluster by ram->nodes, no end checking, so gives a bit as the end node in list */
@@ -415,6 +414,13 @@ struct km_cluster *km_cluster_alloc(struct ke_mem_cluster_info * ret_info, int n
 	unsigned long flags;
 	struct list_head * tmp;
 
+	/* Auto to select the node by currently running cpu? */
+	if (node == -1)
+	{
+		//TODO: Auto select node if we are proposed to
+		node = 0;
+	}
+	
 	/* Select the cluster head by node,and other cpu may adding memory to the cluster list */
 	//TODO:to optimize the arithmatic
 	flags = ke_spin_lock_irqsave(&km_global.lock);
@@ -471,6 +477,11 @@ struct km_cluster *km_cluster_alloc(struct ke_mem_cluster_info * ret_info, int n
 	ret_info->km_cluster = cluster;
 end:
 	return cluster;
+}
+
+void km_cluster_dealloc_base(unsigned long physical_base, bool force)
+{
+	//TODO
 }
 
 /**

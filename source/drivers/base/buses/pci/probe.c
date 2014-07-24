@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-#include <ddk/log.h>
+#include <ddk/debug.h>
 #include <ddk/pci/pci_regs.h>
 #include <ddk/pci/global_ids.h>
 #include <ddk/slab.h>
@@ -1236,7 +1236,7 @@ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
 //	dev->dev.release = pci_release_dev;
 	pci_dev_get(dev);
 
-//	dev->dev.dma_mask = &dev->dma_mask;
+	dev->dev.dma_mask = &dev->dma_mask;
 //	dev->dev.dma_parms = &dev->dma_parms;
 //	dev->dev.coherent_dma_mask = 0xffffffffull;
 

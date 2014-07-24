@@ -1,5 +1,3 @@
-
-#include <ddk/log.h>
 #include <ddk/obj.h>
 
 #include "pci.h"

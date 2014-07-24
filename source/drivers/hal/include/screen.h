@@ -21,7 +21,7 @@ extern struct video_screen_info main_screen;					//main screen,defined in screen
 //screen.c
 unsigned char video_rgb24_to_8(unsigned int colour);
 void video_get_screen_resolution(int *w, int *h, int *bpp);
-void hal_video_init_screen();
+void hal_fb_register_simple(unsigned long fb, int w, int h, int bpp, int map);
 
 //pixel.c
 void video_draw_pixel(unsigned int x, unsigned int y, unsigned int clr);

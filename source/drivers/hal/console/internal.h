@@ -2,7 +2,8 @@
 #define VIDEO_INTERNAL_H
 
 //dotfnt.c
-int get_eng_char_width(unsigned char ascii);int get_chs_char_width(unsigned int gbk_code);
+int get_eng_char_width(unsigned char ascii);
+int get_chs_char_width(unsigned int gbk_code);
 unsigned int draw_eng_char(unsigned char c, int org_x, int org_y, unsigned int color);
 unsigned int draw_gbk_chinese(unsigned short gbk_code, int org_x, int org_y, unsigned int color);
 

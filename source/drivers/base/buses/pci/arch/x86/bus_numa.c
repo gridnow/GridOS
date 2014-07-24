@@ -1,5 +1,5 @@
 #include <ddk/types.h>
-#include <ddk/log.h>
+#include <ddk/debug.h>
 #include <ddk/io.h>
 #include <ddk/irq.h>
 #include <ddk/resource.h>
@@ -7,11 +7,11 @@
 #include <ddk/slab.h>
 #include <ddk/pci/pci_regs.h>
 #include <ddk/pci/class.h>
+#include <ddk/string.h>
 
 #include <compiler.h>
 #include <list.h>
 #include <errno.h>
-#include <string.h>
 #include <stdio.h>
 
 #include <pci.h>

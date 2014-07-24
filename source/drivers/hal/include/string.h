@@ -10,7 +10,7 @@
 #define HAL_STRING_H
 
 #include <types.h>
-#include <asm/string.h>
+#include "cl_string.h"
 
 #define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
 			 || ('a' <= (c) && (c) <= 'f') \

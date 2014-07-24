@@ -1,5 +1,5 @@
-#ifndef DDK_COMPATIBLE_H
-#define DDK_COMPATIBLE_H
+#ifndef DDK_COMPILER_H
+#define DDK_COMPILER_H
 
 /* Compiler macro */
 #define __cold				__attribute__((__cold__))					//Gcc 认为函数调用是unlikely

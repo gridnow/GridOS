@@ -3,6 +3,17 @@
 #
 
 #
+#苹果的平台的交叉编译器
+#
+ifeq ($(TERM_PROGRAM),Apple_Terminal)
+ifeq ($(ARCH),arm)
+export GCC_PREFIX=arm-linux-gnueabi-
+else
+export GCC_PREFIX=i686-linux-
+endif
+endif
+
+#
 #工具宏
 #
 CC				= $(GCC_PREFIX)gcc
@@ -11,14 +22,16 @@ AR				= $(GCC_PREFIX)ar
 LD				= $(GCC_PREFIX)ld
 RES				= fares
 CP				= cp
+RM				= rm
 OBJCOPY			= $(GCC_PREFIX)objcopy
 
-CFLAGS_arm         = -c -O2
-CFLAGS_i386        = -c -O2
+CFLAGS_arm         = -c -O2 -march=armv6k
+CFLAGS_i386        = -c -O2 -m32
 CFGAGS_MIPS64      = -c -O2 -mabi=64 -mips3 -EL -G0 
 CFGAGS_MIPS32      = -c -O2 -mabi=32 -mips2 -EL -G0 
+CL_INCLUDE         = -I$(MY_BUILD_BASE)/source/libs/common/include -I$(MY_BUILD_BASE)/source/libs/common/include/arch/$(ARCH_DIR)
 STD_INCLUDE        = -I$(MY_BUILD_BASE)/include -I$(MY_BUILD_BASE)/include/arch/$(ARCH_DIR)
-COMMON_CC_FLAGS    += -Wimplicit-function-declaration
+COMMON_CC_FLAGS    += -Wimplicit-function-declaration -Wall
 COMMON_CC_FLAGS    += -fvisibility=hidden
 
 #
@@ -26,7 +39,8 @@ COMMON_CC_FLAGS    += -fvisibility=hidden
 #
 LDFLAGS				= -L$(SYSTEM_DIR)
 ifeq ($(DLL),yes)
-LDFLAGS    			+= -shared
+LDFLAGS    			+= -shared --entry=_start
+COMMON_CC_FLAGS   		+= -fPIC
 endif
 
 #
@@ -50,7 +64,7 @@ endif
 #调试处理
 #
 ifeq ($(DEBUG),YES)
-COMMON_CC_FLAGS 		+=-D__DEBUG__=1
+COMMON_CC_FLAGS 		+=-D__DEBUG__=1 -g
 endif
 
 #
@@ -82,4 +96,5 @@ else
 	ARCH=i386
 	COMMON_CC_FLAGS += $(CFLAGS_i386) $(STD_INCLUDE)
 	ARCH_DIR=x86
+        ARCH_LD_FLAGS=-melf_i386
 endif

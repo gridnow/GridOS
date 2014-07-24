@@ -2,7 +2,7 @@
 <HTML lang=en xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><HEAD><TITLE>云操作系统 操作系统 操作系统开发 自主操作系统 国产操作系统 云OS YUNOS</TITLE>
 <META http-equiv=Content-Type content="text/html; charset=utf-8">
 <META content="我的操作系统" name=Description>
-<META content="国产操作系统,国产自主操作系统,操作系统,自主操作系统开发,操作系统开发,云操作系统" name=Keywords>
+<META content="国产操作系统,国产自主操作系统,操作系统,自主操作系统开发,操作系统开发,云操作系统,网格操作系统,云OS YUNOS" name=Keywords>
 <META content=yes name=allow-search>
 <LINK 
 href="css/fa.css" type=text/css rel=stylesheet><LINK 
@@ -31,7 +31,7 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
     <tbody>
       <tr>
         <td><a href="index.htm">系统介绍</a></td>
-        <td><a href="dev.htm">系统模块</a></td>
+        <td><a href="dev.htm">系统开发</a></td>
         <td><a href="http://www.yunos.org/bbs"><span class="STYLE4">技术WIKI</span></a></td>
       </tr>
     </tbody>
@@ -39,7 +39,7 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
 </DIV>
 <DIV id=content>
 <p>&nbsp;</p>
-<h2><span class="news-title">一，本阶段模块/任务细分(更多的内容将随着项目进展而添加,欢迎到BBS讨论）</span></h2>
+<h2><span class="news-title">一，本阶段模块/任务细分(更多的内容将随着项目进展而添加)</span></h2>
 <DIV id=news>
   <DIV class=news-item>
     <TABLE width=808 
@@ -58,14 +58,14 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
   <td height="26" width="307">物理内存页管理</td>
           </table></TD>
           <TD>管理系统中所有的物理内存的分配和回收，并支持NUMA内存节点亲近特性。</TD>
-          <TD>开发中</TD>
+          <TD><div align="left">2013-6-9：测试了物理页分配器，有待压力测试。</div></TD>
         </TR>
         <TR align="center">
           <TD><table cellspacing="0" cellpadding="0">
     <td height="26" width="307">逻辑上N级V2P（虚拟转物理地址）转换表</td>
           </table></TD>
           <TD>操作虚拟地址到物理地址转换表。为上层提供平台无关性的地址转换功能。</TD>
-          <TD>开发中</TD>
+          <TD><p align="left">2013-6-9：编写测试了Page Walk算法，支持了x86-32 两表的操作。理论上算法可以支持任意级别的Page Walk，但是Table Entry的操作应该是平台相关的（cache/tlb flash等问题），目前的版本没有考虑硬件的这些hazzards。</p></TD>
         </TR>
         <TR align="center">
           <TD>线程切换框架</TD>
@@ -78,7 +78,7 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
           <TD>&nbsp;</TD>
         </TR>
         <TR align="center">
-          <TD rowspan="8">硬件抽象层（HAL）</TD>
+          <TD rowspan="10">硬件抽象层（HAL）</TD>
           <TD>引导程序</TD>
           <TD>支持MULTIBOOT的引导程序</TD>
           <TD>开发中</TD>
@@ -100,8 +100,12 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
             <p>2，特定CPU的中断处理表和处理函数。</p>
             <p>3，抽象的中断处理流程和中断处理函数的管理（为驱动程序提供相应接口）。</p>
             <p>4，特定CPU的异常与内核的异常处理框架对接。</p></TD>
-          <TD><p>1，完成平台无关的中断注册、中断处理流程，目前在x86-32上测试通过。还缺少中断处理函数的反注册，多处理器中断问题。</p>
-            <p>2，给驱动程序提供的中断处理函数注册接口还未提供。</p></TD>
+          <TD><p align="left">2013-3-25：增加了中断管理框架，部分中断处理相关的逻辑来自Linux。</p>            </TD>
+        </TR>
+        <TR align="center">
+          <TD>自旋锁</TD>
+          <TD>&nbsp;</TD>
+          <TD>2013-3-15：实现了x86平台上的自旋锁，并封装了抽象接口。</TD>
         </TR>
         <TR align="center">
           <TD>多CPU管理框架</TD>
@@ -111,17 +115,26 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
         <TR align="center">
           <TD>设备管理器</TD>
           <TD>设备和驱动程序描述符的管理、操作。以及设备和驱动所用到的资源（内存资源IO资源）的管理。（注册设备，注册驱动，注册设备所拥有的资源，以及他们的被系统其他应用单位的对接口）。</TD>
-          <TD>1。完成了设备对象的注册封装。该封装是对设备最抽象的描述，其中主要包括2类信息的结合：设备管理器的设备信息与驱动程序对于设备的详细描述。详细描述用于具体驱动程序，高层信息用于设备管理器内部。</TD>
+          <TD>2013-4-8：完成了设备对象的注册封装。该封装是对设备最抽象的描述，其中主要包括2类信息的结合：设备管理器的设备信息与驱动程序对于设备的详细描述。详细描述用于具体驱动程序，高层信息用于设备管理器内部。</TD>
         </TR>
         <TR align="center">
           <TD>PCI总线驱动</TD>
           <TD>在设备管理器提供的管理框架中，支持平台无关的PCI总线的设备扫描、使能、资源操作接口。</TD>
-          <TD>1，上层代PCI设备扫描码部署完毕，并与设备管理器对接完成。支持的硬件平台可以有很多种，目前是x86。许多其他依赖接口还未编写完成，没有测试。</TD>
+          <TD><p align="left">2013-3-31：移植了PCI总线驱动，但是没有测试，许多依赖接口并未完成。</p>
+            <p align="left">2013-4-8：上层的PCI设备扫描码部署完毕，并与设备管理器对接完成。支持的硬件平台可以有很多种，目前是x86，总线扫描成功，并把扫描到的PCI设备放到设备管理器中去管理。</p></TD>
+          </TR>
+        <TR align="center">
+          <TD>&nbsp;</TD>
+          <TD>&nbsp;</TD>
+          <TD>&nbsp;</TD>
         </TR>
         <TR align="center">
           <TD>简单控制台封装</TD>
           <TD>实现系统调试。</TD>
-          <TD>&nbsp;</TD>
+          <TD><div align="left">
+            <p>2013-3-6：printk代码编写完成，在x86平台上可以向串口输出内容。</p>
+            <p>2013-6-9：通过封装简单的console模块，实现了屏幕文字的显示。屏幕framebuffer信息则通过硬件相关层向console模块报告硬件信息，并且通过iomap来影射可访问的显存地址。目前仅仅支持x86平台。Mips、Arm还没有实现。</p>
+          </div></TD>
         </TR>
         <TR align="center">
           <TD rowspan="3">公共库</TD>
@@ -132,22 +145,76 @@ href="images/logo.ico" type=image/x-icon rel=icon><!--[if lt IE 7.]>
         <TR align="center">
           <TD>对象管理器</TD>
           <TD>&nbsp;</TD>
-          <TD>&nbsp;</TD>
+          <TD><p align="left">2013-3-16：完成了对象管理器的关键数据结构定义。</p>
+            <p align="left">2013-3-18：为了测试对象管理器，编写了线程对象的创立方法。</p>
+            <p align="left">&nbsp;</p></TD>
         </TR>
         <TR align="center">
-          <TD>字符串操作</TD>
-          <TD>&nbsp;</TD>
-          <TD>&nbsp;</TD>
+          <TD>Grid 编程库 </TD>
+          <TD><div align="left">Grid 库是系统上的最基础的库，类似ntdll等基础库。它给用户进程提供访posix兼容接口、操作系统功能访问、分布式计算支撑。 </div></TD>
+          <TD><p align="left">2013-3-6：vsnprintf字符串格式化函数。</p>
+            <p align="left">2013-8-1：开始做x86、mips平台的系统调用模块。</p>
+            <p align="left">2013-8-20：开始做posix 动态库支撑接口；posix malloc 接口。</p>
+            <p align="left">&nbsp;</p></TD>
+        </TR>
+        <TR align="center">
+          <TD rowspan="3">驱动程序</TD>
+          <TD>以太网</TD>
+          <TD>移植Linux驱动</TD>
+          <TD><p align="left">2013-4-20：8139cp到了映射PCI 地址空间的位置，这部分需要内核的内存管理器的支持。我们现在的重点在驱动上，内核的这部分还没做。</p>
+            <p align="left">&nbsp;</p></TD>
+        </TR>
+        <TR align="center">
+          <TD>键盘鼠标</TD>
+          <TD><p>1，ps2 键盘鼠标</p>
+            <p>2，usb键盘鼠标</p>
+            </TD>
+          <TD><div align="left">
+            <p>2013-7-31:ps2 i8042 控制器启动成功，端口数据获取成功。</p>
+            </div></TD>
+        </TR>
+        <TR align="center">
+          <TD>硬盘 控制器</TD>
+          <TD><p align="center">1,Intel AHCI</p></TD>
+          <TD><div align="left">
+            <p>2013-8-1:开始实施移植AHCI，向驱动子系统增加HAL的PCI信息。</p>
+            <p>2013-8-22:遵循Intel AHCI规范的硬盘控制器驱动运行成功，探测磁盘、DMA读写扇区成功。</p>
+          </div></TD>
+        </TR>
+        <TR align="center">
+          <TD rowspan="2">虚拟文件系统</TD>
+          <TD>目录树</TD>
+          <TD>管理卷上的文件目录结构。提供搜索、打开、删除文件等操作。目录树中的内容从具体文件系统管理的卷上导入。操作目录树实际上是在操作卷上的目录文件结构。</TD>
+          <TD><p align="left">2013-8-1：用简单的树数据结构管理目录以及目录下文件和子目录。</p>
+            <p align="left">2013-8-10：根据文件路径搜索目录树，打开指定路径的文件。目前用简单的树数据结构搜索算法，效率有待提高。</p>
+            <p>&nbsp;</p></TD>
+        </TR>
+        <TR align="center">
+          <TD>文件操作</TD>
+          <TD>读写文件、删除文件、影射文件。</TD>
+          <TD><p align="left">2013-8-20：完成虚拟文件系统层面的文件缓存读；</p>
+            <p align="left">&nbsp;</p></TD>
         </TR>
       </TBODY>
     </TABLE>
     <h2 class="news-title">二，本阶段主要目标</h2>
     <p>&nbsp;&nbsp;&nbsp;&nbsp;1，内核具备分页机制的虚拟内存，支持多线程运行，在多CPU上能进行简单的负载均衡,识别到PCI硬件。</p>
     <p>&nbsp;&nbsp;&nbsp;&nbsp;2，支持虚拟文件系统。</p>
-    <p>&nbsp;&nbsp;&nbsp;&nbsp;3，支持基本libc编程接口，可操作文件 。    </p>
-    <p>&nbsp;&nbsp;&nbsp;&nbsp;4，支持简单控制台。</p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;3，支持PCI总线、AHCI硬盘控制器、几款网卡设备（满足虚拟机的测试）。</p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;4，支持基本libc编程接口，可操作文件 。    </p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;5，移植X WINDOW 图形系统和GTK图形库。</p>
     <p class="news-title">&nbsp;</p>
     <DIV id=div><DIV class=news-item></DIV>
+		
+	<h2 class="news-title">三，编译调试方法</h2>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;1，下载<a href="TOOLS/mgw_x86.7z">x86编译器(运行在windows平台，其他平台的大家可以自己做交叉编译器)</a>，解压到C盘根目录，运行其中的C:\mgw_x86\msys\1.0\msys.bat即可启动编译控制台。</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;2，编译基本系统。进入到如下目录，输入make即可：source\libs，source\drivers\hal，source\drivers\base，source\drivers\net，source\kernel。这里要注意，kernel 和 hal 都可以生成最终的可执行内核文件，如果开发中修改了hal则在hal目录下编译即可，如果修改了kernel在kernel目录下make 就能生成内核文件。</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;3，下载<a href="TOOLS/q64.7z">虚拟机(运行在windows平台的qemu)</a>并解压到D盘根目录，下载<a href="TOOLS/image.7z">虚拟机镜像更新工具(windows平台)</a>并解压到C盘根目录。</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;4，如果重新修改了基本系统的代码，在make后通过输入make to_image，并在弹出的对话框里选择Yes 或 Yes to all 即可更新虚拟机的进行文件</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;5，通过虚拟机运行。运行d:\q64\run.0.15.bat即启动虚拟机测试我们的操作系统。</p>
+	<p class="news-title">&nbsp;</p>
+	<DIV id=div><DIV class=news-item></DIV>
+		
 </DIV>
 </DIV>
   <HR>

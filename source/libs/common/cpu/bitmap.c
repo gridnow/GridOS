@@ -11,8 +11,8 @@
 #include "bits.h"
 
 /* Should all from hal */
-#include "asm/bitops.h"
-#include "string.h"
+#include <bitops.h>
+#include <string.h> 
 
 void cl_bitmap_init(struct cl_bitmap *cur_bitmap, unsigned long *bitmap, unsigned long mask_count)
 {	

@@ -37,4 +37,8 @@
 		hal_preempt_count_dec(); \
 	} while (0)
 
+/* Old interface */
+#define preempt_count() hal_preempt_count()
+#define preempt_disable() hal_preempt_disable()
+#define preempt_enable() hal_preempt_enable()
 #endif

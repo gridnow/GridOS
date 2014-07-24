@@ -18,7 +18,7 @@ static struct ko_thread dummy_kmt = {1}/*Use DATA segment, 否则占用过多的BSS，防
 
 void dumy_idle_ops(int type)
 {
-#ifdef __i386__
+#ifdef __i386__ 
 	__asm volatile("hlt\n");
 #endif
 }
@@ -37,7 +37,8 @@ static void init_a_cpu(struct kc_cpu * cpu)
 
 	/* 安装一个假的THREAD到CPU上，应为在启动阶段我们用CURRENT's preemnt来分配页（防止被抢占的）*/
 	cpu->cur = &dummy_kmt;
-
+	cpu->driver_thread = NULL;
+	
 	/* Give the cpu a memory cluster */
 	km_cluster_alloc(&info, 0, false);
 	cpu->mm_current_cluster = info.km_cluster;

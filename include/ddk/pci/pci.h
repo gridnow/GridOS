@@ -10,7 +10,6 @@
 #define _PCI_H_
 #include <list.h>
 
-#include <kernel/ke_lock.h>
 #include <kernel/ke_atomic.h>
 
 #include <ddk/types.h>
@@ -108,6 +107,11 @@ struct pci_fixup {
 #define DEFINE_PCI_DEVICE_TABLE(_table) \
 	const struct pci_device_id _table[] __devinitconst
 
+/* This defines the direction arg to the DMA mapping routines. */
+#define PCI_DMA_BIDIRECTIONAL	0
+#define PCI_DMA_TODEVICE	1
+#define PCI_DMA_FROMDEVICE	2
+#define PCI_DMA_NONE		3
 
 /**
 	@brief PCI资源编号
@@ -200,7 +204,7 @@ void pci_dev_put(struct pci_dev *dev);
 /**
 	@brief 设置PCI设备的DMA地址长度
 */
-DLLEXPORT int pci_set_dma_mask(struct pci_dev *dev, u64 mask);
+int pci_set_dma_mask(struct pci_dev *dev, u64 mask);
 
 /**
 	@brief 设置PCI设备的consistent DMA地址长度
@@ -255,6 +259,8 @@ struct pci_dev * pci_get_device(unsigned int vendor, unsigned int device, struct
 */
 DLLEXPORT int pci_set_mwi(struct pci_dev *dev);
 
+DLLEXPORT void pci_clear_mwi(struct pci_dev *dev);
+
 /**
 	@brief 为一个pci设备保留所有的设备资源
  
@@ -267,6 +273,7 @@ DLLEXPORT int pci_set_mwi(struct pci_dev *dev);
 */
 DLLEXPORT int pci_request_regions(struct pci_dev *dev, const char *res_name);
 
+DLLEXPORT void pci_release_regions(struct pci_dev *pdev);
 
 /**
 	@brief 映射PCI地址

@@ -1,8 +1,8 @@
 #ifndef DDK_COMPATIBLE_IO_H
 #define DDK_COMPATIBLE_IO_H
 
-#include <ddk/log.h>
 #include <ddk/compiler.h>
+#include <ddk/types.h>
 
 /* IO */
 #include <ddk/io.h>
@@ -28,4 +28,14 @@
 #define readb hal_readb
 #define readw hal_readw
 #define readl hal_readl
+
+#include <kernel/ke_memory.h>
+#define ioremap(__address__, __size__) km_map_physical(__address__, __size__, 0)
+
+/* DMA */
+#define dma_free_coherent(d,s,c,h) ddk_dma_free_attrs(d,s,c,h,NULL)
+#define dma_alloc_coherent(d,s,h,f) ddk_dma_alloc_attrs(d,s,h,f,NULL)
+#define dma_map_single(d, a, s, r) ddk_dma_map_single_attrs(d, a, s, r, NULL)
+#define dma_unmap_single(d, a, s, r) ddk_dma_unmap_single_attrs(d, a, s, r, NULL)
+
 #endif
