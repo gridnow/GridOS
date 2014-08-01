@@ -109,3 +109,14 @@ void ke_panic(char *why)
 {
 	hal_do_panic(why);
 }
+
+unsigned long hal_get_basic_kaddr(unsigned long phy)
+{
+	return HAL_GET_BASIC_KADDRESS(phy);
+}
+
+unsigned long hal_get_basic_phyaddr(void *vaddr)
+{
+	return HAL_GET_BASIC_PHYADDRESS(vaddr);
+}
+

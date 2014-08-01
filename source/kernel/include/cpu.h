@@ -11,6 +11,15 @@
 #include <list.h>
 #include "preempt.h"
 #include "priority.h"
+#include <arch/page.h>
+
+struct kc_arch_cpu
+{
+#ifdef __mips__
+	unsigned long asid, cur_asid;
+	void *asid_confict_table[CPU_PAGE_FALG_ASID_MASK + 1];
+#endif
+};
 
 struct ko_thread;
 struct kc_cpu
@@ -19,7 +28,8 @@ struct kc_cpu
 	struct ko_thread * cur;
 
 	/* CPU itself, 由于有了汇编器，该指针有了特别的意思，哈哈 */
-	struct km_cpu * self;
+	struct kc_cpu * self;
+	struct kc_arch_cpu cpu;
 	int id;
 
 	/* Thread queue */

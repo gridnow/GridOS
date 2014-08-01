@@ -17,17 +17,17 @@
 */
 extern int printk(const char *fmt, ...);
 
-#ifndef PRINT 
-#define PRINT printk
+#ifndef ddk_print 
+#define ddk_print printk
 #endif
 
 /**
 	@brief 输出调试信息
 */
 
-#define hal_printf PRINT
-#define hal_printf_warning PRINT
-#define hal_printf_error PRINT
+#define hal_printf ddk_print
+#define hal_printf_warning ddk_print
+#define hal_printf_error ddk_print
 
 /* prefix */
 #define HAL_DEBUG		"HAL调试："
@@ -48,12 +48,12 @@ extern void hal_do_panic();
 */
 #define hal_panic(buf) \
 	do {	\
-		PRINT("在文件%s中的函数%s第%d行出现致命问题:%s.\n", __FILE__, __FUNCTION__, __LINE__, buf);	\
+		ddk_print("在文件%s中的函数%s第%d行出现致命问题:%s.\n", __FILE__, __FUNCTION__, __LINE__, buf);	\
 		hal_do_panic();	\
 	} while(0)	
 #define TODO(__what__)	\
 	do {	\
-		PRINT("%s->%s line %d TODO %s.\n", __FILE__, __FUNCTION__, __LINE__, __what__);	\
+		ddk_print("%s->%s line %d TODO %s.\n", __FILE__, __FUNCTION__, __LINE__, __what__);	\
 	} while(0)
 #define TODO_ROLL_BACK() \
 	do {	\
@@ -61,19 +61,19 @@ extern void hal_do_panic();
 	} while (0)
 #define TRACE_UNIMPLEMENTED(__info__) \
 	do {	\
-		PRINT("文件%s中的%s函数（行号%d）没有实现：%s。\n", __FILE__,__FUNCTION__,__LINE__,__info__);	\
+		ddk_print("文件%s中的%s函数（行号%d）没有实现：%s。\n", __FILE__,__FUNCTION__,__LINE__,__info__);	\
 	} while(0)
 #define TRACE_ERROR(__info__) \
 	do {	\
-	PRINT("文件%s中的%s函数（行号%d）发生错误：%s。\n", __FILE__,__FUNCTION__,__LINE__,__info__);	\
+	ddk_print("文件%s中的%s函数（行号%d）发生错误：%s。\n", __FILE__,__FUNCTION__,__LINE__,__info__);	\
 	} while(0)
 #define TRACE_POINT() \
 	do {	\
-		PRINT("文件%s中的%s函数（行号%d）运行。\n", __FILE__,__FUNCTION__,__LINE__);	\
+		ddk_print("文件%s中的%s函数（行号%d）运行。\n", __FILE__,__FUNCTION__,__LINE__);	\
 	} while(0)
 #define UNUSED(__what__)	\
 	do {	\
-	PRINT("文件%s中的函数%s第%d行无需 %s.\n", __FILE__, __FUNCTION__, __LINE__, __what__);	\
+	ddk_print("文件%s中的函数%s第%d行无需 %s.\n", __FILE__, __FUNCTION__, __LINE__, __what__);	\
 	} while(0)	
 
 /**
@@ -81,12 +81,12 @@ extern void hal_do_panic();
 */
 #define BUG() \
 	do {	\
-		PRINT("文件%s中的函数%s第%d行不应该执行,程序BUG.\n", __FILE__, __FUNCTION__, __LINE__);	\
+		ddk_print("文件%s中的函数%s第%d行不应该执行,程序BUG.\n", __FILE__, __FUNCTION__, __LINE__);	\
 		hal_do_panic();	\
 	} while(0)	
 #define BUG_ON(condition) do { if (unlikely(condition)) BUG(); } while(0)
 
-#define __WARN_printf(arg...)	do { PRINT(arg); } while (0)
+#define __WARN_printf(arg...)	do { ddk_print(arg); } while (0)
 
 /* 目前有些warn的条件不好做，因此留空 */
 #define WARN_ON(x) (0)
@@ -126,16 +126,16 @@ extern void hal_do_panic();
 #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
 
 /* Runtime sanity check */
-#define __WARN() PRINT("警告：%s %d行有问题.\n", __FILE__, __LINE__)
+#define __WARN() ddk_print("警告：%s %d行有问题.\n", __FILE__, __LINE__)
 
 /* 记录特定设备对象的驱动运行日志,TODO to support this */
-#define dev_info(dev, format, arg...) PRINT("dev_inf："format, ##arg)
+#define dev_info(dev, format, arg...) ddk_print("dev_inf："format, ##arg)
 #define dev_dbg dev_info
 #define dev_warn dev_info
-#define dev_printk(level, dev, format, arg...) PRINT("设备信息："format, ##arg)
+#define dev_printk(level, dev, format, arg...) ddk_print("设备信息："format, ##arg)
 #define dev_err dev_info
-#define dev_trace(format, arg...) PRINT("设备跟踪："format, ##arg)
-#define dev_WARN(dev, format, arg...) PRINT("设备警告(%s.%d):"format"\n", __FUNCTION__, __LINE__, ##arg)
+#define dev_trace(format, arg...) ddk_print("设备跟踪："format, ##arg)
+#define dev_WARN(dev, format, arg...) ddk_print("设备警告(%s.%d):"format"\n", __FUNCTION__, __LINE__, ##arg)
 
 #endif
 

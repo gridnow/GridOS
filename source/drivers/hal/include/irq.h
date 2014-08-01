@@ -233,8 +233,15 @@ extern int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 extern void disable_irq_nosync(unsigned int irq);
  
 //chip.c
+extern void handle_percpu_irq(unsigned int irq, struct irq_desc *desc);
 extern void	irq_set_chip_and_handler_name(unsigned int irq, struct irq_chip *chip,
 	irq_flow_handler_t handle, const char *name);
+static inline void irq_set_chip_and_handler(unsigned int irq, struct irq_chip *chip,
+					    irq_flow_handler_t handle)
+{
+	irq_set_chip_and_handler_name(irq, chip, handle, NULL);
+}
+
 extern void handle_level_irq(unsigned int irq, struct irq_desc *desc);
 
 //handle.c

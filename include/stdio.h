@@ -267,7 +267,7 @@ int getch();
 /*
 	For debug only
 */
-#define PRINT printf
+#define ddk_print printf
 #include "ddk/debug.h"
 
 END_C_DECLS;

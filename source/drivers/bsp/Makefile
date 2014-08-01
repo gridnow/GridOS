@@ -4,5 +4,5 @@ OBJS 	=
 PARTS 	= $(ARCH_DIR)
 
 all:  subs_parts $(OBJS)
-	$(CP) *.o ../hal/
+	$(CP) $(ARCH_DIR).o ../hal/
 include $(MY_BUILD_BASE)/cc.mk

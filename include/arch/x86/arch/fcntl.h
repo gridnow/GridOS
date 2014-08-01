@@ -18,5 +18,4 @@
 #define _O_NONBLOCK	04000		/* Non-blocking I/O */
 #define _O_NDELAY	_O_NONBLOCK
 
-
 #endif	/* _X86_BITS_FCNTL_H */

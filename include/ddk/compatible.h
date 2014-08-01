@@ -9,27 +9,15 @@
 /*************************************************************/
 /* Memory */
 /*************************************************************/
-inline static void * ke_vm_basic(unsigned long basic_physical)
-{
-	/*  将基本物理内存（一般是低端内存）转换成内核、驱动能直接访问的虚拟地址*/
-	void *p = (void*)(basic_physical + 0x80000000UL);
-	//TODO
-	return p;
-}
-#define __va(phy) ke_vm_basic(phy)
-#if 0
-struct page;									/* 模拟一个假的,其实是页的起始虚拟地址,后续的转换要注意 */
-#define virt_to_page(v) v						/* 虚拟地址转换到页地址，在hal中就是虚拟地址，hal的虚拟是连续的，物理地址也是连续的 */
-#define page_to_phys(p) 0						/* 页地址（其实就是虚拟地址）到物理地址的转换，如果转后的物理地址要进行跨页DMA，调用者保证该物理地址来自HAL（也即是连续的）*/
-DLLEXPORT void hal_wmb();
-DLLEXPORT void hal_rmb();
-#endif
+extern unsigned long hal_get_basic_kaddr(unsigned long);
+extern unsigned long hal_get_basic_phyaddr(void *vaddr);
 
-/*
- * Convert a physical address to a Page Frame Number and back
- */
+struct page;															/* 模拟一个假的,其实是页的起始虚拟地址,后续的转换要注意 */
+#define __va(phy) hal_get_basic_kaddr(phy)								/*  将基本物理内存（一般是低端内存）转换成内核、驱动能直接访问的虚拟地址*/
+#define virt_to_page(v) v												/* 虚拟地址转换到页地址，在hal中就是虚拟地址，hal的虚拟是连续的，物理地址也是连续的 */
+#define page_to_phys(p) hal_get_basic_phyaddr(p)						/* 页地址（其实就是虚拟地址）到物理地址的转换，如果转后的物理地址要进行跨页DMA，调用者保证该物理地址来自HAL（也即是连续的）*/
 #define	__phys_to_pfn(paddr)	((unsigned long)((paddr) >> PAGE_SHIFT))
-#define	__pfn_to_phys(pfn)	((phys_addr_t)(pfn) << PAGE_SHIFT)
+#define	__pfn_to_phys(pfn)		((phys_addr_t)(pfn) << PAGE_SHIFT)
 #define SZ_1K				0x00000400
 #define SZ_2K				0x00000800
 #define SZ_4K				0x00001000

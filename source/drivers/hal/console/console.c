@@ -574,7 +574,6 @@ struct hal_console_ops video_console_ops = {
 
 void hal_console_init(void)
 {
-	video_console_ops.write = write_string;
 	
 	dsp_ctx.window.topline = 2 * sizeof(unsigned int);
 	dsp_ctx.window.pos_x = 0;
@@ -599,6 +598,11 @@ void hal_console_init(void)
 	/* 取分辨率 */
 	get_screen_resolution(&dsp_ctx.max_x, &dsp_ctx.max_y, NULL); 
 
+	/* 但是如果分辨率是0 x 0的话，write_string 似乎有bug，这里屏蔽掉 */
+	if (dsp_ctx.max_x == 0 || dsp_ctx.max_y == 0)
+		;
+	else
+		video_console_ops.write = write_string;
 	console_cursor_setup();
 	console_cursor_set_height(DOTFNT_CHAR_LINE_HEIGHT);
 

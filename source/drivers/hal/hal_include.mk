@@ -1,1 +1,2 @@
-HAL_INCLUDE = -I$(MY_BUILD_BASE)/source/drivers/hal/include -I$(MY_BUILD_BASE)/source/drivers/hal/include/arch/$(ARCH_DIR) -I$(MY_BUILD_BASE)/source/drivers/hal/include/arch/ $(CL_INCLUDE) -include hal_config.h
+HAL_INCLUDE = -I$(MY_BUILD_BASE)/source/drivers/hal/include -I$(MY_BUILD_BASE)/source/drivers/hal/include/arch/$(ARCH_DIR) -I$(MY_BUILD_BASE)/source/drivers/hal/include/arch $(CL_INCLUDE) -include hal_config.h
+include $(MY_BUILD_BASE)/source/drivers/bsp/$(ARCH_DIR)/$(PLAT)/config.mk
