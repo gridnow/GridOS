@@ -273,11 +273,17 @@ void __init ks_init()
 #include <kernel/ke_event.h>
 
 struct ke_event ev;
-static void test_thread(unsigned long para)
+void test_thread(unsigned long para)
 {
-	printk("test thread. %d...", para);
+	unsigned int i = 0;
+
 	while (1)
+	{
+		i++;
+		if ((i % 100000) == 0)
+			printk(" %d(%x) ", para, &para);
 		kt_schedule();
+	}
 }
 
 void kernel_test()
@@ -286,6 +292,7 @@ void kernel_test()
 	
 	//for (i = 0; i < 34; i++)
 	//	kt_create_kernel(test_thread, i);
+	
 	fss_main();
 	nss_main();
 	//初始化输入设备

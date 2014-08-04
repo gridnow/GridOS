@@ -138,6 +138,9 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 	switch (process_cpl)
 	{
 		case KP_CPL0:
+			/*
+				Arch 必须保证CONFIG_HAL_KERNEL_MEM_LEN 后面是可以影射的空间
+			*/
 			if (start)
 				*start = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET) + CONFIG_HAL_KERNEL_MEM_LEN;
 			if (size)
@@ -161,7 +164,17 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 					*desired_start = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET);
 					*start = *desired_start;
 				}
-#elif defined(__mips64__)
+#elif defined(__mips__)
+#if _MIPS_SZLONG == 32
+				*size = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET) - user_start;
+				if (is_type_kernel)
+				{
+					*desired_size = *size;
+					*desired_start = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET);
+					*start = *desired_start;
+				}
+
+#elif _MIPS_SZLONG == 64
 				*size = 1024 * 1024 * 1024 * 1024;
 				if (is_type_kernel)
 				{
@@ -169,6 +182,10 @@ void get_vm_range(int process_cpl, unsigned long *start, unsigned long *size, un
 					*desired_start = HAL_GET_BASIC_KADDRESS(PHYS_OFFSET);
 					*start = *desired_start;
 				}
+#else
+#error "Unsupported mips size"
+#endif
+
 #else
 #error "Platform must be defined for get_vm_range"
 #endif

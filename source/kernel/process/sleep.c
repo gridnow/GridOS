@@ -11,6 +11,8 @@
 #include "process.h"
 #include "cpu.h"
 
+#include <bitops.h>
+
 bool kt_sleep(unsigned long stat)
 {
 	unsigned long flags;

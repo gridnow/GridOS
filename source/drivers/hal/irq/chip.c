@@ -253,6 +253,26 @@ out_unlock:
 	raw_spin_unlock(&desc->lock);
 }
 
+/**
+ *	handle_percpu_irq - Per CPU local irq handler
+ *	@irq:	the interrupt number
+ *	@desc:	the interrupt description structure for this irq
+ *
+ *	Per CPU interrupts on SMP machines without locking requirements
+ */
+void handle_percpu_irq(unsigned int irq, struct irq_desc *desc)
+{
+	struct irq_chip *chip = irq_desc_get_chip(desc);
+
+	if (chip->irq_ack)
+		chip->irq_ack(&desc->irq_data);
+
+	handle_irq_event_percpu(desc, desc->action);
+
+	if (chip->irq_eoi)
+		chip->irq_eoi(&desc->irq_data);
+}
+
 /* 设置某个而中断的处理最高流程句柄 */
 void irq_set_chip_and_handler_name(unsigned int irq, struct irq_chip *chip,
 							  irq_flow_handler_t handle, const char *name)

@@ -23,6 +23,7 @@ struct irq_desc {
 extern struct irq_desc *irq_to_desc(unsigned int irq);
 
 #ifdef CONFIG_GENERIC_HARDIRQS
+int generic_handle_irq(unsigned int irq);
 static inline struct irq_chip *irq_desc_get_chip(struct irq_desc *desc)
 {
 	return desc->irq_data.chip;

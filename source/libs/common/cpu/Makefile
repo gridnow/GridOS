@@ -3,6 +3,8 @@ include ../../../drivers/hal/hal_include.mk
 
 #要编译的文件列表
 OBJS	= bitmap.o atomic.o bit.o string.o
+OBJS 	+= ucmpdi2.o
+
 PARTS	=
 CPU_SPEICAL_LIBS =
 

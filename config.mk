@@ -8,6 +8,10 @@
 ifeq ($(TERM_PROGRAM),Apple_Terminal)
 ifeq ($(ARCH),arm)
 export GCC_PREFIX=arm-linux-gnueabi-
+else ifeq ($(ARCH),mips32)
+export GCC_PREFIX=mips64el-linux-
+else ifeq ($(ARCH),mips64)
+export GCC_PREFIX=mips64el-linux-
 else
 export GCC_PREFIX=i686-linux-
 endif
@@ -28,7 +32,7 @@ OBJCOPY			= $(GCC_PREFIX)objcopy
 CFLAGS_arm         = -c -O2 -march=armv6k
 CFLAGS_i386        = -c -O2 -m32
 CFGAGS_MIPS64      = -c -O2 -mabi=64 -mips3 -EL -G0 
-CFGAGS_MIPS32      = -c -O2 -mabi=32 -mips2 -EL -G0 
+CFGAGS_MIPS32      = -c -O2 -mabi=32 -mips32 -EL -G0
 CL_INCLUDE         = -I$(MY_BUILD_BASE)/source/libs/common/include -I$(MY_BUILD_BASE)/source/libs/common/include/arch/$(ARCH_DIR)
 STD_INCLUDE        = -I$(MY_BUILD_BASE)/include -I$(MY_BUILD_BASE)/include/arch/$(ARCH_DIR)
 COMMON_CC_FLAGS    += -Wimplicit-function-declaration -Wall
@@ -72,19 +76,29 @@ endif
 #
 ifeq ($(ARCH),mips64)
 	BITS=64
-	COMMON_CC_FLAGS		+=$(CFGAGS_MIPS64) $(STD_INCLUDE)
 	ARCH_DIR			=mips
 	ARCH_LD_FLAGS		=-melf64ltsmip
- ifeq ($(DLL),yes)
- COMMON_CC_FLAGS    += -mabicalls
- endif
- ifeq ($(NORMAL_APP),yes)
- COMMON_CC_FLAGS    += -mabicalls
- endif
+	ifeq ($(DLL),yes)
+	COMMON_CC_FLAGS    += -mabicalls
+	else ifeq ($(NORMAL_APP),yes)
+	COMMON_CC_FLAGS    += -mabicalls
+	else
+	COMMON_CC_FLAGS    += -mno-abicalls
+	endif
+	COMMON_CC_FLAGS		+=$(CFGAGS_MIPS64) $(STD_INCLUDE)
+
 else ifeq ($(ARCH),mips32)
 	BITS=32
-	COMMON_CC_FLAGS +=  $(CFGAGS_MIPS32) $(STD_INCLUDE)
 	ARCH_DIR=mips
+	ARCH_LD_FLAGS		=-melf32ltsmip
+	ifeq ($(DLL),yes)
+	COMMON_CC_FLAGS    += -mabicalls
+	else ifeq ($(NORMAL_APP),yes)
+	COMMON_CC_FLAGS    += -mabicalls
+	else
+	COMMON_CC_FLAGS    += -mno-abicalls
+	endif
+	COMMON_CC_FLAGS +=  $(CFGAGS_MIPS32) $(STD_INCLUDE)
 
 else ifeq ($(ARCH),arm)
 	BITS=32

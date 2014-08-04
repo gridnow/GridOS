@@ -6,6 +6,6 @@ PARTS	= object misc cpu
 ADD_INCLUDE +=-Iinclude $(CL_INCLUDE)
 
 all:  subs_parts $(OBJS)
-	$(LD) -r -o ../common.o *.o $(ARCH_LD_FLAGS)
+	$(LD) -r -o $(SYSTEM_BUILD_TMP)/libs/$(ARCH_DIR)/common.o$(DLL) *.o $(ARCH_LD_FLAGS)
 
 include $(MY_BUILD_BASE)/cc.mk

@@ -1,8 +1,9 @@
 #ifndef _BYTEORDER_LITTLE_ENDIAN_H
 #define _BYTEORDER_LITTLE_ENDIAN_H
 
+#ifndef __ASSEMBLY__
 #include "swab.h"
-#include "compiler.h"
+#endif
 
 #ifndef __LITTLE_ENDIAN
 #define __LITTLE_ENDIAN 1234

@@ -156,12 +156,14 @@ static inline int dma_map_sg(struct device *dev, struct scatterlist *sglist, int
 							 enum dma_data_direction direction)
 {
 	TODO("");
+	return -1;
 };
 
 static inline void * dmam_alloc_coherent(struct device *dev, size_t size,
 										 dma_addr_t *dma_handle, gfp_t gfp)
 {
 	TODO("");
+	return NULL;
 }
 
 

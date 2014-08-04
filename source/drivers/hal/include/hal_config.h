@@ -23,9 +23,15 @@
 #define CONFIG_RTC							1								
 
 #elif defined(__mips__)
+#if _MIPS_SZPTR < 64
+#define CONFIG_HAL_KERNEL_BASE				0x80000000UL 
+#else
 #define CONFIG_HAL_KERNEL_BASE				0xFFFFFFFF80000000UL
+#endif
 #define CONFIG_GENERIC_FIND_FIRST_BIT
-#define CONFIG_RTC							1
+//#define CONFIG_RTC							1
+#define CONFIG_HAL_KERNEL_MEM_LEN			0x40000000						//内核直接映射长度
+#define CONFIG_HAL_KERNEL_VM_LEN			0X40000000						//虚拟内存长度
 
 #elif defined(__arm__)
 #define CONFIG_HAL_KERNEL_BASE				0xc0000000						//内核起始地址
@@ -52,19 +58,22 @@
 /* config for loongson */
 #ifdef __mips__
 //#define CONFIG_CPU_LOONGSON2				1								//龙芯2系列很多东西是特别的，3A时要取消掉该选项。
-#define CONFIG_64BIT						1								//64位
-#define CONFIG_PAGE_SIZE_16KB				1								//asm/mipsregs.h需要
-#define PAGE_SHIFT							14								//16kb PAGE
+//#define CONFIG_CPU_LOONGSON					1								// kmm_arch_ctx_init_kernel and TLB flush need it
+//#define CONFIG_64BIT						1								//64位
+#define CONFIG_32BIT						1								//32位
+#define CONFIG_PAGE_SIZE_4KB				1								//asm/mipsregs.h需要
+//#define CONFIG_PAGE_SIZE_16KB				1								//asm/mipsregs.h需要
+//#define PAGE_SHIFT							14								//16kb PAGE
+#define PAGE_SHIFT							12								//4kb PAGE
 #define CONFIG_WEAK_REORDERING_BEYOND_LLSC	1								//mips/asm/barrier.h中，多处理间需要用
 #define CONFIG_WEAK_ORDERING				1								//mips/asm/barrier.h中，多处理间需要用
 #define CONFIG_CPU_HAS_SYNC					1								//mips CPU 有SYNC指令，barrier需要
-#define CONFIG_CPU_HAS_WB					1								//loongson CPU 有WBFLUSH功能，其实SYNC指令具备该功能，在barrier中需要
+//#define CONFIG_CPU_HAS_WB					1								//loongson CPU 有WBFLUSH功能，其实SYNC指令具备该功能，在barrier中需要
 #define CONFIG_I8259						1	
 #define CONFIG_IRQ_CPU						1								//CPU 继承了8个终端源
 #define CONFIG_MIPS_L1_CACHE_SHIFT			5								//32 LINE SIZE         
 #define CONFIG_BUG							1
-#define CONFIG_CPU_LOONGSON					1								// kmm_arch_ctx_init_kernel and TLB flush need it
-#include <asm/asm-offsets.h>
+//#include <asm/asm-offsets.h>
 #endif
 
 /* Config of common */
