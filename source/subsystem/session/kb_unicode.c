@@ -14,7 +14,7 @@
 
 #define KEY_MAX			0x2ff
 #define KEY_UNPRESS		1
-#define IF_UP			0x80
+
 #define IF_EXTEND		0xe0
 
 #define EXT_CODE_1			1
@@ -22,11 +22,9 @@
 
 #define BASE_KEY_MAX_NUM	111
 
-#define KEY_UP				112
-#define KEY_DOWN			113
-#define KEY_LEFT			114
-#define KEY_RIGHT			115
-
+#define KEY_SHIFT_LEFT		0x2a
+#define KEY_SHIFT_RIGHT     0x36        
+#define KEY_CAP_LOCK		0x3a
 
 
 
@@ -254,7 +252,7 @@ static int kb_input_stream(struct ifi_device * dev, void * buf, size_t size, int
 	}
 
 	/* shiftº¸øÿ÷∆ */
-	if ((scancode == 0x2a) || (scancode == 0x36))
+	if ((scancode == KEY_SHIFT_LEFT) || (scancode == KEY_SHIFT_RIGHT))
 	{
 		if (down == 1)
 			set_ext_shift_bit(dev);
@@ -264,7 +262,7 @@ static int kb_input_stream(struct ifi_device * dev, void * buf, size_t size, int
 	}
 	
 	/* cap lock øÿ÷∆ ‰»Î */
-	if ((scancode == 0x3a))
+	if ((scancode == KEY_CAP_LOCK))
 	{
 		if (down == 1)
 			set_ext_cap_lock_bit(dev);
