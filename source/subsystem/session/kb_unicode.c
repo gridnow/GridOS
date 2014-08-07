@@ -14,7 +14,7 @@
 
 #define KEY_MAX			0x2ff
 #define KEY_UNPRESS		1
-#define IF_UP			0x80
+
 #define IF_EXTEND		0xe0
 
 #define EXT_CODE_1			1
@@ -22,11 +22,9 @@
 
 #define BASE_KEY_MAX_NUM	111
 
-#define KEY_UP				112
-#define KEY_DOWN			113
-#define KEY_LEFT			114
-#define KEY_RIGHT			115
-
+#define KEY_SHIFT_LEFT		0x2a
+#define KEY_SHIFT_RIGHT     0x36        
+#define KEY_CAP_LOCK		0x3a
 
 
 
@@ -34,8 +32,8 @@
 #define K(t,s,f) ((t)|((s)<<8)|((f)<<16)|(0)<<24)
 //static struct ifi_device * default_dev;
 
-/* 定义所有的字符码 */
-static unsigned int code_key[KEY_MAX] = {
+/* 定义无控制功能键组合的字符码 */
+static unsigned int normal_code_key[KEY_MAX] = {
 	'\000',K('\033', 0, 0),'1','2','3','4','5','6','7','8','9','0','-','=','\177','\t',																				
 	'q','w','e','r','t','y','u','i','o','p','[',']','\r','\000','a','s',
 	'd','f','g','h','j','k','l',';','\'','`','\000','\\','z','x','c','v',
@@ -46,6 +44,29 @@ static unsigned int code_key[KEY_MAX] = {
 	K('\033','[','A'),K('\033','[','B'),K('\033','[','D'),K('\033','[','C'),0,0,0,0,0,0,0,0,0,0,0,0
 };
 
+/* 定义带shitf控制字符编码 */
+static unsigned int shift_code_key[KEY_MAX] = {
+	'\000',K('\033', 0, 0),'!','@','#','$','%','^','&','*','(',')','_','+','\177','\t',																				
+	'q','w','e','r','t','y','u','i','o','p','{','}','\r','\000','a','s',
+	'd','f','g','h','j','k','l',':','\"','~','\000','|','z','x','c','v',
+	'b','n','m','<','>','?','\000','*','\000',' ','\000','\201','\202','\203','\204','\205',
+	'\206','\207','\210','\211','\212','\000','\000','7','8','9','-','4','5','6','+','1',
+	'2','3','0','\177','\000','\000','\213','\214','\000','\000','\000','\000','\000','\000','\000','\000',
+	'\r','\000','/',0,0,0,0,0,0,0,0,0,0,0,0,0,
+	K('\033','[','A'),K('\033','[','B'),K('\033','[','D'),K('\033','[','C'),0,0,0,0,0,0,0,0,0,0,0,0
+};
+
+/* 定义带CAPS LOCK字符编码 */
+static unsigned int cap_lock_code_key[KEY_MAX] = {
+	'\000',K('\033', 0, 0),'1','2','3','4','5','6','7','8','9','0','-','=','\177','\t',																				
+	'Q','W','E','R','T','Y','U','I','O','P','[',']','\r','\000','A','S',
+	'D','F','G','H','J','K','L',';','\'','`','\000','\\','Z','X','C','V',
+	'B','N','M',',','.','/','\000','*','\000',' ','\000','\201','\202','\203','\204','\205',
+	'\206','\207','\210','\211','\212','\000','\000','7','8','9','-','4','5','6','+','1',
+	'2','3','0','\177','\000','\000','\213','\214','\000','\000','\000','\000','\000','\000','\000','\000',
+	'\r','\000','/',0,0,0,0,0,0,0,0,0,0,0,0,0,
+	K('\033','[','A'),K('\033','[','B'),K('\033','[','D'),K('\033','[','C'),0,0,0,0,0,0,0,0,0,0,0,0
+};
 
 /* 声明两个扫描码的查找表 */
 unsigned char double_key_table[KEY_MAX] = {
@@ -97,7 +118,7 @@ unsigned char single_key_table[BASE_KEY_MAX_NUM] = {
 	@return
 		The size in bytes we have stored
 */
-static int store_code(struct ifi_device *dev, unsigned char *table_name, unsigned char scancode)
+static int store_code(struct ifi_device *dev, unsigned char *table_name, unsigned char scancode, unsigned int *code_table)
 {
 	unsigned char *code;
 	int stored = 0;
@@ -109,7 +130,7 @@ static int store_code(struct ifi_device *dev, unsigned char *table_name, unsigne
 		int i, count;
 		
 		/* Split the code to buffer */
-		code = (unsigned char*)&code_key[table_name[scancode]];
+		code = (unsigned char*)&code_table[table_name[scancode]];
 		for (count = 0, i = 0; ;i++, count++)
 		{
 			if (code[i] == 0)
@@ -185,16 +206,34 @@ static int kb_read_input(struct ifi_device * dev, struct ifi_package * input, in
 	return 1;
 }
 
+/* 定义扩展功能键标志位 */
+#define EXTER_SHIFT_BIT     (1 << 0)
+#define EXTER_CAP_LOCK_BIT  (1 << 1)
+
+#define set_ext_shift_bit(dev) \
+	((dev)->ext_code |= EXTER_SHIFT_BIT)
+#define clear_ext_shift_bit(dev) \
+	((dev)->ext_code &= ~EXTER_SHIFT_BIT)
+
+#define in_shift_state(dev)     ((dev)->ext_code & EXTER_SHIFT_BIT)
+#define in_cap_lock_state(dev)  ((dev)->ext_code & EXTER_CAP_LOCK_BIT)
+
+#define set_ext_cap_lock_bit(dev) \
+	((dev)->ext_code |= ((in_cap_lock_state(dev)) ? (~EXTER_CAP_LOCK_BIT) : EXTER_CAP_LOCK_BIT))
+
 /**
 	@brief input the kbd/mouse/touch screen input stream
 
 	@note
 		对于同一个对象不可重入		
 */
-static int kb_input_stream(struct ifi_device * dev, void * buf, size_t size)
+static int kb_input_stream(struct ifi_device * dev, void * buf, size_t size, int down)
 {	
-	unsigned char scancode = 0;														//用来接收扫描码
-	int inpt_len = 0;						
+	/* 用来接收扫描码 */
+	unsigned char scancode = 0;	
+	int inpt_len = 0;
+	unsigned int *code_table = normal_code_key;
+	
  	if (!dev)
  		return -1;
 		
@@ -212,18 +251,42 @@ static int kb_input_stream(struct ifi_device * dev, void * buf, size_t size)
 		return inpt_len;
 	}
 
+	/* shift键控制 */
+	if ((scancode == KEY_SHIFT_LEFT) || (scancode == KEY_SHIFT_RIGHT))
+	{
+		if (down == 1)
+			set_ext_shift_bit(dev);
+		else if (down == 0)
+			clear_ext_shift_bit(dev);
+		return inpt_len;
+	}
+	
+	/* cap lock 控制输入 */
+	if ((scancode == KEY_CAP_LOCK))
+	{
+		if (down == 1)
+			set_ext_cap_lock_bit(dev);
+		
+		return inpt_len;
+	}
+
+	if (in_shift_state(dev))
+		code_table = shift_code_key;
+	else if (in_cap_lock_state(dev))
+		code_table = cap_lock_code_key;
+	
 	/* 弹起后目前没有操作，存结束符 */
-	if (scancode & IF_UP)
-		inpt_len = store_code(dev, NULL, 0);
+	if (down == 0)
+		inpt_len = store_code(dev, NULL, 0, code_table);
 	else if (dev->ext_code == EXT_CODE_1 || ((scancode > 71)
 				&& (scancode < 81)))//如果是第一扫描码是0xE0开头，则用double_key_table表查询，如果是普通字符用single_key_table查询
 	{
-		inpt_len = store_code(dev, double_key_table, scancode);
+		inpt_len = store_code(dev, double_key_table, scancode, code_table);
 		dev->ext_code = 0;
 	}
 	else
 	{
-		inpt_len = store_code(dev, single_key_table, scancode);
+		inpt_len = store_code(dev, single_key_table, scancode, code_table);
 	}
 	/* To the distribution layer */
 	ke_complete(&dev->data_ready);

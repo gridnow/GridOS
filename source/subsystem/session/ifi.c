@@ -10,11 +10,11 @@ static LIST_HEAD(dev_list_hd);
 	@note
 		对于同一个对象不可重入		
 */
-static int __ifi_input_stream(struct ifi_device * dev, void * buf, size_t size)
+static int __ifi_input_stream(struct ifi_device * dev, void * buf, size_t size, int down)
 {	
 	if (dev && dev->ifi_input_stream)
 	{
-		return dev->ifi_input_stream(dev, buf, size);
+		return dev->ifi_input_stream(dev, buf, size, down);
 	}
 
 	return 0;
@@ -28,10 +28,10 @@ static int __ifi_input_stream(struct ifi_device * dev, void * buf, size_t size)
 		对于同一个对象不可重入
 */
 
-int ifi_input_stream(int type, void * buf, size_t size)
+int ifi_input_stream(int type, void * buf, size_t size, int down)
 {
 	struct ifi_device * dev = get_ifi_dev_by_devtype(type);
-	return __ifi_input_stream(dev , buf, size);
+	return __ifi_input_stream(dev , buf, size, down);
 }
 
 

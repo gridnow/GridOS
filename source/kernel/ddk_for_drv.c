@@ -35,9 +35,10 @@ static void input_event(struct ddk_input_handle *handle, unsigned int event_type
 	switch(event_type)
 	{
 		case DDK_INPUT_EV_KEY:
-			//是输入键还是弹起键
-			if(value == 1)
-				ifi_input_stream(IFI_DEV_STD_IN, &event_code, 1);
+			/*
+				value : 1 输入  2 重复  0 该键弹起 
+			*/
+			ifi_input_stream(IFI_DEV_STD_IN, &event_code, 1, value);
 			break;
 		default:
 				//printk("type = %d,code = %d, value = %d\n", event_type, event_code, value);
