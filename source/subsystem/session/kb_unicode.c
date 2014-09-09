@@ -178,7 +178,7 @@ end:
 }
 
 /*
-*供上层接口调用的kb输入函数
+*	供上层接口调用的kb输入函数
 */
 static int kb_read_input(struct ifi_device * dev, struct ifi_package * input, int len)
 {
@@ -207,8 +207,8 @@ static int kb_read_input(struct ifi_device * dev, struct ifi_package * input, in
 }
 
 /* 定义扩展功能键标志位 */
-#define EXTER_SHIFT_BIT     (1 << 0)
-#define EXTER_CAP_LOCK_BIT  (1 << 1)
+#define EXTER_SHIFT_BIT     (1 << 3)
+#define EXTER_CAP_LOCK_BIT  (1 << 4)
 
 #define set_ext_shift_bit(dev) \
 	((dev)->ext_code |= EXTER_SHIFT_BIT)
@@ -218,8 +218,13 @@ static int kb_read_input(struct ifi_device * dev, struct ifi_package * input, in
 #define in_shift_state(dev)     ((dev)->ext_code & EXTER_SHIFT_BIT)
 #define in_cap_lock_state(dev)  ((dev)->ext_code & EXTER_CAP_LOCK_BIT)
 
+#define __set_cap_lock_bit(dev) \
+		((dev)->ext_code |= EXTER_CAP_LOCK_BIT)
+#define __clear_cap_lock_bit(dev) \
+		((dev)->ext_code &= ~EXTER_CAP_LOCK_BIT)
+		
 #define set_ext_cap_lock_bit(dev) \
-	((dev)->ext_code |= ((in_cap_lock_state(dev)) ? (~EXTER_CAP_LOCK_BIT) : EXTER_CAP_LOCK_BIT))
+	((in_cap_lock_state(dev)) ? (__clear_cap_lock_bit(dev)) : (__set_cap_lock_bit(dev)))
 
 /**
 	@brief input the kbd/mouse/touch screen input stream
@@ -258,6 +263,7 @@ static int kb_input_stream(struct ifi_device * dev, void * buf, size_t size, int
 			set_ext_shift_bit(dev);
 		else if (down == 0)
 			clear_ext_shift_bit(dev);
+
 		return inpt_len;
 	}
 	
@@ -282,7 +288,6 @@ static int kb_input_stream(struct ifi_device * dev, void * buf, size_t size, int
 				&& (scancode < 81)))//如果是第一扫描码是0xE0开头，则用double_key_table表查询，如果是普通字符用single_key_table查询
 	{
 		inpt_len = store_code(dev, double_key_table, scancode, code_table);
-		dev->ext_code = 0;
 	}
 	else
 	{

@@ -30,6 +30,9 @@ struct y_thread_environment_block
 	
 	/* Message information */
 	void *mi;
+
+	/* Pthread specific key/value */
+	void *pt_speci;
 };
 
 typedef unsigned long message_id_t;
@@ -300,6 +303,17 @@ void sys_get_screen_resolution(int *width, int * height, int *bpp);
 	@brief ²Ù×÷CMDLINE
 */
 int crt0_split_cmdline(char * cmdline, int max_size, int *argc, int max_argc, char **argv);
+
+/**
+	@brief:
+		set pthread specific field
+*/
+void set_current_pt_specific(void *specific);
+
+/**
+	@brief: get pthread specific fields
+*/
+void *get_current_pt_specific();
 
 END_C_DECLS;
 
