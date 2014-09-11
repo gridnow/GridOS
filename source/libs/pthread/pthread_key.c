@@ -19,8 +19,7 @@ static unsigned long __pthread_specific_nums = 0;
 #define DESTRUCTORT_INVALID ((destructort_t)-1)
 
 /**
-	@brief
-		add thread specific ptr to specific_arry
+	@brief add thread specific ptr to specific_arry
 	@return
 		0 for success
 		others for errno.
@@ -84,7 +83,8 @@ find_elem_index_and_add_to_arry(void *elem, void ***arry,
 
 
 /**
-	@brief
+	@brief pthread key create
+	@para
 		key[out] for store key
 		destructor[in] for delete key value produce
 	@return
@@ -95,16 +95,17 @@ int pthread_key_create(pthread_key_t *key, void *(*destructor)(void *))
 {
 	int ret;
 	
-	//pthread_spin_lock(&__pthread_key_lock);
+	pthread_spin_lock(&__pthread_key_lock);
 	ret = find_elem_index_and_add_to_arry(destructor, (void *)&__destructort_arry, 
 											(int *)&__pthread_key_nums, (int *)key);
-	//pthread_spin_unlock(&__pthread_key_lock);
+	pthread_spin_unlock(&__pthread_key_lock);
 	return ret;
 }
 
 
 /**
-	@brief
+	@brief pthread key delete.
+	@para
 		key[in] for delete key
 
 	@return
@@ -120,7 +121,7 @@ int pthread_key_delete(pthread_key_t key)
 		__destructort_arry[key] == DESTRUCTORT_INVALID)
 		return -EINVAL;
 
-	//pthread_spin_lock(&__pthread_specific_lock);
+	pthread_spin_lock(&__pthread_specific_lock);
 
 	/* foreach pthread specific */
 	for (; i < __pthread_specific_nums; i++)
@@ -130,11 +131,11 @@ int pthread_key_delete(pthread_key_t key)
 			hurd_ihash_remove(__pthread_specific_arry[i], key);
 	}
 
-	//pthread_spin_lock(&__pthread_key_lock);
+	pthread_spin_lock(&__pthread_key_lock);
 	__destructort_arry[key] = (destructort_t)-1;
-	//pthread_spin_unlock(&__pthread_key_lock);
+	pthread_spin_unlock(&__pthread_key_lock);
 	
-	//pthread_spin_unlock(&__pthread_specific_lock);
+	pthread_spin_unlock(&__pthread_specific_lock);
 	return 0;
 }
 
@@ -144,7 +145,7 @@ int pthread_key_delete(pthread_key_t key)
 */
 void pthread_locks_init(void)
 {
-	pthread_spin_lock(&__pthread_key_lock);
-	pthread_spin_lock(&__pthread_specific_lock);
+	pthread_spin_init(&__pthread_key_lock, 0);
+	pthread_spin_init(&__pthread_specific_lock, 0);
 }
 

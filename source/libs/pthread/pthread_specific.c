@@ -1,12 +1,11 @@
 
 #include <pthread.h>
 #include <ystd.h>
-#include <ihash.h>
+#include "ihash.h"
 
 
 /**
-	@brief: 
-		This function set value to thread_specific data by the key.
+	@brief: This function set value to thread_specific data by the key.
 */
 int pthread_setspecific (pthread_key_t key, const void *value)
 {
@@ -27,9 +26,9 @@ int pthread_setspecific (pthread_key_t key, const void *value)
 			return -ENOMEM;
 		
 		/* add speci_tb to speci_tables */
-		//pthread_spin_lock(&__pthread_specific_lock);
+		pthread_spin_lock(&__pthread_specific_lock);
 		ret = find_elem_index_and_add_to_arry(speci_tb, &__pthread_specific_arry, (int *)&__pthread_specific_nums, NULL);
-		//pthread_spin_unlock(&__pthread_specific_lock);
+		pthread_spin_unlock(&__pthread_specific_lock);
 
 		/* errno is always no mem */
 		if (ret < 0)
@@ -51,8 +50,7 @@ int pthread_setspecific (pthread_key_t key, const void *value)
 
 
 /**
-	@brief
-		get thread specific value base key
+	@brief get thread specific value base key
 */
 void *pthread_getspecific(pthread_key_t key)
 {

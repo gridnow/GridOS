@@ -7,5 +7,5 @@
 
 void dll_main(int x, int y)
 {
-	//pthread_locks_init();
+	pthread_locks_init();
 }

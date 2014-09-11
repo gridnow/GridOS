@@ -17,17 +17,16 @@
 
 #define IF_EXTEND		0xe0
 
-#define EXT_CODE_1			1
-#define EXT_CODE_2			2
-
 #define BASE_KEY_MAX_NUM	111
 
 #define KEY_SHIFT_LEFT		0x2a
 #define KEY_SHIFT_RIGHT     0x36        
 #define KEY_CAP_LOCK		0x3a
 
-
-
+/* 定义扩展功能键标志位 */
+#define EXTER_SHIFT_BIT     (1 << 0)
+#define EXTER_CAP_LOCK_BIT  (1 << 1)
+#define EXT_CODE_1			(1 << 2)
 
 #define K(t,s,f) ((t)|((s)<<8)|((f)<<16)|(0)<<24)
 //static struct ifi_device * default_dev;
@@ -205,10 +204,6 @@ static int kb_read_input(struct ifi_device * dev, struct ifi_package * input, in
 
 	return 1;
 }
-
-/* 定义扩展功能键标志位 */
-#define EXTER_SHIFT_BIT     (1 << 3)
-#define EXTER_CAP_LOCK_BIT  (1 << 4)
 
 #define set_ext_shift_bit(dev) \
 	((dev)->ext_code |= EXTER_SHIFT_BIT)
