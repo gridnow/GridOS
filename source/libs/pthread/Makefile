@@ -3,10 +3,10 @@ DLL						=yes
 include $(MY_BUILD_BASE)/config.mk
 
 TARGET					= libpthread.so
-DEPENDS					= -lhead_so.o
+DEPENDS					= -lhead_so.o -lgrid
 PARTS					= 
 OBJS					= pthread.o
-ADD_INCLUDE				+=-I../grid/include
+ADD_INCLUDE				+=-I. -I../grid/include
 
 FROM_OTHER_LIB			=$(MY_BUILD_BASE)/build/pthread_spin_*.o
 

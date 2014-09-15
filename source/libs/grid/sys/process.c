@@ -48,6 +48,25 @@ static void set_current_mi(struct y_message_instance *mi)
 	current->mi = mi;
 }
 
+/**
+	@brief: get pthread specific fields
+*/
+DLLEXPORT void *get_current_pt_specific()
+{
+	struct y_thread_environment_block *current = get_current();
+	return current->pt_speci;
+}
+
+/**
+	@brief:
+		set pthread specific field
+*/
+DLLEXPORT void set_current_pt_specific(void *specific)
+{
+	struct y_thread_environment_block *current = get_current();
+	current->pt_speci = specific;
+}
+
 static void message_default_sync_ack(struct y_message *what)
 {
 	struct sysreq_thread_msg req;
