@@ -9,6 +9,7 @@
 
 #include <pthread.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <ystd.h>
 
 static void *get_thread_specific(void *para)
