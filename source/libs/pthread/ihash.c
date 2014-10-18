@@ -235,6 +235,7 @@ hurd_ihash_add (hurd_ihash_t ht, hurd_ihash_key_t key, hurd_ihash_value_t item)
 	struct hurd_ihash old_ht = *ht;
 	int was_added;
 	unsigned int i;
+	int r;
 
 	if (ht->size)
 	{
@@ -265,17 +266,27 @@ hurd_ihash_add (hurd_ihash_t ht, hurd_ihash_key_t key, hurd_ihash_value_t item)
 		if (!index_empty (&old_ht, i))
 		{
 			was_added = add_one (ht, old_ht.items[i].key, old_ht.items[i].value);
-			assert (was_added);
+			/* It will not happen or our code is so stupied */
+			if (!was_added)
+				goto err_and_free_itmes_buffer;
 		}
 
 	/* Finally add the new element!  */
 	was_added = add_one (ht, key, item);
-	assert (was_added);
-
+	if (!was_added)
+		goto err_and_free_itmes_buffer;
+	r = 0;
+end:
 	if (old_ht.size > 0)
 		free (old_ht.items);
 
-	return 0;
+	return r;
+
+err_and_free_itmes_buffer:
+	free(ht->items);
+	ht->items = NULL;
+	r = ENOMEM;
+	goto end;
 }
 
 
