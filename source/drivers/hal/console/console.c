@@ -216,6 +216,13 @@ static int draw_a_line(unsigned int* pos_x, unsigned int* pos_y, unsigned int st
 			cur_x += draw_eng_char(*c, cur_x, cur_y, color);
 			p_string = get_buf_idx(p_string + 1);	
 		}
+		/*127退格键,27四个方向键,131-138,255是F3-10 F12,140是F11*/
+		else if (*c == 127 || *c == 27 || *c == 131 ||
+			*c == 255 || *c == 132 || *c == 133 || 
+			*c == 134 || *c == 135 || *c == 136 || 
+			*c == 137 || *c == 138 || *c == 140){
+			p_string = get_buf_idx(p_string + 1);/*＋1 就是跳过他们，这些过滤的键，直接跳过，就不绘制了*/
+		}
 		/* Chinese is 2 bytes */
 		else
 		{
