@@ -1,4 +1,3 @@
-
 /**
 	This API for pthread key create and delete.
 */
@@ -140,8 +139,7 @@ int pthread_key_delete(pthread_key_t key)
 }
 
 /**
-	@brief
-		called for when pthread lib init.
+	@brief Called for when pthread lib init.
 */
 void pthread_locks_init(void)
 {
