@@ -14,6 +14,10 @@
 #include <compiler.h>
 #include <types.h>
 #include "env.h"
+#include "string.h"
+#include "crt.h"
+#include "malloc.h"
+#include "stdio.h"
 
 extern char *_environ ;		//环境变量首指针
 

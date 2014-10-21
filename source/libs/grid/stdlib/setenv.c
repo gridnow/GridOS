@@ -13,6 +13,10 @@
 #include <types.h>
 #include <errno.h>
 #include "env.h"
+#include "string.h"
+#include "crt.h"
+#include "malloc.h"
+#include "stdio.h"
 
 char *_environ = NULL;			//环境变量首指针
 char *_cur_env = NULL;			//指向环境变量空闲空间首地址
