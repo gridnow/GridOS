@@ -109,3 +109,14 @@ char *strrchr(const char *s, int c)
 	return NULL;
 }
 #endif
+
+#ifndef __HAVE_ARCH_STRCHR
+char *strchr(const char *s, int c)
+{
+	for (; *s != (char)c; ++s)
+		if (*s == '\0')
+			return NULL;
+	return (char *)s;
+}
+#endif
+

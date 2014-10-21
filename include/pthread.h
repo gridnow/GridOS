@@ -263,6 +263,13 @@ PTEXPORT int PTCDECL pthread_spin_unlock (pthread_spinlock_t * lock);
 /*
  * KEY
  */
+
+PTEXPORT int pthread_key_create(pthread_key_t *key, void *(*destructor)(void *));
+
+PTEXPORT int pthread_key_delete(pthread_key_t key);
+
+PTEXPORT int pthread_setspecific (pthread_key_t key, const void *value);
+
 PTEXPORT void *pthread_getspecific (pthread_key_t key);
 
 END_C_DECLS;

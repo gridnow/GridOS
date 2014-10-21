@@ -9,7 +9,7 @@
 #include <bcd.h>
 
 #include <ddk/compatible.h>
-#include <ddk/compatible_irq.h>
+#include <irqflags.h>
 
 #include <mc146818rtc.h>
 
@@ -144,7 +144,7 @@ int rtc_init(void)
 		rtc_int_handler_ptr = rtc_interrupt;
 	}
 
-	if (request_irq(RTC_IRQ, rtc_int_handler_ptr, IRQF_DISABLED,
+	if (hal_irq_request(RTC_IRQ, rtc_int_handler_ptr, IRQF_DISABLED,
 		"rtc", NULL)) {
 			/* Yeah right, seeing as irq 8 doesn't even hit the bus. */
 			rtc_has_irq = 0;

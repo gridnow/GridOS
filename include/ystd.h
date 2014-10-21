@@ -30,6 +30,9 @@ struct y_thread_environment_block
 	
 	/* Message information */
 	void *mi;
+
+	/* Pthread specific key/value */
+	void *pt_speci;
 };
 
 typedef unsigned long message_id_t;

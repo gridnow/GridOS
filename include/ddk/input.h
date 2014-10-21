@@ -102,7 +102,7 @@ struct ifi_device
 
 	struct ifi_dev_ops *dev_ops;
 	/* 设备输入函数处理,该函数在中断上下文被调用 */
-	int (*ifi_input_stream)(struct ifi_device *dev, void *data, size_t len);
+	int (*ifi_input_stream)(struct ifi_device *dev, void *data, size_t len, int down);
 	/* 设备输出函数 */
 	int (*ifi_output_stream)(struct ifi_device *dev);
 	/* 设备销毁函数 */
@@ -123,7 +123,7 @@ DLLEXPORT struct ifi_device * get_ifi_dev_by_devtype(int type);
 		对于同一个对象不可重入!
 */
 
-DLLEXPORT int ifi_input_stream(int type, void * buf, size_t size);
+DLLEXPORT int ifi_input_stream(int type, void * buf, size_t size, int down);
 
 /**
 	@brief 读取输入流

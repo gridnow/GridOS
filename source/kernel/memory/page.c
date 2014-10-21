@@ -111,7 +111,7 @@ bool km_page_create_cow(struct km *mem_dst, unsigned long address)
 	km_pte_write_force(&dst_ctx, entry);
 
 	/* Must flush, because we are changing the entry */
-	km_arch_flush_page(address);
+	km_arch_flush_page(mem_dst, address);
 
 	return true;
 	
@@ -192,6 +192,6 @@ void km_page_dealloc_range(struct km *mem_dst, unsigned long start, unsigned lon
 	KM_WALK_INIT(mem_dst, &dst_ctx);	
 	km_walk_loop(&dst_ctx, start, size, delete_page);
 
-	/* Flush the TLB */
-	km_arch_flush_pages(start, size);
+	/* Flush the TLB,  */
+	km_arch_flush_pages(mem_dst, start, size);
 }

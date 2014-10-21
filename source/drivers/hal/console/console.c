@@ -216,6 +216,13 @@ static int draw_a_line(unsigned int* pos_x, unsigned int* pos_y, unsigned int st
 			cur_x += draw_eng_char(*c, cur_x, cur_y, color);
 			p_string = get_buf_idx(p_string + 1);	
 		}
+		/*127退格键,27四个方向键,131-138,255是F3-10 F12,140是F11*/
+		else if (*c == 127 || *c == 27 || *c == 131 ||
+			*c == 255 || *c == 132 || *c == 133 || 
+			*c == 134 || *c == 135 || *c == 136 || 
+			*c == 137 || *c == 138 || *c == 140){
+			p_string = get_buf_idx(p_string + 1);/*＋1 就是跳过他们，这些过滤的键，直接跳过，就不绘制了*/
+		}
 		/* Chinese is 2 bytes */
 		else
 		{
@@ -574,7 +581,6 @@ struct hal_console_ops video_console_ops = {
 
 void hal_console_init(void)
 {
-	video_console_ops.write = write_string;
 	
 	dsp_ctx.window.topline = 2 * sizeof(unsigned int);
 	dsp_ctx.window.pos_x = 0;
@@ -599,6 +605,11 @@ void hal_console_init(void)
 	/* 取分辨率 */
 	get_screen_resolution(&dsp_ctx.max_x, &dsp_ctx.max_y, NULL); 
 
+	/* 但是如果分辨率是0 x 0的话，write_string 似乎有bug，这里屏蔽掉 */
+	if (dsp_ctx.max_x == 0 || dsp_ctx.max_y == 0)
+		;
+	else
+		video_console_ops.write = write_string;
 	console_cursor_setup();
 	console_cursor_set_height(DOTFNT_CHAR_LINE_HEIGHT);
 

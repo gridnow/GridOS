@@ -13,6 +13,7 @@
 #include <irqflags.h>
 #include <smp.h>
 #include <irq.h>
+#include <linkage.h>
 
 #include <ddk/debug.h>
 
@@ -20,7 +21,6 @@ static struct dpc_irq_action dpc_irq_vec[NR_DPC_IRQS] __cacheline_aligned_in_smp
 
 /* Totally we have MAX DPC threads to run on all CPUs */
 #define MAX_DPC_THREADS 1
-static void *dpc_threads[MAX_DPC_THREADS];
 
 //TODO:多处理器上每个处理器由自己的pending
 static unsigned long dpc_irq_pending;
@@ -62,13 +62,11 @@ asmlinkage void __do_dpc_irq(void)
 	struct dpc_irq_action *h;
 	u32 pending;
 	int max_restart = MAX_SOFTIRQ_RESTART;
-	int cpu;
 
 	/* Get mask */	
 	pending = local_dpc_irq_pending();
 	__local_bh_disable((unsigned long)__builtin_return_address(0),
 				SOFTIRQ_OFFSET);
-	cpu = smp_processor_id();
 restart:
 	/* Reset the pending bit mask before enabling irqs */
 	set_dpc_irq_pending(0);
@@ -78,7 +76,6 @@ restart:
 	h = dpc_irq_vec;
 	do {
 		if (pending & 1) {
-			unsigned int vec_nr = h - dpc_irq_vec;
 			int prev_count = hal_preempt_count();
 			
 			h->action(h);
@@ -125,6 +122,7 @@ asmlinkage void do_dpc_irq(void)
 
 #endif
 
+#if 0
 static void dpc_thread()
 {
 	while(1)
@@ -137,6 +135,7 @@ static void dpc_thread()
 		//TODO: Sleep
 	}	
 }
+#endif
 
 static inline void invoke_softirq(void)
 {	

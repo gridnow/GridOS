@@ -26,8 +26,6 @@ void cl_bitmap_init(struct cl_bitmap *cur_bitmap, unsigned long *bitmap, unsigne
 */
 bool cl_bitmap_adaption(struct cl_bitmap *bitmap, void *buffer, int buffer_size, int block_size)
 {
-	unsigned long head;
-
 	int total_size;
 	int cur_count = 1;
 
@@ -93,7 +91,6 @@ again_scan:
 
 unsigned long cl_bitmap_alloc_consistant_bits(struct cl_bitmap *cur_bitmap, int count)
 {
-	unsigned long first_bit;
 	int i, temp_count;
 	bool scan_flag = false;
 	unsigned long bit_offset;
@@ -141,14 +138,15 @@ restart_scan:
 			goto error;
 	}
 	if ((temp_count + 1) == count)
-	{
+	{		
+		unsigned long first_bit = cur_bitmap->last_bit;
+
 		for (i = 0; i < count; i++)
 		{
 			__set_bit(cur_bitmap->last_bit, (unsigned long *)cur_bitmap->bitmap);
-			if (i == 0)
-				first_bit = cur_bitmap->last_bit;			
 			cur_bitmap->last_bit++;			
 		}
+		
 		return first_bit;
 	}
 error:

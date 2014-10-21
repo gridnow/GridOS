@@ -40,6 +40,11 @@ struct km
 	spinlock_t lock;
 	void *translation_table;
 
+#ifdef __mips__
+	unsigned long asid;
+	unsigned long hw_refill;
+#endif
+
 	/* µØÖ·²Ù×÷Õ» */
 #define KM_MAX_ADDRESS_STACK 32
 	int address_idx;
@@ -161,6 +166,8 @@ static inline bool km_pte_next(struct km_walk_ctx * ctx)
 static inline pte_t km_pte_read(struct km_walk_ctx *ctx)
 {
 	pte_t *entry  = &(ctx->table_base[1][ctx->hirarch_id[1]]);
+	//printk("entry = %x, table base 1 = %x, hearid = %d.\n", 
+	//	entry, ctx->table_base[1], ctx->hirarch_id[1]);
 	return *entry;
 }
 

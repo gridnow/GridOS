@@ -1,0 +1,19 @@
+
+
+SECTIONS
+{	
+
+	. = 0xffffffff81000000;
+	___start = .;
+	
+	 .bss : AT(ADDR(.bss) ) {
+	__bss_start = .;
+	*(.bss)
+ }
+ __bss_stop = .;
+ 
+ /* 最好是4KB对齐的，考虑到有的页是16KB，所有用最大的16KB对齐 */
+ . = ALIGN(((0x4000)));
+	___end = .;
+};
+jiffies = jiffies_64;

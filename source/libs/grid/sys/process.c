@@ -25,17 +25,6 @@ struct message_desc
 	y_message_func callback;
 };
 
-static struct y_thread_environment_block *get_current()
-{
-	struct y_thread_environment_block *current;
-	struct sysreq_thread_teb req;
-	
-	req.base.req_id = SYS_REQ_KERNEL_THREAD_TEB;
-	current = (struct y_thread_environment_block*)system_call(&req);
-	
-	return current;
-}
-
 static struct y_message_instance *get_current_mi()
 {
 	struct y_thread_environment_block *current = get_current();

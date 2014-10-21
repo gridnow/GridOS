@@ -210,4 +210,18 @@ struct sysreq_process_printf
 	void *string;
 };
 
+/**************************************************
+Internal function used by run time library(pthread and ystd)
+**************************************************/
+static inline void *get_current()
+{
+	void *current;
+	struct sysreq_thread_teb req;
+	
+	req.base.req_id = SYS_REQ_KERNEL_THREAD_TEB;
+	current = (void*)system_call(&req);
+	
+	return current;
+}
+
 #endif

@@ -4,7 +4,7 @@ include ../hal_include.mk
 ADD_INCLUDE +=$(HAL_INCLUDE) -include hal_config.h
 
 #要编译的文件列表
-OBJS	= printk.o
+OBJS	= printk.o div64.o
 PARTS	= 
 
 all:  subs_parts $(OBJS)

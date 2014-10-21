@@ -5,6 +5,8 @@
 
 #include <ring_buff.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "cmd.h"
 
 static int test_ring(int argc, char **argv)
@@ -21,17 +23,17 @@ static int test_ring(int argc, char **argv)
 	p = ring_buff_alloc(buff, 256);
 	if (!p)
 		goto err;
-	memset(p, 1, 256);
+	memset((void *)p, 1, 256);
 	
 	p1 = ring_buff_alloc(buff, 300);
 	if (!p1)
 		goto err;
-	memset(p1, 3, 300);	
+	memset((void *)p1, 3, 300);	
 	
 	p2 = ring_buff_alloc(buff, 123);
 	if (!p2)
 		goto err;
-	memset(p2, 1, 123);	
+	memset((void *)p2, 1, 123);	
 	
 	ring_buff_free(buff, p);
 	p = NULL;
@@ -46,7 +48,7 @@ static int test_ring(int argc, char **argv)
 	
 	if (!p3)
 		goto err;
-	memset(p3, 1, 256);	
+	memset((void *)p3, 1, 256);	
 
 	cache_package_head_info_debug(buff);
 	

@@ -5,7 +5,7 @@ OBJS					= main.o fd.o
 TARGET					= grid.so
 DEPENDS					= -lhead_so.o 
 #DEPENDS				+=../../pthread/pthread.o
-DEPENDS					+= ../../libs/common/*.o $(SYSTEM_BUILD_TMP)/libs/elf2/$(ARCH_DIR)/elf.o
+DEPENDS					+= $(SYSTEM_BUILD_TMP)/libs/$(ARCH_DIR)/common.o$(DLL) $(SYSTEM_BUILD_TMP)/libs/$(ARCH_DIR)/elf.o
 ADD_INCLUDE				+=-I./include $(CL_INCLUDE)
 LDFLAGS					+=-Ttext-segment=0x70000000 -init dll_preinit
 PARTS					= crt0 dlfun malloc string stdlib stdio socket dirent sys arch
