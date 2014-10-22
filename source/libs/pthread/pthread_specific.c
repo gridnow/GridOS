@@ -1,11 +1,27 @@
-
 #include <pthread.h>
 #include <ystd.h>
 #include "ihash.h"
 
+/**
+	@brief get pthread specific fields
+*/
+static void *get_current_pt_specific()
+{
+	struct y_thread_environment_block *current = get_current();
+	return current->pt_speci;
+}
 
 /**
-	@brief: This function set value to thread_specific data by the key.
+	@brief set pthread specific field
+*/
+static void set_current_pt_specific(void *specific)
+{
+	struct y_thread_environment_block *current = get_current();
+	current->pt_speci = specific;
+}
+
+/**
+	@brief This function set value to thread_specific data by the key.
 */
 int pthread_setspecific (pthread_key_t key, const void *value)
 {
@@ -68,8 +84,3 @@ void *pthread_getspecific(pthread_key_t key)
 	/* find value */
 	return hurd_ihash_find(speci_tb, (hurd_ihash_key_t)key);
 }
-
-
-
-
-
