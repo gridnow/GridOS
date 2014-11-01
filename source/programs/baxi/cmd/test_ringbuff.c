@@ -18,9 +18,8 @@ static int test_ring(int argc, char **argv)
 	if (!buff)
 		goto err;
 	
-	buff = ring_buff_head_init(buff, 1024);
+	buff = ring_buff_head_init(buff, 2048);
 	
-	printf("Allocating 3 buffers\n");
 	p = ring_buff_alloc(buff, 256);
 	if (!p)
 		goto err;
@@ -29,42 +28,38 @@ static int test_ring(int argc, char **argv)
 	p1 = ring_buff_alloc(buff, 300);
 	if (!p1)
 		goto err;
-	memset((void *)p1, 2, 300);
+	memset((void *)p1, 3, 300);	
 	
 	p2 = ring_buff_alloc(buff, 123);
 	if (!p2)
 		goto err;
-	memset((void *)p2, 3, 123);
+	memset((void *)p2, 1, 123);	
 	
-	printf("Free the first one\n");
 	ring_buff_free(buff, p);
-	
-	printf("Allocate again the size of first one, the address should meet\n");
-	p3 = ring_buff_alloc(buff, 256);
-	if (p != p3)
-	{
-		printf("Error in first round test p = %p, p3 = %p\n", p, p3);
-		goto err;
-	}
-	memset((void *)p3, 4, 256);
-	
-	printf("Free the second one\n");
-	ring_buff_free(buff, p1);
-	
-	printf("Allocating bigger the 2nd one\n");
-	p = ring_buff_alloc(buff, 301);
-	if (p == p1)
-		printf("Error in p1\n");
-	printf("2nd p = %p, p1 = %p\n", p, p1);
+	p = NULL;
 
+	/* DEBUG FOR CURR HEAD INFO */
+	cache_package_head_info_debug(buff);
+	
+	p3 = ring_buff_alloc(buff, 256);
+	
+	ring_buff_free(buff, p1);
+	p1 = NULL;
+	
+	if (!p3)
+		goto err;
+	memset((void *)p3, 1, 256);	
+
+	cache_package_head_info_debug(buff);
+	
 	ring_buff_free(buff, p2);
-	ring_buff_free(buff, p3);
+	ring_buff_free(buff, p3);	
 	p2 = NULL;
 	p3 = NULL;
 	
-	/* Show status */
 	cache_package_head_info_debug(buff);
 err:
+	cache_package_head_info_debug(buff);
 	if (buff)
 		free(buff);
 	
