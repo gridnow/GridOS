@@ -22,5 +22,5 @@ bool dl_close(void *handle);
 void *dl_sym(void *handle, const char *name);
 void *dl_entry(void *handle);
 void dl_call_posix_entry(void *entry, int argc, char *argv[]);
-
+void *dl_section_vaddress(void *handle, const char *name, size_t *size);
 #endif

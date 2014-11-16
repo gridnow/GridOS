@@ -15,6 +15,7 @@
 #define POSIX_DLFCN_H
 
 #include <compiler.h>
+#include <types.h>
 
 #define RTLD_LAZY			0x00001	/* Lazy function call binding.  */
 #define RTLD_NOW			0x00002	/* Immediate function call binding.  */
@@ -110,9 +111,15 @@ char *dlerror (void);
 */
 int dladdr(void * address, Dl_info * info);
 
-/* Extended */
+/********************************************************
+				Extended
+*********************************************************/
 void dlcall_posix_entry(void *entry, int argc, char *argv[]);
 void *dlentry(void *__restrict handle);
+/* 
+	@brief 获取section 的虚拟地址
+*/
+void *dlsection_vaddr(void *handle, const char *section_name, size_t *size);
 
 #endif
 /** @} */
