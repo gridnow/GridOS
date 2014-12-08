@@ -140,3 +140,15 @@ void *dl_entry(void *handle)
 	return (void*)entry;
 }
 
+void *dl_section_vaddress(void *handle, const char *section_name, size_t *size)
+{
+	int section_for = -1;
+	struct image *image = handle;
+	
+	/* 目前支持的有限 */
+	if (!strcmp(section_name, ".eh_frame"))
+		section_for = ELF_SECTION_FOR_EH_FRAME;
+	if (section_for == -1)
+		return NULL;
+	return (void*)elf_get_section_vaddr(&image->exe_desc, &image->user_ctx, section_for, size);
+}

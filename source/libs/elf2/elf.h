@@ -19,8 +19,18 @@ struct elf_segment
 #define ELF_SEG_EXE				(1 << 2)
 #define ELF_SEG_HAS_UNINITED	(1 << 3)
 
+struct elf_section
+{
+	int section_for;
+
+	size_t size;
+	unsigned int flags;
+	unsigned long vstart;
+};
+#define ELF_SECTION_FOR_EH_FRAME 1
+
 /**
- @brief Elf 在用户层的描述
+	@brief Elf 在用户层的描述
  */
 struct elf_user_ctx
 {
@@ -107,6 +117,11 @@ bool elf_resolve_symbol_by_name(void *elf, void *user_ctx, const char *name, uns
 	模块的入口、出口、构造和析构
 */
 bool elf_get_startup(void *elf, void *user_ctx, unsigned long *entry, unsigned long *init, unsigned long *fini);
+
+/**
+	@brief Get the section address by section flag
+ */
+unsigned long elf_get_section_vaddr(void *elf, void *user_ctx, int section_for, size_t *size);
 
 /**
 	@brief Get the private structure size of the image

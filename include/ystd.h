@@ -304,17 +304,6 @@ void sys_get_screen_resolution(int *width, int * height, int *bpp);
 */
 int crt0_split_cmdline(char * cmdline, int max_size, int *argc, int max_argc, char **argv);
 
-/**
-	@brief:
-		set pthread specific field
-*/
-void set_current_pt_specific(void *specific);
-
-/**
-	@brief: get pthread specific fields
-*/
-void *get_current_pt_specific();
-
 END_C_DECLS;
 
 #endif /* _Y_STANDARD_H */
