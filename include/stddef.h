@@ -59,6 +59,10 @@
 #define __ALIGN__MASK(x, mask)	(((x) + (mask)) & ~(mask))
 #define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
 
+/* for ptrdiff_t */
+#define __PTRDIFF_TYPE__ long int
+typedef __PTRDIFF_TYPE__ ptrdiff_t;
+
 #endif
 
 /** @} */
