@@ -4,6 +4,8 @@
 	$(CC) $(my_cflags) $(ADD_INCLUDE) $(COMMON_CC_FLAGS) $(LAST_INCLUDE) -o $@ $<
 .S.o:
 	$(CC) $(my_cflags) $(ADD_INCLUDE) -D__ASSEMBLY__ $(COMMON_CC_FLAGS) $(LAST_INCLUDE) -o $@ $<
+.cc.o:
+	$(C++) $(my_c++flags) $(ADD_INCLUDE) $(LAST_INCLUDE) -o $@ $<
 clean:
 	@rm -f *.o *.a *.so *.oyes
 	@for i in $(PARTS); do $(MAKE) -C $$i clean; done

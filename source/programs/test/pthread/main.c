@@ -9,6 +9,7 @@
 
 #include <pthread.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <ystd.h>
 
 static void *get_thread_specific(void *para)
@@ -57,14 +58,19 @@ err:
 	return NULL;
 }
 
+static void do_once(void)
+{
+	printf("pthread do once.\n");
+}
+
+
 int main(int argc, char **agrv)
 {
 	/* create wait event */
 	y_handle wait_event = y_event_create(false, false);
 
-	void *p = malloc(12);
-	printf("start pthread set value test p %p.\n", p);
-
+	/* pthread once */
+	pthread_once_t only_once = PTHREAD_ONCE_INIT;
 	
 	/* start pthread */
 	if (pthread_create(NULL, NULL, get_thread_specific, NULL) < 0)
@@ -73,6 +79,11 @@ int main(int argc, char **agrv)
 		return 0;
 	}
 
+	/* do pthread once */
+	pthread_once(&only_once, do_once);
+	pthread_once(&only_once, do_once);
+	pthread_once(&only_once, do_once);
+	
 	/* wait 5s */
 	while (1)
 		y_event_wait(wait_event, 50000);
