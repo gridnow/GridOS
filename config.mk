@@ -21,6 +21,7 @@ endif
 #¹¤¾ßºê
 #
 CC				= $(GCC_PREFIX)gcc
+C++				= $(GCC_PREFIX)g++
 AS				= $(GCC_PREFIX)as
 AR				= $(GCC_PREFIX)ar
 LD				= $(GCC_PREFIX)ld

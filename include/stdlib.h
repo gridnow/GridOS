@@ -94,6 +94,9 @@ char *getenv(const char * envvar);
 */
 int setenv(const char *name, const char *value, int rewrite);
 
+/* TODO */
+void abort(void);
+
 END_C_DECLS;
 
 #endif
