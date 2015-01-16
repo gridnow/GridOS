@@ -15,3 +15,4 @@ subs_parts:
 	
 to_image:
 	c:\\image\\winimage.exe d:\\q64\\hd0.img -I $(MY_BUILD_BASE)\\release
+
