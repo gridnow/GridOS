@@ -13,10 +13,16 @@
 #include <types.h>
 #include <errno.h>
 #include "env.h"
+#include "string.h"
+#include "crt.h"
+#include "malloc.h"
+#include "stdio.h"
 
 char *_environ = NULL;			//环境变量首指针
 char *_cur_env = NULL;			//指向环境变量空闲空间首地址
 unsigned long _env_len = NULL;	//当前环境变量指针所指向的空间的总大小
+
+/*  变量存放格式: 名称+值长度+值内容*/
 
 DLLEXPORT __weak  int setenv(const char * name, const char * value, int overwrite)
 {
@@ -53,19 +59,19 @@ DLLEXPORT __weak  int setenv(const char * name, const char * value, int overwrit
 		{
 			break;
 		}
-		p = p + strlen(name) + __SIZE_OF_END_CHAR_;	// name eof
+		p = p + strlen(name) + __SIZE_OF_END_CHAR_;
 		memcpy(&oldlen, p, sizeof(int));
 		p += sizeof(int);
-		p += oldlen + __SIZE_OF_END_CHAR_;			//eof
+		p += oldlen + __SIZE_OF_END_CHAR_;
 	}
 
 	;
-	if (*p == 0)			//需新增
+	if (*p == 0)   /*需新增 */
 	{
 		p = _cur_env;
 		strcpy(p, name);
 		p += strlen(name);
-		*p = NULL;		//eof
+		*p = NULL;
 		p++;  
 		newlen = strlen(value);
 		memcpy(p, (char*)&newlen, sizeof(int));
@@ -125,3 +131,4 @@ DLLEXPORT __weak  int setenv(const char * name, const char * value, int overwrit
 	UNLOCK_ENV_VARIABLE;
 	return 0;
 }
+
