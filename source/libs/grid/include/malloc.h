@@ -11,5 +11,6 @@
 #define _MALLOC_H
 
 bool init_malloc();
+void * malloc(size_t _Size);
 
 #endif
